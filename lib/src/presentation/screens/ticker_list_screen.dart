@@ -614,6 +614,8 @@ class _TickerCard extends ConsumerWidget {
                           ),
                           const SizedBox(width: 8),
                           _StatusChip(label: statusLabel, color: statusColor),
+                          const SizedBox(width: 6),
+                          _InlineMarketState(symbol: ticker.symbol),
                         ],
                       ),
                       if (sector != null && advancedMode)
@@ -790,6 +792,50 @@ class _PriceTag extends StatelessWidget {
 // ---------------------------------------------------------------------------
 // Empty + Error states
 // ---------------------------------------------------------------------------
+
+/// Compact PRE / AH inline pill shown next to the symbol in the ticker card.
+/// Hidden when market is REGULAR or CLOSED and no relevant extended-hours price
+/// is available.
+class _InlineMarketState extends ConsumerWidget {
+  const _InlineMarketState({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quoteAsync = ref.watch(intradayQuoteProvider(symbol));
+    final quote = switch (quoteAsync) {
+      AsyncData(:final value) => value,
+      _ => null,
+    };
+    if (quote == null) return const SizedBox.shrink();
+    if (quote.isRegularHours) return const SizedBox.shrink();
+
+    final (label, color) = switch (quote.marketState) {
+      'PRE' => ('PRE', Colors.orange.shade700),
+      'POST' => ('AH', Colors.blue.shade600),
+      _ => ('', Colors.grey),
+    };
+    if (label.isEmpty) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        border: Border.all(color: color, width: 0.8),
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 9,
+          color: color,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
 
 class _EmptyState extends StatelessWidget {
   const _EmptyState();
