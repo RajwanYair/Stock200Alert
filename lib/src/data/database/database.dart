@@ -130,6 +130,30 @@ class AlertStates extends Table {
   Set<Column> get primaryKey => {ticker};
 }
 
+/// Append-only audit log recording every user-initiated settings change.
+///
+/// Each row captures: field name, old value, new value, source screen, time.
+/// Used by the /audit-log screen to help users understand why alerts changed.
+class AuditLogTable extends Table {
+  @override
+  String get tableName => 'audit_log';
+
+  IntColumn get id => integer().autoIncrement()();
+  DateTimeColumn get timestamp => dateTime().withDefault(currentDateAndTime)();
+
+  /// Human-readable field that changed, e.g. 'refreshIntervalMinutes'.
+  TextColumn get field => text()();
+
+  /// Previous value as string (empty string when previously unset).
+  TextColumn get oldValue => text().withDefault(const Constant(''))();
+
+  /// New value as string.
+  TextColumn get newValue => text()();
+
+  /// Screen or context where the change originated, e.g. 'SettingsScreen'.
+  TextColumn get screen => text().withDefault(const Constant(''))();
+}
+
 class AppSettingsTable extends Table {
   IntColumn get id => integer().withDefault(const Constant(1))();
   IntColumn get refreshIntervalMinutes =>
@@ -171,6 +195,7 @@ class AppSettingsTable extends Table {
     PriceTargetsTable,
     PctMoveThresholdsTable,
     AlertHistoryTable,
+    AuditLogTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -180,7 +205,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 11;
+  int get schemaVersion => 12;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -225,6 +250,9 @@ class AppDatabase extends _$AppDatabase {
           appSettingsTable,
           appSettingsTable.accentColorValue,
         );
+      }
+      if (from < 12) {
+        await migrator.createTable(auditLogTable);
       }
     },
   );
@@ -384,6 +412,19 @@ class AppDatabase extends _$AppDatabase {
       TickersCompanion(nextEarningsAt: Value(date)),
     );
   }
+
+  // ---- Audit Log ----
+
+  Future<int> insertAuditLog(AuditLogTableCompanion entry) =>
+      into(auditLogTable).insert(entry);
+
+  Future<List<AuditLogTableData>> getAuditLog({int limit = 200}) =>
+      (select(auditLogTable)
+            ..orderBy([(t) => OrderingTerm.desc(t.timestamp)])
+            ..limit(limit))
+          .get();
+
+  Future<void> clearAuditLog() => delete(auditLogTable).go();
 }
 
 LazyDatabase _openConnection() {

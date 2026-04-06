@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'screens/alert_history_screen.dart';
+import 'screens/audit_log_screen.dart';
 import 'screens/crash_log_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/settings_screen.dart';
@@ -62,6 +63,11 @@ final appRouter = GoRouter(
       path: '/crash-logs',
       name: 'crashLogs',
       builder: (context, state) => const CrashLogScreen(),
+    ),
+    GoRoute(
+      path: '/audit-log',
+      name: 'auditLog',
+      builder: (context, state) => const AuditLogScreen(),
     ),
   ],
 );

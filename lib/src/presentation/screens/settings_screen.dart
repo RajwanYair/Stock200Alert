@@ -393,6 +393,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ).animate(delay: 420.ms).fadeIn().slideY(begin: 0.1, end: 0),
               const SizedBox(height: 8),
 
+              // Diagnostic: Audit Log
+              OutlinedButton.icon(
+                onPressed: () => context.push('/audit-log'),
+                icon: const Icon(Icons.history_edu_rounded, size: 18),
+                label: const Text('View Audit Log'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ).animate(delay: 440.ms).fadeIn().slideY(begin: 0.1, end: 0),
+              const SizedBox(height: 8),
+
               // About row
               Center(
                 child: Row(
@@ -426,7 +440,73 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     try {
       final repo = await ref.read(repositoryProvider.future);
       if (!mounted) return;
+
+      // Diff old vs new settings and record each changed field in the audit log.
+      final oldSettings = await repo.getSettings();
+      final auditService = ref.read(auditLogServiceProvider);
+      final Map<String, (String, String)> diffs = {};
+      void diff(String field, Object? o, Object? n) {
+        if (o?.toString() != n?.toString()) {
+          diffs[field] = (o?.toString() ?? '', n?.toString() ?? '');
+        }
+      }
+
+      diff(
+        'refreshIntervalMinutes',
+        oldSettings.refreshIntervalMinutes,
+        _settings.refreshIntervalMinutes,
+      );
+      diff(
+        'quietHoursStart',
+        oldSettings.quietHoursStart,
+        _settings.quietHoursStart,
+      );
+      diff(
+        'quietHoursEnd',
+        oldSettings.quietHoursEnd,
+        _settings.quietHoursEnd,
+      );
+      diff(
+        'trendStrictnessDays',
+        oldSettings.trendStrictnessDays,
+        _settings.trendStrictnessDays,
+      );
+      diff('providerName', oldSettings.providerName, _settings.providerName);
+      diff(
+        'cacheTtlMinutes',
+        oldSettings.cacheTtlMinutes,
+        _settings.cacheTtlMinutes,
+      );
+      diff('advancedMode', oldSettings.advancedMode, _settings.advancedMode);
+      diff(
+        'defaultIndicators',
+        oldSettings.defaultIndicators.join(','),
+        _settings.defaultIndicators.join(','),
+      );
+      diff(
+        'volumeSpikeMultiplier',
+        oldSettings.volumeSpikeMultiplier,
+        _settings.volumeSpikeMultiplier,
+      );
+      diff(
+        'accentColorValue',
+        oldSettings.accentColorValue,
+        _settings.accentColorValue,
+      );
+
       await repo.saveSettings(_settings);
+
+      for (final entry in diffs.entries) {
+        await auditService.record(
+          field: entry.key,
+          oldValue: entry.value.$1,
+          newValue: entry.value.$2,
+          screen: 'SettingsScreen',
+        );
+      }
+      if (diffs.isNotEmpty) {
+        ref.invalidate(auditLogProvider);
+      }
 
       const storage = FlutterSecureStorage();
       final apiKey = _apiKeyController.text.trim();

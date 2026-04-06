@@ -583,6 +583,40 @@ class AlertSensitivityStats extends Equatable {
   ];
 }
 
+// ---------------------------------------------------------------------------
+// AuditLogEntry — records user-initiated settings changes
+// ---------------------------------------------------------------------------
+
+/// A single entry in the audit log recording a settings change.
+class AuditLogEntry extends Equatable {
+  const AuditLogEntry({
+    this.id,
+    required this.timestamp,
+    required this.field,
+    required this.oldValue,
+    required this.newValue,
+    this.screen = '',
+  });
+
+  final int? id;
+  final DateTime timestamp;
+
+  /// The settings field that changed (e.g. 'refreshIntervalMinutes').
+  final String field;
+
+  /// The previous value as a display string.
+  final String oldValue;
+
+  /// The new value as a display string.
+  final String newValue;
+
+  /// The screen or context where the change was made.
+  final String screen;
+
+  @override
+  List<Object?> get props => [id, timestamp, field, oldValue, newValue, screen];
+}
+
 /// Maps each [AlertProfile] to a ready-to-use [AppSettings] snapshot.
 /// The UI can apply a profile in one tap; the user may then fine-tune
 /// individual fields (which implicitly switches the profile to [custom]).

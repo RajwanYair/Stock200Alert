@@ -250,6 +250,21 @@ final alertSensitivityProvider = FutureProvider.family<
   return repo.getAlertSensitivityStats(symbol);
 });
 
+/// [AuditLogService] singleton — records user settings changes.
+final auditLogServiceProvider = Provider<AuditLogService>((ref) {
+  final db = ref.watch(databaseProvider);
+  final logger = ref.watch(loggerProvider);
+  return AuditLogService(db: db, logger: logger);
+});
+
+/// Audit log entries (newest first, up to 200).
+final auditLogProvider = FutureProvider<List<domain.AuditLogEntry>>((
+  ref,
+) async {
+  final service = ref.watch(auditLogServiceProvider);
+  return service.getLog();
+});
+
 /// Persists and exposes the user's [ThemeMode] preference.
 ///
 /// Stored in secure storage under key `'theme_mode'`.
