@@ -1,0 +1,84 @@
+name: stock_alert
+description: >
+  Cross-platform Stock Alert app. Monitors tickers for 200-day SMA cross-up
+  events and fires local notifications. Targets Android + Windows.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.11.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State management – Riverpod: compile-safe, testable, no BuildContext needed
+  flutter_riverpod: ^2.6.1
+
+  # Navigation
+  go_router: ^14.8.1
+
+  # Networking
+  dio: ^5.8.0+1
+
+  # Serialization
+  freezed_annotation: ^2.4.4
+  json_annotation: ^4.9.0
+
+  # Persistence – Drift (SQLite): type-safe, migration-friendly, in-memory for tests
+  drift: ^2.24.0
+  sqlite3_flutter_libs: ^0.5.32
+
+  # Secure storage for API keys
+  flutter_secure_storage: ^9.2.4
+
+  # Environment variables (local dev only; never commit .env)
+  flutter_dotenv: ^5.2.1
+
+  # Local notifications – supports Windows toasts + Android channels + deep-links
+  flutter_local_notifications: ^18.0.1
+
+  # Background tasks (Android only; Windows NOT supported by workmanager)
+  workmanager: ^0.5.2
+
+  # Charts
+  fl_chart: ^0.70.2
+
+  # Logging
+  logger: ^2.5.0
+
+  # System tray: removed due to uuid version conflict with riverpod.
+  # TODO: Re-add when system_tray supports uuid ^4. Use tray_manager or custom approach.
+
+  # Utility
+  intl: ^0.20.2
+  path_provider: ^2.1.5
+  path: ^1.9.1
+  collection: ^1.19.1
+  equatable: ^2.0.7
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  build_runner: ^2.4.15
+  freezed: ^2.5.8
+  json_serializable: ^6.9.4
+  drift_dev: ^2.24.0
+  mockito: ^5.4.5
+  mocktail: ^1.0.4
+
+flutter:
+  uses-material-design: true
+  assets:
+    - .env
+  #         style: italic
+  #   - family: Trajan Pro
+  #     fonts:
+  #       - asset: fonts/TrajanPro.ttf
+  #       - asset: fonts/TrajanPro_Bold.ttf
+  #         weight: 700
+  #
+  # For details regarding fonts from package dependencies,
+  # see https://flutter.dev/to/font-from-package
