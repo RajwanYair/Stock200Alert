@@ -228,6 +228,8 @@ class TickerEntry extends Equatable {
     this.sma200,
     this.alertState,
     this.error,
+    this.enabledAlertTypes = const {AlertType.sma200CrossUp},
+    this.sortOrder = 0,
   });
 
   final String symbol;
@@ -238,12 +240,20 @@ class TickerEntry extends Equatable {
   final TickerAlertState? alertState;
   final String? error;
 
+  /// Which alert events the user wants for this ticker.
+  final Set<AlertType> enabledAlertTypes;
+
+  /// Sort position for drag-to-reorder (lower = higher in list).
+  final int sortOrder;
+
   TickerEntry copyWith({
     DateTime? lastRefreshAt,
     double? lastClose,
     double? sma200,
     TickerAlertState? alertState,
     String? error,
+    Set<AlertType>? enabledAlertTypes,
+    int? sortOrder,
   }) {
     return TickerEntry(
       symbol: symbol,
@@ -253,6 +263,8 @@ class TickerEntry extends Equatable {
       sma200: sma200 ?? this.sma200,
       alertState: alertState ?? this.alertState,
       error: error,
+      enabledAlertTypes: enabledAlertTypes ?? this.enabledAlertTypes,
+      sortOrder: sortOrder ?? this.sortOrder,
     );
   }
 
@@ -265,6 +277,8 @@ class TickerEntry extends Equatable {
     sma200,
     alertState,
     error,
+    enabledAlertTypes,
+    sortOrder,
   ];
 }
 

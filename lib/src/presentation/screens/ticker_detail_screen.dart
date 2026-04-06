@@ -122,6 +122,10 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                 _AlertStateCard(
                   stateAsync: alertStateAsync,
                 ).animate(delay: 160.ms).fadeIn(duration: 300.ms),
+                const SizedBox(height: 16),
+                _AlertTypeSelectorCard(
+                  symbol: widget.symbol,
+                ).animate(delay: 240.ms).fadeIn(duration: 300.ms),
               ],
             ),
           );
@@ -787,6 +791,126 @@ class _AlertDetailRow extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Alert Type Selector Card
+// ---------------------------------------------------------------------------
+
+class _AlertTypeSelectorCard extends ConsumerWidget {
+  const _AlertTypeSelectorCard({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final typesAsync = ref.watch(tickerEnabledAlertTypesProvider(symbol));
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(
+                  Icons.tune_rounded,
+                  size: 18,
+                  color: Color(0xFF1565C0),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '⚙️ Alert Types',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Choose which crossover events trigger notifications.',
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
+            ),
+            const SizedBox(height: 12),
+            typesAsync.when(
+              loading: () => const LinearProgressIndicator(),
+              error: (e, _) => Text('⚠️ Error: $e'),
+              data: (enabled) => Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: AlertType.values.map((type) {
+                  final isOn = enabled.contains(type);
+                  return FilterChip(
+                    selected: isOn,
+                    label: Text(
+                      type.displayName,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: isOn
+                            ? FontWeight.w700
+                            : FontWeight.normal,
+                      ),
+                    ),
+                    tooltip: type.description,
+                    onSelected: (value) =>
+                        _toggle(context, ref, enabled, type, value),
+                    selectedColor: _chipColor(type).withAlpha(40),
+                    checkmarkColor: _chipColor(type),
+                    side: BorderSide(
+                      color: isOn ? _chipColor(type) : Colors.grey.shade300,
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  static Color _chipColor(AlertType type) => switch (type) {
+    AlertType.sma50CrossUp => Colors.green.shade700,
+    AlertType.sma150CrossUp => Colors.purple.shade700,
+    AlertType.sma200CrossUp => Colors.orange.shade700,
+    AlertType.goldenCross => Colors.amber.shade800,
+    AlertType.deathCross => Colors.red.shade700,
+  };
+
+  Future<void> _toggle(
+    BuildContext context,
+    WidgetRef ref,
+    Set<AlertType> current,
+    AlertType type,
+    bool selected,
+  ) async {
+    final next = {...current};
+    if (selected) {
+      next.add(type);
+    } else {
+      next.remove(type);
+      // Always keep at least one alert type enabled
+      if (next.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('At least one alert type must stay enabled.')),
+        );
+        return;
+      }
+    }
+    try {
+      final repo = await ref.read(repositoryProvider.future);
+      await repo.updateTickerAlertTypes(symbol, next);
+      ref.invalidate(tickerEnabledAlertTypesProvider(symbol));
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Failed to save: $e')));
+      }
+    }
   }
 }
 

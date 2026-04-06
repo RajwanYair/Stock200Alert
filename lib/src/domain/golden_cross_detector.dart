@@ -79,8 +79,8 @@ class GoldenCrossDetector {
     final golden = evaluateGoldenCross(ticker: ticker, candles: candles);
     final death = evaluateDeathCross(ticker: ticker, candles: candles);
     return [
-      if (golden != null) golden,
-      if (death != null) death,
+      ?golden,
+      ?death,
     ];
   }
 

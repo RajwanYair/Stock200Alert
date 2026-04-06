@@ -7,9 +7,24 @@ library;
 import 'package:drift/drift.dart';
 import 'package:logger/logger.dart';
 
-import '../domain/entities.dart' as domain;
+import '../domain/domain.dart' as domain;
 import 'database/database.dart';
 import 'providers/market_data_provider.dart';
+
+/// Converts a comma-separated string to a [Set] of [domain.AlertType].
+Set<domain.AlertType> _parseAlertTypes(String raw) {
+  if (raw.isEmpty) return const {domain.AlertType.sma200CrossUp};
+  return raw.split(',').map((s) {
+    return domain.AlertType.values.firstWhere(
+      (t) => t.name == s.trim(),
+      orElse: () => domain.AlertType.sma200CrossUp,
+    );
+  }).toSet();
+}
+
+/// Converts a [Set] of [domain.AlertType] to a comma-separated string.
+String _serializeAlertTypes(Set<domain.AlertType> types) =>
+    types.map((t) => t.name).join(',');
 
 class StockRepository {
   StockRepository({required this.db, required this.provider, Logger? logger})
@@ -35,6 +50,8 @@ class StockRepository {
           sma200: r.sma200,
           alertState: alertState,
           error: r.error,
+          enabledAlertTypes: _parseAlertTypes(r.enabledAlertTypes),
+          sortOrder: r.sortOrder,
         ),
       );
     }
@@ -57,6 +74,23 @@ class StockRepository {
     await (db.delete(
       db.alertStates,
     )..where((a) => a.ticker.equals(upper))).go();
+  }
+
+  /// Persist the enabled [alertTypes] for [symbol].
+  Future<void> updateTickerAlertTypes(
+    String symbol,
+    Set<domain.AlertType> alertTypes,
+  ) async {
+    final upper = symbol.toUpperCase().trim();
+    await (db.update(db.tickers)..where((t) => t.symbol.equals(upper)))
+        .write(TickersCompanion(enabledAlertTypes: Value(_serializeAlertTypes(alertTypes))));
+  }
+
+  /// Persist the [sortOrder] for [symbol].
+  Future<void> updateTickerSortOrder(String symbol, int sortOrder) async {
+    final upper = symbol.toUpperCase().trim();
+    await (db.update(db.tickers)..where((t) => t.symbol.equals(upper)))
+        .write(TickersCompanion(sortOrder: Value(sortOrder)));
   }
 
   // ---- Price Data ----

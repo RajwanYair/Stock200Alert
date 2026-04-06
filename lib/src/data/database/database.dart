@@ -26,6 +26,14 @@ class Tickers extends Table {
   RealColumn get sma200 => real().nullable()();
   TextColumn get error => text().nullable()();
 
+  /// Comma-separated list of [AlertType] names the user has enabled.
+  /// Defaults to sma200CrossUp only (legacy behaviour preserved).
+  TextColumn get enabledAlertTypes =>
+      text().withDefault(const Constant('sma200CrossUp'))();
+
+  /// Display order for drag-to-reorder (lower = higher in list).
+  IntColumn get sortOrder => integer().withDefault(const Constant(0))();
+
   @override
   Set<Column> get primaryKey => {symbol};
 }
@@ -83,8 +91,21 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onUpgrade: (migrator, from, to) async {
+      if (from < 2) {
+        // v2: add enabledAlertTypes and sortOrder to tickers
+        await migrator.addColumn(
+          tickers,
+          tickers.enabledAlertTypes,
+        );
+        await migrator.addColumn(tickers, tickers.sortOrder);
+      }
+    },
+  );
   // ---- Tickers ----
 
   Future<List<Ticker>> getAllTickers() => select(tickers).get();

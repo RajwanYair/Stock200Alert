@@ -151,6 +151,23 @@ final tickerAlertStateProvider =
       return repo.getAlertState(ticker);
     });
 
+/// Returns the set of enabled [AlertType]s for [ticker].
+/// Kept separate from [tickerCandlesProvider] so the selector can invalidate
+/// it independently.
+final tickerEnabledAlertTypesProvider =
+    FutureProvider.family<Set<domain.AlertType>, String>((
+      ref,
+      ticker,
+    ) async {
+      final repo = await ref.watch(repositoryProvider.future);
+      final tickers = await repo.getAllTickers();
+      final entry = tickers.firstWhere(
+        (t) => t.symbol == ticker.toUpperCase(),
+        orElse: () => domain.TickerEntry(symbol: ticker.toUpperCase()),
+      );
+      return entry.enabledAlertTypes;
+    });
+
 // ---------------------------------------------------------------------------
 // Refresh action
 // ---------------------------------------------------------------------------

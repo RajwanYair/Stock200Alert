@@ -314,8 +314,10 @@ void main() {
       );
     });
 
-    test('props has 7 elements', () {
-      expect(makeEntry().props.length, 7);
+    test('props has 9 elements', () {
+      // symbol, addedAt, lastRefreshAt, lastClose, sma200, alertState, error,
+      // enabledAlertTypes, sortOrder
+      expect(makeEntry().props.length, 9);
     });
 
     test('minimal constructor — all optionals null', () {
