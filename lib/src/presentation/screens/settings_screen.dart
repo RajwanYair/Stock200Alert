@@ -82,6 +82,27 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   .slideY(begin: 0.04, end: 0),
               const SizedBox(height: 12),
 
+              // Accent Color
+              _SettingsSection(
+                    icon: Icons.color_lens_outlined,
+                    title: '🎨 Accent Color',
+                    subtitle: 'Customize the app\'s primary theme color',
+                    child: _AccentColorPicker(
+                      current: _settings.accentColorValue,
+                      onChanged:
+                          (v) => setState(
+                            () =>
+                                _settings = _settings.copyWith(
+                                  accentColorValue: v,
+                                ),
+                          ),
+                    ),
+                  )
+                  .animate()
+                  .fadeIn(duration: 300.ms)
+                  .slideY(begin: 0.04, end: 0),
+              const SizedBox(height: 12),
+
               // Alert Profile Selector
               _SettingsSection(
                 icon: Icons.person_outline_rounded,
@@ -798,7 +819,7 @@ class _WatchlistGroupsManagerState
       WatchlistGroup(
         id: DateTime.now().millisecondsSinceEpoch.toString(),
         name: name,
-        colorValue: pickedColor.value,
+        colorValue: pickedColor.toARGB32(),
         sortOrder: 0,
       ),
     );
@@ -1134,6 +1155,82 @@ class _ThemeModePicker extends ConsumerWidget {
           ref.read(themeModeProvider.notifier).setMode(modes.first);
         }
       },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Accent Color Picker
+// ---------------------------------------------------------------------------
+
+class _AccentColorPicker extends StatelessWidget {
+  const _AccentColorPicker({
+    required this.current,
+    required this.onChanged,
+  });
+
+  final int current;
+  final ValueChanged<int> onChanged;
+
+  static const _palette = [
+    (label: 'Ocean Blue', value: 0xFF0D47A1),
+    (label: 'Sky Blue', value: 0xFF1E88E5),
+    (label: 'Teal', value: 0xFF00695C),
+    (label: 'Green', value: 0xFF2E7D32),
+    (label: 'Purple', value: 0xFF6A1B9A),
+    (label: 'Indigo', value: 0xFF283593),
+    (label: 'Deep Orange', value: 0xFFBF360C),
+    (label: 'Pink', value: 0xFFAD1457),
+    (label: 'Amber', value: 0xFFF57F17),
+    (label: 'Slate', value: 0xFF455A64),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 10,
+      runSpacing: 10,
+      children:
+          _palette.map((swatch) {
+            final selected = swatch.value == current;
+            return Tooltip(
+              message: swatch.label,
+              child: GestureDetector(
+                onTap: () => onChanged(swatch.value),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  width: 38,
+                  height: 38,
+                  decoration: BoxDecoration(
+                    color: Color(swatch.value),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color:
+                          selected
+                              ? Theme.of(context).colorScheme.onSurface
+                              : Colors.transparent,
+                      width: selected ? 3 : 0,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Color(swatch.value).withValues(alpha: 0.45),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child:
+                      selected
+                          ? const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          )
+                          : null,
+                ),
+              ),
+            );
+          }).toList(),
     );
   }
 }

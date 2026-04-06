@@ -334,6 +334,7 @@ class AppSettings extends Equatable {
     this.advancedMode = false,
     this.defaultIndicators = const [],
     this.volumeSpikeMultiplier = 2.0,
+    this.accentColorValue = 0xFF0D47A1,
   });
 
   /// How often to check for new data (Android: constrained by WorkManager min ~15 min).
@@ -365,6 +366,9 @@ class AppSettings extends Equatable {
   /// Multiplier for volume spike alerts (e.g. 2.0 = 2x avg daily volume).
   final double volumeSpikeMultiplier;
 
+  /// ARGB int for the app accent seed color (e.g. 0xFF0D47A1 = deep blue).
+  final int accentColorValue;
+
   AppSettings copyWith({
     int? refreshIntervalMinutes,
     int? quietHoursStart,
@@ -375,6 +379,7 @@ class AppSettings extends Equatable {
     bool? advancedMode,
     List<String>? defaultIndicators,
     double? volumeSpikeMultiplier,
+    int? accentColorValue,
   }) {
     return AppSettings(
       refreshIntervalMinutes:
@@ -388,6 +393,7 @@ class AppSettings extends Equatable {
       defaultIndicators: defaultIndicators ?? this.defaultIndicators,
       volumeSpikeMultiplier:
           volumeSpikeMultiplier ?? this.volumeSpikeMultiplier,
+      accentColorValue: accentColorValue ?? this.accentColorValue,
     );
   }
 
@@ -402,6 +408,7 @@ class AppSettings extends Equatable {
     advancedMode,
     defaultIndicators,
     volumeSpikeMultiplier,
+    accentColorValue,
   ];
 }
 

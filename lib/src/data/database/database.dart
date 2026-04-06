@@ -149,6 +149,9 @@ class AppSettingsTable extends Table {
   // v8: volume spike multiplier (e.g. 2.0 = 2x average volume)
   RealColumn get volumeSpikeMultiplier =>
       real().withDefault(const Constant(2.0))();
+  // v11: accent seed color ARGB int
+  IntColumn get accentColorValue =>
+      integer().withDefault(const Constant(0xFF0D47A1))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -177,7 +180,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 10;
+  int get schemaVersion => 11;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -216,6 +219,12 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 10) {
         await migrator.addColumn(tickers, tickers.nextEarningsAt);
+      }
+      if (from < 11) {
+        await migrator.addColumn(
+          appSettingsTable,
+          appSettingsTable.accentColorValue,
+        );
       }
     },
   );

@@ -201,6 +201,9 @@ class CrossTideApp extends ConsumerWidget {
       _ => ThemeMode.system,
     };
 
+    // Resolve accent seed color from persisted settings
+    final accentColor = ref.watch(accentColorProvider);
+
     // Rich typography: Outfit for headlines, Inter for body/numbers
     final baseTextTheme = GoogleFonts.outfitTextTheme();
     final numbersTheme = GoogleFonts.interTextTheme();
@@ -220,7 +223,7 @@ class CrossTideApp extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       themeMode: themeMode,
       theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF0D47A1),
+        colorSchemeSeed: accentColor,
         useMaterial3: true,
         brightness: Brightness.light,
         textTheme: richTextTheme.apply(
@@ -256,7 +259,7 @@ class CrossTideApp extends ConsumerWidget {
         ),
       ),
       darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFF1E88E5),
+        colorSchemeSeed: accentColor,
         useMaterial3: true,
         brightness: Brightness.dark,
         textTheme: richTextTheme,

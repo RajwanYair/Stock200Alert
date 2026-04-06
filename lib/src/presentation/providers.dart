@@ -8,7 +8,7 @@ library;
 
 import 'dart:io' show Platform;
 
-import 'package:flutter/material.dart' show ThemeMode;
+import 'package:flutter/material.dart' show Color, ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
@@ -160,6 +160,17 @@ final tickerEntryProvider =
       final all = await repo.getAllTickers();
       return all.where((t) => t.symbol == symbol.toUpperCase()).firstOrNull;
     });
+
+/// Derives the accent seed [Color] from the persisted [AppSettings].
+/// Falls back to the default deep-blue if settings aren't loaded yet.
+final accentColorProvider = Provider<Color>((ref) {
+  final settingsAsync = ref.watch(settingsProvider);
+  final colorValue = switch (settingsAsync) {
+    AsyncData(:final value) => value.accentColorValue,
+    _ => 0xFF0D47A1,
+  };
+  return Color(colorValue);
+});
 
 /// S&P 500 benchmark candles (fetched on-demand when the overlay is toggled).
 /// Uses the SPY ETF as a proxy — always available via Yahoo Finance.

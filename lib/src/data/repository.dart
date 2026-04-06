@@ -276,6 +276,7 @@ class StockRepository {
           ? const []
           : row.defaultIndicators.split(','),
       volumeSpikeMultiplier: row.volumeSpikeMultiplier,
+      accentColorValue: row.accentColorValue,
     );
   }
 
@@ -292,6 +293,7 @@ class StockRepository {
         advancedMode: Value(settings.advancedMode ? 1 : 0),
         defaultIndicators: Value(settings.defaultIndicators.join(',')),
         volumeSpikeMultiplier: Value(settings.volumeSpikeMultiplier),
+        accentColorValue: Value(settings.accentColorValue),
       ),
     );
   }
