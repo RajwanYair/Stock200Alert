@@ -33,7 +33,7 @@ dependencies:
   flutter_secure_storage: ^9.2.4
 
   # Environment variables (local dev only; never commit .env)
-  flutter_dotenv: ^5.2.1
+  flutter_dotenv: ^6.0.0
 
   # Local notifications – supports Windows toasts + Android channels + deep-links
   flutter_local_notifications: ^18.0.1
