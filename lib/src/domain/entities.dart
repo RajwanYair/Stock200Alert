@@ -443,6 +443,37 @@ class PriceTarget extends Equatable {
   List<Object?> get props => [id, symbol, targetPrice, note, createdAt, firedAt];
 }
 
+/// A single entry in the alert history (append-only fired-alert log).
+class AlertHistoryEntry extends Equatable {
+  const AlertHistoryEntry({
+    this.id,
+    required this.symbol,
+    required this.alertType,
+    required this.message,
+    required this.firedAt,
+    this.acknowledged = false,
+  });
+
+  final int? id;
+  final String symbol;
+
+  /// Matches [AlertType.name], e.g. 'sma200CrossUp', 'priceTarget'.
+  final String alertType;
+  final String message;
+  final DateTime firedAt;
+  final bool acknowledged;
+
+  @override
+  List<Object?> get props => [
+    id,
+    symbol,
+    alertType,
+    message,
+    firedAt,
+    acknowledged,
+  ];
+}
+
 /// Maps each [AlertProfile] to a ready-to-use [AppSettings] snapshot.
 /// The UI can apply a profile in one tap; the user may then fine-tune
 /// individual fields (which implicitly switches the profile to [custom]).

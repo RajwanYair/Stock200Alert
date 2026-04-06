@@ -188,6 +188,11 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
                   tooltip: '⚙️ Settings',
                 ),
                 IconButton(
+                  icon: const Icon(Icons.history_rounded),
+                  onPressed: () => context.push('/alert-history'),
+                  tooltip: '📋 Alert History',
+                ),
+                IconButton(
                   icon: Icon(
                     _heatmapMode
                         ? Icons.view_list_rounded

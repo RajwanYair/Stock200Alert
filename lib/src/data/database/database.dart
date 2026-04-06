@@ -81,6 +81,27 @@ class PctMoveThresholdsTable extends Table {
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
 }
 
+/// Append-only log of every fired alert for in-app history timeline.
+class AlertHistoryTable extends Table {
+  @override
+  String get tableName => 'alert_history';
+
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get symbol => text().withLength(min: 1, max: 10)();
+
+  /// AlertType enum name, e.g. 'sma200CrossUp', 'priceTarget'.
+  TextColumn get alertType => text()();
+
+  /// Human-readable message shown as the notification body.
+  TextColumn get message => text()();
+
+  DateTimeColumn get firedAt => dateTime().withDefault(currentDateAndTime)();
+
+  /// Whether the user has dismissed/acknowledged this entry.
+  BoolColumn get acknowledged =>
+      boolean().withDefault(const Constant(false))();
+}
+
 class DailyCandles extends Table {
   TextColumn get ticker => text().withLength(min: 1, max: 10)();
   DateTimeColumn get date => dateTime()();
@@ -143,6 +164,7 @@ class AppSettingsTable extends Table {
     WatchlistGroups,
     PriceTargetsTable,
     PctMoveThresholdsTable,
+    AlertHistoryTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -152,7 +174,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 8;
+  int get schemaVersion => 9;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -185,6 +207,9 @@ class AppDatabase extends _$AppDatabase {
           appSettingsTable,
           appSettingsTable.volumeSpikeMultiplier,
         );
+      }
+      if (from < 9) {
+        await migrator.createTable(alertHistoryTable);
       }
     },
   );
@@ -313,6 +338,29 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> deletePctMoveThreshold(int id) =>
       (delete(pctMoveThresholdsTable)..where((t) => t.id.equals(id))).go();
+
+  // ---- AlertHistory ----
+
+  Future<int> insertAlertHistory(AlertHistoryTableCompanion entry) =>
+      into(alertHistoryTable).insert(entry);
+
+  Stream<List<AlertHistoryTableData>> watchAlertHistory() =>
+      (select(alertHistoryTable)
+            ..orderBy([(t) => OrderingTerm.desc(t.firedAt)]))
+          .watch();
+
+  Future<List<AlertHistoryTableData>> getAlertHistory() =>
+      (select(alertHistoryTable)
+            ..orderBy([(t) => OrderingTerm.desc(t.firedAt)]))
+          .get();
+
+  Future<void> acknowledgeAlertHistory(int id) async {
+    await (update(alertHistoryTable)..where((t) => t.id.equals(id))).write(
+      const AlertHistoryTableCompanion(acknowledged: Value(true)),
+    );
+  }
+
+  Future<void> clearAlertHistory() => delete(alertHistoryTable).go();
 }
 
 LazyDatabase _openConnection() {

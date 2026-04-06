@@ -4,6 +4,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import 'screens/alert_history_screen.dart';
 import 'screens/onboarding_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/ticker_detail_screen.dart';
@@ -35,6 +36,11 @@ final appRouter = GoRouter(
       path: '/settings',
       name: 'settings',
       builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/alert-history',
+      name: 'alertHistory',
+      builder: (context, state) => const AlertHistoryScreen(),
     ),
   ],
 );

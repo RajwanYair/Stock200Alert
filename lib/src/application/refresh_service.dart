@@ -69,6 +69,23 @@ class RefreshService {
     return results;
   }
 
+  /// Append an entry to the persistent alert history log.
+  Future<void> _appendHistory({
+    required String symbol,
+    required String alertType,
+    required String message,
+  }) async {
+    try {
+      await repository.addAlertHistory(
+        symbol: symbol,
+        alertType: alertType,
+        message: message,
+      );
+    } catch (e) {
+      _logger.w('Failed to append alert history: $e');
+    }
+  }
+
   /// Refresh a single ticker.
   ///
   /// [enabledAlertTypes] controls which detectors run. Defaults to SMA200
@@ -157,6 +174,16 @@ class RefreshService {
             ticker: upper,
             close: evaluation.currentClose,
             sma200: evaluation.currentSma,
+          );
+          await _appendHistory(
+            symbol: upper,
+            alertType: switch (period) {
+              SmaPeriod.sma50 => AlertType.sma50CrossUp.name,
+              SmaPeriod.sma150 => AlertType.sma150CrossUp.name,
+              SmaPeriod.sma200 => AlertType.sma200CrossUp.name,
+            },
+            message:
+                '${period.label} cross-up: close \$${evaluation.currentClose.toStringAsFixed(2)} > SMA \$${evaluation.currentSma.toStringAsFixed(2)}',
           );
           firedAny = true;
         }
@@ -249,11 +276,24 @@ class RefreshService {
       quietEnd: settings.quietHoursEnd,
     );
     if (!inQuiet) {
+      final volStr = candles.last.volume >= 1000000
+          ? '${(candles.last.volume / 1e6).toStringAsFixed(1)}M'
+          : '${(candles.last.volume / 1000).toStringAsFixed(0)}K';
+      final avgVol = (candles.last.volume / ratio).round();
+      final avgStr = avgVol >= 1000000
+          ? '${(avgVol / 1e6).toStringAsFixed(1)}M'
+          : '${(avgVol / 1000).toStringAsFixed(0)}K';
       await notificationService.showVolumeSpikeAlert(
         ticker: symbol,
         volume: candles.last.volume.toDouble(),
-        avgVolume: (candles.last.volume / ratio).round(),
+        avgVolume: avgVol,
         ratio: ratio,
+      );
+      await _appendHistory(
+        symbol: symbol,
+        alertType: AlertType.volumeSpike.name,
+        message:
+            'Volume spike ${ratio.toStringAsFixed(1)}×: $volStr vs avg $avgStr',
       );
     }
   }
@@ -285,11 +325,18 @@ class RefreshService {
           '${t.thresholdPct}%',
         );
         if (!inQuiet) {
+          final sign = pct >= 0 ? '▲' : '▼';
           await notificationService.showPctMoveAlert(
             ticker: symbol,
             close: latestClose,
             prevClose: prevClose,
             thresholdPct: t.thresholdPct,
+          );
+          await _appendHistory(
+            symbol: symbol,
+            alertType: AlertType.pctMove.name,
+            message:
+                '$sign${pct.abs().toStringAsFixed(1)}% move ≥ ${t.thresholdPct}% threshold; close \$${latestClose.toStringAsFixed(2)}',
           );
         }
         // Only fire once per cycle (loudest/first matching threshold)
@@ -328,6 +375,12 @@ class RefreshService {
             ticker: symbol,
             close: latestClose,
             target: target.targetPrice,
+          );
+          await _appendHistory(
+            symbol: symbol,
+            alertType: AlertType.priceTarget.name,
+            message:
+                'Price target \$${target.targetPrice.toStringAsFixed(2)} hit; close \$${latestClose.toStringAsFixed(2)}',
           );
         }
       }

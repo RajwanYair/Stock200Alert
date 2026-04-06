@@ -389,4 +389,47 @@ class StockRepository {
         note: row.note,
         createdAt: row.createdAt,
       );
+
+  // ---- Alert History ----
+
+  Future<void> addAlertHistory({
+    required String symbol,
+    required String alertType,
+    required String message,
+    DateTime? firedAt,
+  }) =>
+      db.insertAlertHistory(
+        AlertHistoryTableCompanion(
+          symbol: Value(symbol),
+          alertType: Value(alertType),
+          message: Value(message),
+          firedAt: firedAt != null ? Value(firedAt) : const Value.absent(),
+        ),
+      );
+
+  Stream<List<domain.AlertHistoryEntry>> watchAlertHistory() =>
+      db.watchAlertHistory().map(
+        (rows) => rows.map(_historyFromRow).toList(),
+      );
+
+  Future<List<domain.AlertHistoryEntry>> getAlertHistory() async {
+    final rows = await db.getAlertHistory();
+    return rows.map(_historyFromRow).toList();
+  }
+
+  Future<void> acknowledgeAlertHistory(int id) =>
+      db.acknowledgeAlertHistory(id);
+
+  Future<void> clearAlertHistory() => db.clearAlertHistory();
+
+  domain.AlertHistoryEntry _historyFromRow(AlertHistoryTableData row) =>
+      domain.AlertHistoryEntry(
+        id: row.id,
+        symbol: row.symbol,
+        alertType: row.alertType,
+        message: row.message,
+        firedAt: row.firedAt,
+        acknowledged: row.acknowledged,
+      );
 }
+

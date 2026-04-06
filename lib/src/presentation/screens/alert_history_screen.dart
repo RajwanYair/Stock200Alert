@@ -1,0 +1,271 @@
+/// Alert History Screen — timeline of all fired alerts.
+library;
+
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+
+import '../../domain/entities.dart';
+import '../providers.dart';
+
+// Date formatter used throughout this screen.
+final _dateFmt = DateFormat('MMM d, yyyy h:mm a');
+
+class AlertHistoryScreen extends ConsumerWidget {
+  const AlertHistoryScreen({super.key});
+
+  static const routeName = '/alert-history';
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final historyAsync = ref.watch(alertHistoryProvider);
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Alert History'),
+        actions: [
+          historyAsync.when(
+            data: (entries) => entries.isEmpty
+                ? const SizedBox.shrink()
+                : IconButton(
+                    icon: const Icon(Icons.delete_sweep_rounded),
+                    tooltip: 'Clear all history',
+                    onPressed: () => _confirmClear(context, ref),
+                  ),
+            loading: () => const SizedBox.shrink(),
+            error: (_, __) => const SizedBox.shrink(),
+          ),
+        ],
+      ),
+      body: historyAsync.when(
+        data: (entries) {
+          if (entries.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(
+                    Icons.notifications_none_rounded,
+                    size: 64,
+                    color: colorScheme.onSurface.withValues(alpha: 0.3),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No alerts fired yet',
+                    style: theme.textTheme.titleMedium?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.5),
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Fired alerts will appear here',
+                    style: theme.textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurface.withValues(alpha: 0.4),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
+
+          return ListView.builder(
+            padding: const EdgeInsets.symmetric(vertical: 8),
+            itemCount: entries.length,
+            itemBuilder: (ctx, i) =>
+                _HistoryTile(entry: entries[i], index: i).animate(
+                  delay: Duration(milliseconds: i * 30),
+                ).fadeIn(duration: 250.ms).slideX(
+                  begin: 0.05,
+                  end: 0,
+                  duration: 250.ms,
+                ),
+          );
+        },
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (err, _) => Center(child: Text('Error: $err')),
+      ),
+    );
+  }
+
+  Future<void> _confirmClear(BuildContext context, WidgetRef ref) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Clear Alert History'),
+        content: const Text(
+          'This will permanently delete all history entries. '
+          'This cannot be undone.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Clear'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      final repo = await ref.read(repositoryProvider.future);
+      await repo.clearAlertHistory();
+    }
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Tile
+// ---------------------------------------------------------------------------
+
+class _HistoryTile extends ConsumerWidget {
+  const _HistoryTile({required this.entry, required this.index});
+
+  final AlertHistoryEntry entry;
+  final int index;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final theme = Theme.of(context);
+    final colorScheme = theme.colorScheme;
+
+    return Dismissible(
+      key: ValueKey(entry.id ?? '${entry.symbol}-${entry.firedAt}'),
+      background: Container(
+        alignment: Alignment.centerRight,
+        padding: const EdgeInsets.only(right: 24),
+        color: colorScheme.errorContainer,
+        child: Icon(Icons.delete_rounded, color: colorScheme.error),
+      ),
+      direction: DismissDirection.endToStart,
+      onDismissed: (_) async {
+        if (entry.id != null) {
+          final repo = await ref.read(repositoryProvider.future);
+          await repo.acknowledgeAlertHistory(entry.id!);
+        }
+      },
+      child: Card(
+        margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+        elevation: entry.acknowledged ? 0 : 1,
+        color: entry.acknowledged
+            ? colorScheme.surface
+            : colorScheme.surfaceContainerHighest,
+        child: ListTile(
+          leading: _AlertIcon(alertType: entry.alertType),
+          title: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  entry.symbol,
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: entry.acknowledged
+                        ? colorScheme.onSurface.withValues(alpha: 0.5)
+                        : colorScheme.onSurface,
+                  ),
+                ),
+              ),
+              Text(
+                _alertTypeLabel(entry.alertType),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: _alertColor(context, entry.alertType),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                entry.message,
+                style: theme.textTheme.bodySmall?.copyWith(
+                  color: entry.acknowledged
+                      ? colorScheme.onSurface.withValues(alpha: 0.4)
+                      : null,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                _dateFmt.format(entry.firedAt.toLocal()),
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: colorScheme.onSurface.withValues(alpha: 0.5),
+                ),
+              ),
+            ],
+          ),
+          trailing: entry.acknowledged
+              ? Icon(
+                  Icons.check_circle_outline_rounded,
+                  size: 18,
+                  color: colorScheme.onSurface.withValues(alpha: 0.3),
+                )
+              : null,
+          onTap: entry.acknowledged || entry.id == null
+              ? null
+              : () async {
+                  final repo = await ref.read(repositoryProvider.future);
+                  await repo.acknowledgeAlertHistory(entry.id!);
+                },
+        ),
+      ),
+    );
+  }
+
+  String _alertTypeLabel(String alertType) {
+    for (final t in AlertType.values) {
+      if (t.name == alertType) return t.displayName;
+    }
+    return alertType;
+  }
+
+  Color _alertColor(BuildContext ctx, String alertType) {
+    final cs = Theme.of(ctx).colorScheme;
+    return switch (alertType) {
+      'sma200CrossUp' || 'sma150CrossUp' || 'sma50CrossUp' => cs.primary,
+      'goldenCross' => Colors.amber.shade700,
+      'deathCross' => cs.error,
+      'priceTarget' => Colors.teal.shade700,
+      'pctMove' => Colors.blue.shade700,
+      'volumeSpike' => Colors.purple.shade700,
+      _ => cs.secondary,
+    };
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Alert type icon badge
+// ---------------------------------------------------------------------------
+
+class _AlertIcon extends StatelessWidget {
+  const _AlertIcon({required this.alertType});
+  final String alertType;
+
+  @override
+  Widget build(BuildContext context) {
+    final (icon, color) = switch (alertType) {
+      'sma200CrossUp' ||
+      'sma150CrossUp' ||
+      'sma50CrossUp' => (Icons.trending_up_rounded, Colors.green.shade700),
+      'goldenCross' => (Icons.auto_awesome_rounded, Colors.amber.shade700),
+      'deathCross' => (Icons.trending_down_rounded, Colors.red.shade700),
+      'priceTarget' => (Icons.gps_fixed_rounded, Colors.teal.shade700),
+      'pctMove' => (Icons.swap_vert_rounded, Colors.blue.shade700),
+      'volumeSpike' => (Icons.bar_chart_rounded, Colors.purple.shade700),
+      _ => (Icons.notifications_rounded, Colors.grey),
+    };
+
+    return CircleAvatar(
+      radius: 20,
+      backgroundColor: color.withValues(alpha: 0.15),
+      child: Icon(icon, size: 20, color: color),
+    );
+  }
+}

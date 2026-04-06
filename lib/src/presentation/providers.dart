@@ -260,6 +260,14 @@ class ActiveGroupFilter extends Notifier<String?> {
   void set(String? value) => state = value;
 }
 
+/// Alert history (all fired alerts, newest first).
+final alertHistoryProvider = StreamProvider<List<domain.AlertHistoryEntry>>(
+  (ref) async* {
+    final repo = await ref.watch(repositoryProvider.future);
+    yield* repo.watchAlertHistory();
+  },
+);
+
 // ---------------------------------------------------------------------------
 // Refresh action
 // ---------------------------------------------------------------------------
