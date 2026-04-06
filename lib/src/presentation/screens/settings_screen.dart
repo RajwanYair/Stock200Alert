@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../data/database/database.dart' show WatchlistGroup;
 import '../../domain/entities.dart';
@@ -376,6 +377,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                 ),
               ).animate(delay: 400.ms).fadeIn().slideY(begin: 0.1, end: 0),
+              const SizedBox(height: 16),
+
+              // Diagnostic: Crash Logs
+              OutlinedButton.icon(
+                onPressed: () => context.push('/crash-logs'),
+                icon: const Icon(Icons.bug_report_outlined, size: 18),
+                label: const Text('View Crash Logs'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ).animate(delay: 420.ms).fadeIn().slideY(begin: 0.1, end: 0),
               const SizedBox(height: 8),
 
               // About row
