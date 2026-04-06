@@ -122,6 +122,9 @@ class AppSettingsTable extends Table {
   // v5: default indicators (comma-separated, e.g. 'SMA200,EMA:20')
   TextColumn get defaultIndicators =>
       text().withDefault(const Constant('SMA200'))();
+  // v8: volume spike multiplier (e.g. 2.0 = 2x average volume)
+  RealColumn get volumeSpikeMultiplier =>
+      real().withDefault(const Constant(2.0))();
 
   @override
   Set<Column> get primaryKey => {id};
@@ -149,7 +152,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 7;
+  int get schemaVersion => 8;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -176,6 +179,12 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 7) {
         await migrator.createTable(pctMoveThresholdsTable);
+      }
+      if (from < 8) {
+        await migrator.addColumn(
+          appSettingsTable,
+          appSettingsTable.volumeSpikeMultiplier,
+        );
       }
     },
   );

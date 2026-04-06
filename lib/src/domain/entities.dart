@@ -52,6 +52,9 @@ enum AlertType {
 
   /// Price moves by a set percentage from the previous close (up or down).
   pctMove,
+
+  /// Today's volume is ≥ N× the rolling 20-day average volume.
+  volumeSpike,
 }
 
 /// Extension helpers for [AlertType].
@@ -64,6 +67,7 @@ extension AlertTypeX on AlertType {
     AlertType.deathCross => 'Death Cross (50↓200)',
     AlertType.priceTarget => 'Price Target',
     AlertType.pctMove => '% Move Alert',
+    AlertType.volumeSpike => 'Volume Spike',
   };
 
   String get description => switch (this) {
@@ -81,6 +85,8 @@ extension AlertTypeX on AlertType {
       'Price reaches or exceeds your target price',
     AlertType.pctMove =>
       'Price moves ≥ N% from the previous session close',
+    AlertType.volumeSpike =>
+      'Today\'s volume is ≥ N× the 20-day average volume',
   };
 }
 
@@ -312,6 +318,7 @@ class AppSettings extends Equatable {
     this.cacheTtlMinutes = 30,
     this.advancedMode = false,
     this.defaultIndicators = const [],
+    this.volumeSpikeMultiplier = 2.0,
   });
 
   /// How often to check for new data (Android: constrained by WorkManager min ~15 min).
@@ -340,6 +347,9 @@ class AppSettings extends Equatable {
   /// Default indicators to show on the chart (e.g. 'EMA:20', 'RSI:14', 'MACD', 'BB').
   final List<String> defaultIndicators;
 
+  /// Multiplier for volume spike alerts (e.g. 2.0 = 2x avg daily volume).
+  final double volumeSpikeMultiplier;
+
   AppSettings copyWith({
     int? refreshIntervalMinutes,
     int? quietHoursStart,
@@ -349,6 +359,7 @@ class AppSettings extends Equatable {
     int? cacheTtlMinutes,
     bool? advancedMode,
     List<String>? defaultIndicators,
+    double? volumeSpikeMultiplier,
   }) {
     return AppSettings(
       refreshIntervalMinutes:
@@ -360,6 +371,8 @@ class AppSettings extends Equatable {
       cacheTtlMinutes: cacheTtlMinutes ?? this.cacheTtlMinutes,
       advancedMode: advancedMode ?? this.advancedMode,
       defaultIndicators: defaultIndicators ?? this.defaultIndicators,
+      volumeSpikeMultiplier:
+          volumeSpikeMultiplier ?? this.volumeSpikeMultiplier,
     );
   }
 
@@ -373,6 +386,7 @@ class AppSettings extends Equatable {
     cacheTtlMinutes,
     advancedMode,
     defaultIndicators,
+    volumeSpikeMultiplier,
   ];
 }
 

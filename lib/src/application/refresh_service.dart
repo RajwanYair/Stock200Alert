@@ -25,6 +25,7 @@ class RefreshService {
   final _crossUpDetector = const CrossUpDetector();
   final _goldenCrossDetector = const GoldenCrossDetector();
   final _alertStateMachine = const AlertStateMachine();
+  final _volumeCalculator = const VolumeCalculator();
 
   /// Refresh all tickers: fetch data, evaluate alerts, fire notifications.
   /// This is the main entry point for background tasks.
@@ -180,6 +181,11 @@ class RefreshService {
         candles[candles.length - 2].close,
         settings: settings,
       );
+    }
+
+    // 8. Volume spike check
+    if (enabledAlertTypes.contains(AlertType.volumeSpike)) {
+      await checkVolumeSpike(upper, candles, settings: settings);
     }    if (wantGolden || wantDeath) {
       final crossEvents = _goldenCrossDetector.evaluateBoth(
         ticker: upper,
@@ -216,6 +222,40 @@ class RefreshService {
       _logger.d('$upper: no alerts fired this cycle');
     }
     return firedAny;
+  }
+
+  /// Check if [candles] has a volume spike vs 20-day rolling average.
+  Future<void> checkVolumeSpike(
+    String symbol,
+    List<DailyCandle> candles, {
+    AppSettings? settings,
+  }) async {
+    settings ??= await repository.getSettings();
+    final isSpike = _volumeCalculator.isSpike(
+      candles,
+      multiplier: settings.volumeSpikeMultiplier,
+    );
+    if (!isSpike) return;
+
+    final ratio = _volumeCalculator.spikeRatio(candles) ?? 0.0;
+    _logger.i(
+      '$symbol: volume spike ${ratio.toStringAsFixed(1)}× avg '
+      '(vol=${candles.last.volume})',
+    );
+
+    final inQuiet = _alertStateMachine.isInQuietHours(
+      now: DateTime.now(),
+      quietStart: settings.quietHoursStart,
+      quietEnd: settings.quietHoursEnd,
+    );
+    if (!inQuiet) {
+      await notificationService.showVolumeSpikeAlert(
+        ticker: symbol,
+        volume: candles.last.volume.toDouble(),
+        avgVolume: (candles.last.volume / ratio).round(),
+        ratio: ratio,
+      );
+    }
   }
 
   /// Check pending percentage-move thresholds for [symbol].

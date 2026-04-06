@@ -27,6 +27,15 @@ abstract class INotificationService {
     required double prevClose,
     required double thresholdPct,
   });
+
+  /// Fires a volume spike notification.
+  Future<void> showVolumeSpikeAlert({
+    required String ticker,
+    required double volume,
+    required int avgVolume,
+    required double ratio,
+  });
+
   Future<void> cancelAll();
 }
 
@@ -185,6 +194,42 @@ class LocalNotificationService implements INotificationService {
       );
     } catch (e) {
       _logger.e('Failed to show pct-move notification: $e');
+    }
+  }
+
+  @override
+  Future<void> showVolumeSpikeAlert({
+    required String ticker,
+    required double volume,
+    required int avgVolume,
+    required double ratio,
+  }) async {
+    final id = (ticker.hashCode.abs() + 777) % 100000;
+    const androidDetails = AndroidNotificationDetails(
+      _androidChannelId,
+      _androidChannelName,
+      channelDescription: _androidChannelDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    const details = NotificationDetails(android: androidDetails);
+    try {
+      final volStr = volume >= 1e6
+          ? '${(volume / 1e6).toStringAsFixed(1)}M'
+          : '${(volume / 1e3).toStringAsFixed(0)}K';
+      final avgStr = avgVolume >= 1e6
+          ? '${(avgVolume / 1e6).toStringAsFixed(1)}M'
+          : '${(avgVolume / 1e3).toStringAsFixed(0)}K';
+      await _plugin.show(
+        id: id,
+        title: '$ticker — 📊 Volume Spike ${ratio.toStringAsFixed(1)}×!',
+        body: 'Volume: $volStr vs 20-day avg: $avgStr',
+        notificationDetails: details,
+        payload: 'ticker:$ticker',
+      );
+      _logger.i('Volume spike notification shown for $ticker (${ratio.toStringAsFixed(1)}×)');
+    } catch (e) {
+      _logger.e('Failed to show volume spike notification: $e');
     }
   }
 

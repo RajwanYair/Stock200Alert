@@ -292,6 +292,37 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                       setState(() => _settings = _settings.copyWith(defaultIndicators: v)),
                 ),
               ).animate(delay: 390.ms).fadeIn(duration: 300.ms).slideY(begin: 0.04, end: 0),
+              // Volume spike multiplier
+              _SettingsSection(
+                icon: Icons.bar_chart_rounded,
+                title: '📊 Volume Spike Multiplier',
+                subtitle: 'Alert when volume is ≥ N× the 20-day average',
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Slider(
+                        value: _settings.volumeSpikeMultiplier.clamp(1.5, 5.0),
+                        min: 1.5,
+                        max: 5.0,
+                        divisions: 7,
+                        label: '${_settings.volumeSpikeMultiplier.toStringAsFixed(1)}×',
+                        onChanged: (v) => setState(
+                          () => _settings = _settings.copyWith(
+                            volumeSpikeMultiplier: double.parse(v.toStringAsFixed(1)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(
+                      width: 44,
+                      child: Text(
+                        '${_settings.volumeSpikeMultiplier.toStringAsFixed(1)}×',
+                        style: Theme.of(context).textTheme.bodyMedium,
+                      ),
+                    ),
+                  ],
+                ),
+              ).animate(delay: 392.ms).fadeIn(duration: 300.ms).slideY(begin: 0.04, end: 0),
               const SizedBox(height: 24),
 
               // Watchlist Groups management

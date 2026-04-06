@@ -274,6 +274,7 @@ class StockRepository {
       defaultIndicators: row.defaultIndicators.isEmpty
           ? const []
           : row.defaultIndicators.split(','),
+      volumeSpikeMultiplier: row.volumeSpikeMultiplier,
     );
   }
 
@@ -289,6 +290,7 @@ class StockRepository {
         cacheTtlMinutes: Value(settings.cacheTtlMinutes),
         advancedMode: Value(settings.advancedMode ? 1 : 0),
         defaultIndicators: Value(settings.defaultIndicators.join(',')),
+        volumeSpikeMultiplier: Value(settings.volumeSpikeMultiplier),
       ),
     );
   }

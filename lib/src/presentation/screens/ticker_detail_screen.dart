@@ -1962,6 +1962,7 @@ class _AlertTypeSelectorCard extends ConsumerWidget {
     AlertType.deathCross => Colors.red.shade700,
     AlertType.priceTarget => Colors.teal.shade700,
     AlertType.pctMove => Colors.blue.shade700,
+    AlertType.volumeSpike => Colors.purple.shade700,
   };
 
   Future<void> _toggle(

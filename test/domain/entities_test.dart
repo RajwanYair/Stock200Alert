@@ -401,7 +401,7 @@ void main() {
     });
 
     test('props has 6 elements', () {
-      expect(const AppSettings().props.length, 8);
+      expect(const AppSettings().props.length, 9);
     });
 
     test('not equal when providerName differs', () {
@@ -575,8 +575,8 @@ void main() {
   // AlertType
   // ───────────────────────────────────────────────────────────────
   group('AlertType', () {
-    test('has seven values', () {
-      expect(AlertType.values.length, 7);
+    test('has eight values', () {
+      expect(AlertType.values.length, 8);
     });
 
     test('each type has a non-empty displayName', () {
