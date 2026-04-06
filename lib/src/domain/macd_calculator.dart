@@ -6,8 +6,8 @@
 ///   Histogram  = MACD Line - Signal Line
 library;
 
-import 'entities.dart';
 import 'ema_calculator.dart';
+import 'entities.dart';
 
 class MacdResult {
   const MacdResult({

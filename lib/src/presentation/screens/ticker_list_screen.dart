@@ -44,7 +44,7 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
   }
 
   void _clearSelection() {
-    setState(() => _selectedSymbols.clear());
+    setState(_selectedSymbols.clear);
   }
 
   bool _isStale(List<Ticker> tickers) {
@@ -74,6 +74,9 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
       );
     }
   }
+
+  Future<void> _batchMoveToGroupById(String groupId) =>
+      _batchMoveToGroup(groupId.isEmpty ? null : groupId);
 
   Future<void> _batchMoveToGroup(String? groupId) async {
     final toMove = Set<String>.from(_selectedSymbols);
@@ -136,12 +139,12 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
                 IconButton(
                   icon: const Icon(Icons.delete_outline_rounded),
                   tooltip: 'Delete selected',
-                  onPressed: () => _batchDelete(),
+                  onPressed: _batchDelete,
                 ),
                 PopupMenuButton<String>(
                   icon: const Icon(Icons.drive_file_move_outlined),
                   tooltip: 'Move to group',
-                  onSelected: (groupId) => _batchMoveToGroup(groupId.isEmpty ? null : groupId),
+                  onSelected: _batchMoveToGroupById,
                   itemBuilder: (_) => [
                     const PopupMenuItem(value: '', child: Text('No group')),
                     ...(switch (ref.watch(watchlistGroupsProvider)) {
@@ -258,11 +261,11 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
                     (b.lastClose ?? 0).compareTo(a.lastClose ?? 0),
               );
             case _SortMode.pctFromSma:
-              double _pct(Ticker t) =>
+              double pct(Ticker t) =>
                   (t.lastClose != null && t.sma200 != null && t.sma200 != 0)
                       ? (t.lastClose! - t.sma200!) / t.sma200!
                       : double.negativeInfinity;
-              sortable.sort((a, b) => _pct(b).compareTo(_pct(a)));
+              sortable.sort((a, b) => pct(b).compareTo(pct(a)));
           }
           final displayList = sortable;
 
@@ -871,15 +874,15 @@ class _StaleBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: const Color(0xFFF9A825),
+    return const Material(
+      color: Color(0xFFF9A825),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
         child: Row(
           children: [
-            const Icon(Icons.warning_amber_rounded, size: 16, color: Colors.black87),
-            const SizedBox(width: 8),
-            const Expanded(
+            Icon(Icons.warning_amber_rounded, size: 16, color: Colors.black87),
+            SizedBox(width: 8),
+            Expanded(
               child: Text(
                 'Some tickers have stale data (>24 h). Tap ↻ to refresh.',
                 style: TextStyle(fontSize: 12, color: Colors.black87),
