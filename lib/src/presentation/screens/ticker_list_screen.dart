@@ -24,6 +24,8 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
   final _tickerController = TextEditingController();
   bool _isRefreshing = false;
   bool _heatmapMode = false;
+  _SortMode _sortMode = _SortMode.manual;
+  bool _showAboveOnly = false;
   final Set<String> _selectedSymbols = {};
   bool get _isSelecting => _selectedSymbols.isNotEmpty;
 
@@ -207,11 +209,41 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
           final activeGroup = ref.watch(activeGroupFilterProvider);
 
           // Filter by group if one is selected
-          final filtered = activeGroup == null
+          var filtered = activeGroup == null
               ? tickers
-              : tickers
-                    .where((t) => t.groupId == activeGroup)
-                    .toList();
+              : tickers.where((t) => t.groupId == activeGroup).toList();
+
+          // Optional: show above-SMA200 only
+          if (_showAboveOnly) {
+            filtered = filtered
+                .where(
+                  (t) => t.lastClose != null &&
+                      t.sma200 != null &&
+                      t.lastClose! > t.sma200!,
+                )
+                .toList();
+          }
+
+          // Sort
+          final sortable = [...filtered];
+          switch (_sortMode) {
+            case _SortMode.manual:
+              break; // already ordered by DB sortOrder
+            case _SortMode.symbol:
+              sortable.sort((a, b) => a.symbol.compareTo(b.symbol));
+            case _SortMode.price:
+              sortable.sort(
+                (a, b) =>
+                    (b.lastClose ?? 0).compareTo(a.lastClose ?? 0),
+              );
+            case _SortMode.pctFromSma:
+              double _pct(Ticker t) =>
+                  (t.lastClose != null && t.sma200 != null && t.sma200 != 0)
+                      ? (t.lastClose! - t.sma200!) / t.sma200!
+                      : double.negativeInfinity;
+              sortable.sort((a, b) => _pct(b).compareTo(_pct(a)));
+          }
+          final displayList = sortable;
 
           return Column(
             children: [
@@ -223,22 +255,29 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
               ),
               if (groups.isNotEmpty)
                 _GroupFilterRow(groups: groups, activeGroup: activeGroup),
+              _SortFilterBar(
+                sortMode: _sortMode,
+                showAboveOnly: _showAboveOnly,
+                onSortChange: (mode) => setState(() => _sortMode = mode),
+                onToggleAbove: () =>
+                    setState(() => _showAboveOnly = !_showAboveOnly),
+              ),
               Expanded(
-                child: filtered.isEmpty
-                    ? const Center(child: Text('No tickers in this group.'))
+                child: displayList.isEmpty
+                    ? const Center(child: Text('No tickers match filter.'))
                     : _heatmapMode
-                        ? _HeatmapGrid(tickers: filtered)
+                        ? _HeatmapGrid(tickers: displayList)
                         : ReorderableListView.builder(
                         padding: const EdgeInsets.fromLTRB(12, 6, 12, 100),
-                        itemCount: filtered.length,
-                        buildDefaultDragHandles: !_isSelecting,
+                        itemCount: displayList.length,
+                        buildDefaultDragHandles: !_isSelecting && _sortMode == _SortMode.manual,
                         onReorder: (oldIndex, newIndex) =>
-                            _onReorder(tickers, filtered, oldIndex, newIndex),
+                            _onReorder(tickers, displayList, oldIndex, newIndex),
                         itemBuilder: (context, index) {
-                          final sym = filtered[index].symbol;
+                          final sym = displayList[index].symbol;
                           return _TickerCard(
                             key: ValueKey(sym),
-                            ticker: filtered[index],
+                            ticker: displayList[index],
                             isSelected: _selectedSymbols.contains(sym),
                             isSelecting: _isSelecting,
                             onLongPress: () => _enterSelection(sym),
@@ -791,6 +830,72 @@ class _ErrorState extends StatelessWidget {
       ),
     );
   }
+}
+
+// ---------------------------------------------------------------------------
+// Sort / filter
+// ---------------------------------------------------------------------------
+
+enum _SortMode { manual, symbol, price, pctFromSma }
+
+class _SortFilterBar extends StatelessWidget {
+  const _SortFilterBar({
+    required this.sortMode,
+    required this.showAboveOnly,
+    required this.onSortChange,
+    required this.onToggleAbove,
+  });
+
+  final _SortMode sortMode;
+  final bool showAboveOnly;
+  final ValueChanged<_SortMode> onSortChange;
+  final VoidCallback onToggleAbove;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      child: Row(
+        children: [
+          const Text('Sort:', style: TextStyle(fontSize: 11)),
+          const SizedBox(width: 6),
+          for (final mode in _SortMode.values)
+            Padding(
+              padding: const EdgeInsets.only(right: 6),
+              child: ChoiceChip(
+                label: Text(_sortLabel(mode)),
+                selected: sortMode == mode,
+                onSelected: (_) => onSortChange(mode),
+                labelStyle: const TextStyle(fontSize: 11),
+                padding: const EdgeInsets.symmetric(horizontal: 6),
+                visualDensity: VisualDensity.compact,
+              ),
+            ),
+          const SizedBox(width: 8),
+          FilterChip(
+            label: const Text('▲ Above only'),
+            selected: showAboveOnly,
+            onSelected: (_) => onToggleAbove(),
+            labelStyle: TextStyle(
+              fontSize: 11,
+              color: showAboveOnly ? cs.primary : null,
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _sortLabel(_SortMode mode) => switch (mode) {
+    _SortMode.manual => 'Manual',
+    _SortMode.symbol => 'A–Z',
+    _SortMode.price => 'Price',
+    _SortMode.pctFromSma => '% SMA',
+  };
 }
 
 // ---------------------------------------------------------------------------
