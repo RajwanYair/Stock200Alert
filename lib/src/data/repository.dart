@@ -101,6 +101,14 @@ class StockRepository {
         .write(TickersCompanion(groupId: Value(groupId)));
   }
 
+  Future<void> reorderTickers(List<String> orderedSymbols) async {
+    for (int i = 0; i < orderedSymbols.length; i++) {
+      await (db.update(db.tickers)
+            ..where((t) => t.symbol.equals(orderedSymbols[i])))
+          .write(TickersCompanion(sortOrder: Value(i)));
+    }
+  }
+
   // ---- Watchlist Groups ----
 
   Future<List<WatchlistGroup>> getAllGroups() => db.getAllGroups();

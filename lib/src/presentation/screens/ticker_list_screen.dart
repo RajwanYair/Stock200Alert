@@ -102,23 +102,21 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
               Expanded(
                 child: filtered.isEmpty
                     ? const Center(child: Text('No tickers in this group.'))
-                    : ListView.builder(
+                    : ReorderableListView.builder(
                         padding: const EdgeInsets.fromLTRB(12, 6, 12, 100),
                         itemCount: filtered.length,
+                        onReorder: (oldIndex, newIndex) =>
+                            _onReorder(tickers, filtered, oldIndex, newIndex),
                         itemBuilder: (context, index) {
                           return _TickerCard(
-                                ticker: filtered[index],
-                                onRemove: () =>
-                                    _removeTicker(filtered[index].symbol),
-                                onTap: () => context.push(
-                                  '/ticker/${filtered[index].symbol}',
-                                ),
-                              )
-                              .animate(
-                                delay: Duration(milliseconds: 40 * index),
-                              )
-                              .fadeIn(duration: 280.ms)
-                              .slideX(begin: 0.05, end: 0, duration: 280.ms);
+                            key: ValueKey(filtered[index].symbol),
+                            ticker: filtered[index],
+                            onRemove: () =>
+                                _removeTicker(filtered[index].symbol),
+                            onTap: () => context.push(
+                              '/ticker/${filtered[index].symbol}',
+                            ),
+                          );
                         },
                       ),
               ),
@@ -205,6 +203,32 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
     }
   }
 
+  Future<void> _onReorder(
+    List<Ticker> allTickers,
+    List<Ticker> filtered,
+    int oldIndex,
+    int newIndex,
+  ) async {
+    // ReorderableListView passes newIndex before removal; adjust when moving down
+    if (newIndex > oldIndex) newIndex -= 1;
+    final movedSymbol = filtered[oldIndex].symbol;
+    final List<String> fullOrder = allTickers.map((t) => t.symbol).toList();
+    final List<String> filteredOrder = filtered.map((t) => t.symbol).toList();
+    filteredOrder.removeAt(oldIndex);
+    filteredOrder.insert(newIndex, movedSymbol);
+    // Merge reordered filtered positions back into the full list order
+    int fi = 0;
+    final List<String> newOrder = fullOrder.map((sym) {
+      if (filteredOrder.contains(sym)) return filteredOrder[fi++];
+      return sym;
+    }).toList();
+    try {
+      final repo = await ref.read(repositoryProvider.future);
+      if (!mounted) return;
+      await repo.reorderTickers(newOrder);
+    } catch (_) {}
+  }
+
   Future<void> _onRefreshAll() async {
     if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
@@ -229,6 +253,7 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
 
 class _TickerCard extends ConsumerWidget {
   const _TickerCard({
+    super.key,
     required this.ticker,
     required this.onRemove,
     required this.onTap,

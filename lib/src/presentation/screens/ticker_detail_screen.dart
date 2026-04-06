@@ -59,6 +59,11 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
       _ => const <String, String>{},
     };
     final sector = sectorMap[widget.symbol];
+    final sectorMap = switch (ref.watch(sectorMapProvider)) {
+      AsyncData(:final value) => value,
+      _ => const <String, String>{},
+    };
+    final sector = sectorMap[widget.symbol];
 
     return Scaffold(
       appBar: AppBar(

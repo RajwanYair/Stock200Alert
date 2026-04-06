@@ -136,9 +136,12 @@ class AppDatabase extends _$AppDatabase {
   );
   // ---- Tickers ----
 
-  Future<List<Ticker>> getAllTickers() => select(tickers).get();
+  Future<List<Ticker>> getAllTickers() =>
+      (select(tickers)..orderBy([(t) => OrderingTerm.asc(t.sortOrder)])).get();
 
-  Stream<List<Ticker>> watchAllTickers() => select(tickers).watch();
+  Stream<List<Ticker>> watchAllTickers() =>
+      (select(tickers)..orderBy([(t) => OrderingTerm.asc(t.sortOrder)]))
+          .watch();
 
   Future<void> upsertTicker(TickersCompanion entry) =>
       into(tickers).insertOnConflictUpdate(entry);
