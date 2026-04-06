@@ -33,18 +33,51 @@ class YahooFinanceProvider implements IMarketDataProvider {
 
   @override
   Future<List<DailyCandle>> fetchDailyHistory(String ticker) async {
+    return _fetchHistory(ticker);
+  }
+
+  /// Fetches only candles since [since] using Yahoo's period1/period2 params.
+  ///
+  /// Returns an empty list (not an error) when no new candles exist.
+  /// Throws [MarketDataException] on network or parse errors.
+  Future<List<DailyCandle>> fetchDailyHistoryDelta(
+    String ticker,
+    DateTime since,
+  ) async {
+    // period1 is one day before [since] so we always get at least the overlap
+    // candle for idempotent merging.
+    final period1 =
+        since.subtract(const Duration(days: 1)).millisecondsSinceEpoch ~/ 1000;
+    final period2 = DateTime.now().millisecondsSinceEpoch ~/ 1000;
+    return _fetchHistory(ticker, period1: period1, period2: period2);
+  }
+
+  Future<List<DailyCandle>> _fetchHistory(
+    String ticker, {
+    int? period1,
+    int? period2,
+  }) async {
     _logger.i('Fetching daily history for $ticker from Yahoo Finance');
     final stopwatch = Stopwatch()..start();
 
     try {
+      final queryParams = period1 != null
+          ? {
+              'period1': '$period1',
+              'period2': '$period2',
+              'interval': '1d',
+              'includePrePost': 'false',
+              'events': '',
+            }
+          : {
+              'range': '2y', // 2 years ≈ 500+ trading days (need 201+)
+              'interval': '1d',
+              'includePrePost': 'false',
+              'events': '', // skip dividends/splits for speed
+            };
       final response = await _dio.get<Map<String, dynamic>>(
         '$_baseUrl/$ticker',
-        queryParameters: {
-          'range': '2y', // 2 years ≈ 500+ trading days (need 201+)
-          'interval': '1d',
-          'includePrePost': 'false',
-          'events': '', // skip dividends/splits for speed
-        },
+        queryParameters: queryParams,
         options: Options(
           headers: {
             'User-Agent': 'CrossTide/1.0',

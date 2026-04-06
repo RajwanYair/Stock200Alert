@@ -10,6 +10,7 @@ import 'package:logger/logger.dart';
 import '../domain/domain.dart' as domain;
 import 'database/database.dart';
 import 'providers/market_data_provider.dart';
+import 'providers/yahoo_finance_provider.dart';
 
 /// Converts a comma-separated string to a [Set] of [domain.AlertType].
 Set<domain.AlertType> _parseAlertTypes(String raw) {
@@ -157,28 +158,97 @@ class StockRepository {
     _logger.i('Fetching fresh data for $upper');
     final stopwatch = Stopwatch()..start();
     try {
-      final candles = await provider.fetchDailyHistory(upper);
+      // --- Delta fetch ---------------------------------------------------
+      // If we already have cached candles and the provider supports it,
+      // only fetch candles since the last cached date (much faster).
+      List<domain.DailyCandle> candles;
+      final cachedRows = await db.getCandlesForTicker(upper);
+      final lastCachedDate = cachedRows.isNotEmpty
+          ? cachedRows.last.date
+          : null;
+
+      if (lastCachedDate != null && provider is YahooFinanceProvider) {
+        final yahoo = provider as YahooFinanceProvider;
+        _logger.i('Delta fetch for $upper since $lastCachedDate');
+        final existingCandles = cachedRows
+            .map(
+              (r) => domain.DailyCandle(
+                date: r.date,
+                open: r.open,
+                high: r.high,
+                low: r.low,
+                close: r.close,
+                volume: r.volume,
+              ),
+            )
+            .toList();
+        final newCandles = await yahoo.fetchDailyHistoryDelta(
+          upper,
+          lastCachedDate,
+        );
+        if (newCandles.isNotEmpty) {
+          // Merge: keep existing, upsert new (duplicate dates replaced)
+          final dateSet = {
+            for (final c in newCandles)
+              DateTime(c.date.year, c.date.month, c.date.day),
+          };
+          final merged = [
+            ...existingCandles.where(
+              (c) => !dateSet.contains(
+                DateTime(c.date.year, c.date.month, c.date.day),
+              ),
+            ),
+            ...newCandles,
+          ]..sort((a, b) => a.date.compareTo(b.date));
+          candles = merged;
+          // Persist merged set
+          await db.deleteCandlesForTicker(upper);
+          await db.insertCandles(
+            candles
+                .map(
+                  (c) => DailyCandlesCompanion.insert(
+                    ticker: upper,
+                    date: c.date,
+                    open: c.open,
+                    high: c.high,
+                    low: c.low,
+                    close: c.close,
+                    volume: c.volume,
+                  ),
+                )
+                .toList(),
+          );
+        } else {
+          // No new candles — use existing cache as-is
+          candles = existingCandles.isNotEmpty
+              ? existingCandles
+              : await _loadCachedCandles(upper);
+        }
+      } else {
+        candles = await provider.fetchDailyHistory(upper);
+        // Persist full history
+        await db.deleteCandlesForTicker(upper);
+        await db.insertCandles(
+          candles
+              .map(
+                (c) => DailyCandlesCompanion.insert(
+                  ticker: upper,
+                  date: c.date,
+                  open: c.open,
+                  high: c.high,
+                  low: c.low,
+                  close: c.close,
+                  volume: c.volume,
+                ),
+              )
+              .toList(),
+        );
+      }
+
       stopwatch.stop();
       _logger.i(
         'Fetched ${candles.length} candles for $upper in ${stopwatch.elapsedMilliseconds}ms',
       );
-
-      // Persist
-      await db.deleteCandlesForTicker(upper);
-      final companions = candles
-          .map(
-            (c) => DailyCandlesCompanion.insert(
-              ticker: upper,
-              date: c.date,
-              open: c.open,
-              high: c.high,
-              low: c.low,
-              close: c.close,
-              volume: c.volume,
-            ),
-          )
-          .toList();
-      await db.insertCandles(companions);
 
       // Update ticker metadata
       final lastCandle = candles.isNotEmpty ? candles.last : null;
