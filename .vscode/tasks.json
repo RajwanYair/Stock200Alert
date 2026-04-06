@@ -1,0 +1,65 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "flutter: pub get",
+      "type": "shell",
+      "command": "flutter pub get",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: build_runner",
+      "type": "shell",
+      "command": "dart run build_runner build --delete-conflicting-outputs",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: build_runner watch",
+      "type": "shell",
+      "command": "dart run build_runner watch --delete-conflicting-outputs",
+      "group": "build",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: analyze",
+      "type": "shell",
+      "command": "flutter analyze",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: test",
+      "type": "shell",
+      "command": "flutter test",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: format check",
+      "type": "shell",
+      "command": "dart format --set-exit-if-changed .",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: build windows",
+      "type": "shell",
+      "command": "flutter build windows",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "flutter: build android debug",
+      "type": "shell",
+      "command": "flutter build apk --debug",
+      "group": "build",
+      "problemMatcher": []
+    }
+  ]
+}
