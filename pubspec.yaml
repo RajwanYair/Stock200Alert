@@ -63,7 +63,7 @@ dependencies:
   # Graphics & UI polish
   flutter_svg: ^2.1.0          # SVG asset rendering
   flutter_animate: ^4.5.2      # Micro-animations (fade/slide/scale)
-  google_fonts: ^6.2.1         # Typography: Inter for numbers, Outfit for headings
+  google_fonts: ^8.0.2         # Typography: Inter for numbers, Outfit for headings
   tray_manager: ^0.5.2
 
 dev_dependencies:

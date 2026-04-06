@@ -17,6 +17,8 @@ import 'package:logger/logger.dart';
 import '../application/application.dart';
 import '../data/data.dart';
 import '../data/database/database.dart' as db show WatchlistGroup;
+import '../domain/cross_up_anomaly_detector.dart' as domain
+    show CrossUpAnomaly, CrossUpAnomalyDetector;
 import '../domain/entities.dart' as domain;
 
 // ---------------------------------------------------------------------------
@@ -414,6 +416,26 @@ final alertHistoryProvider = StreamProvider<List<domain.AlertHistoryEntry>>(
     yield* repo.watchAlertHistory();
   },
 );
+
+/// Cross-up anomalies derived from the alert history.
+///
+/// Runs the [CrossUpAnomalyDetector] over [alertHistoryProvider] every time
+/// the history changes. A banner or badge in the alert history screen surfaces
+/// the result.
+final crossUpAnomaliesProvider =
+    Provider<List<domain.CrossUpAnomaly>>((ref) {
+  final historyAsync = ref.watch(alertHistoryProvider);
+  return historyAsync.maybeWhen(
+    data: (entries) {
+      const detector = domain.CrossUpAnomalyDetector(
+        windowHours: 24,
+        minOccurrences: 2,
+      );
+      return detector.detect(entries);
+    },
+    orElse: () => [],
+  );
+});
 
 // ---------------------------------------------------------------------------
 // Refresh action

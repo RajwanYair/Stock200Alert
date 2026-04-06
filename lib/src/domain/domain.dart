@@ -3,6 +3,7 @@ library;
 
 export 'alert_state_machine.dart';
 export 'bollinger_calculator.dart';
+export 'cross_up_anomaly_detector.dart';
 export 'cross_up_detector.dart';
 export 'ema_calculator.dart';
 export 'entities.dart';

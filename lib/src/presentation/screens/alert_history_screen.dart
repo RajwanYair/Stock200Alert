@@ -8,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../application/alert_history_exporter.dart';
+import '../../domain/cross_up_anomaly_detector.dart';
 import '../../domain/entities.dart';
 import '../providers.dart';
 
@@ -111,17 +112,26 @@ class AlertHistoryScreen extends ConsumerWidget {
             );
           }
 
-          return ListView.builder(
-            padding: const EdgeInsets.symmetric(vertical: 8),
-            itemCount: entries.length,
-            itemBuilder: (ctx, i) =>
-                _HistoryTile(entry: entries[i], index: i).animate(
-                  delay: Duration(milliseconds: i * 30),
-                ).fadeIn(duration: 250.ms).slideX(
-                  begin: 0.05,
-                  end: 0,
-                  duration: 250.ms,
+          final anomalies = ref.watch(crossUpAnomaliesProvider);
+
+          return Column(
+            children: [
+              if (anomalies.isNotEmpty) _AnomalyBanner(anomalies: anomalies),
+              Expanded(
+                child: ListView.builder(
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  itemCount: entries.length,
+                  itemBuilder: (ctx, i) =>
+                      _HistoryTile(entry: entries[i], index: i).animate(
+                        delay: Duration(milliseconds: i * 30),
+                      ).fadeIn(duration: 250.ms).slideX(
+                        begin: 0.05,
+                        end: 0,
+                        duration: 250.ms,
+                      ),
                 ),
+              ),
+            ],
           );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
@@ -336,6 +346,54 @@ class _AlertIcon extends StatelessWidget {
       radius: 20,
       backgroundColor: color.withValues(alpha: 0.15),
       child: Icon(icon, size: 20, color: color),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Anomaly banner
+// ---------------------------------------------------------------------------
+
+/// Shown at the top of the alert history list when the anomaly detector finds
+/// repeated cross-up events within a 24-hour window.
+class _AnomalyBanner extends StatelessWidget {
+  const _AnomalyBanner({required this.anomalies});
+
+  final List<CrossUpAnomaly> anomalies;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final cs = theme.colorScheme;
+    final syms = anomalies.map((a) => a.symbol).toSet().join(', ');
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 0),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+      decoration: BoxDecoration(
+        color: cs.errorContainer.withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            Icons.warning_amber_rounded,
+            size: 22,
+            color: cs.onErrorContainer,
+          ),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              '⚠ Repeated cross-up alerts detected for: $syms\n'
+              'Consider increasing TTL or switching to Conservative profile.',
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: cs.onErrorContainer,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
