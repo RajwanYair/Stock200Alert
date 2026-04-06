@@ -1,4 +1,4 @@
-/// Settings Screen — Refresh interval, quiet hours, trend strictness, API key.
+/// Settings Screen — Theme, refresh interval, quiet hours, trend strictness, API key.
 library;
 
 import 'package:flutter/material.dart';
@@ -69,6 +69,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           return ListView(
             padding: const EdgeInsets.all(16),
             children: [
+              // Theme Mode
+              _SettingsSection(
+                    icon: Icons.palette_outlined,
+                    title: '🌗 Theme',
+                    subtitle: 'Light, Dark, or follow the system setting',
+                    child: _ThemeModePicker(),
+                  )
+                  .animate()
+                  .fadeIn(duration: 300.ms)
+                  .slideY(begin: 0.04, end: 0),
+              const SizedBox(height: 12),
+
               // Alert Profile Selector
               _SettingsSection(
                 icon: Icons.person_outline_rounded,
@@ -648,6 +660,49 @@ class _QuietHoursSetting extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Theme Mode Picker
+// ---------------------------------------------------------------------------
+
+class _ThemeModePicker extends ConsumerWidget {
+  const _ThemeModePicker();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeModeAsync = ref.watch(themeModeProvider);
+    final current = switch (themeModeAsync) {
+      AsyncData(:final value) => value,
+      _ => ThemeMode.system,
+    };
+
+    return SegmentedButton<ThemeMode>(
+      segments: const [
+        ButtonSegment(
+          value: ThemeMode.light,
+          label: Text('☀️ Light'),
+          icon: Icon(Icons.light_mode_rounded),
+        ),
+        ButtonSegment(
+          value: ThemeMode.system,
+          label: Text('🌗 System'),
+          icon: Icon(Icons.brightness_auto_rounded),
+        ),
+        ButtonSegment(
+          value: ThemeMode.dark,
+          label: Text('🌙 Dark'),
+          icon: Icon(Icons.dark_mode_rounded),
+        ),
+      ],
+      selected: {current},
+      onSelectionChanged: (modes) {
+        if (modes.isNotEmpty) {
+          ref.read(themeModeProvider.notifier).setMode(modes.first);
+        }
+      },
     );
   }
 }

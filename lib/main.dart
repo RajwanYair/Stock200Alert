@@ -179,13 +179,13 @@ Future<void> _appMain(Logger logger) async {
   );
 }
 
-class CrossTideApp extends StatelessWidget {
+class CrossTideApp extends ConsumerWidget {
   const CrossTideApp({super.key, this.showOnboarding = false});
 
   final bool showOnboarding;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     // Override initial location if onboarding needed
     final router = showOnboarding
         ? GoRouter(
@@ -193,6 +193,13 @@ class CrossTideApp extends StatelessWidget {
             routes: appRouter.configuration.routes,
           )
         : appRouter;
+
+    // Resolve persisted theme mode (default: system)
+    final themeModeAsync = ref.watch(themeModeProvider);
+    final themeMode = switch (themeModeAsync) {
+      AsyncData(:final value) => value,
+      _ => ThemeMode.system,
+    };
 
     // Rich typography: Outfit for headlines, Inter for body/numbers
     final baseTextTheme = GoogleFonts.outfitTextTheme();
@@ -211,6 +218,7 @@ class CrossTideApp extends StatelessWidget {
     return MaterialApp.router(
       title: 'CrossTide',
       debugShowCheckedModeBanner: false,
+      themeMode: themeMode,
       theme: ThemeData(
         colorSchemeSeed: const Color(0xFF0D47A1),
         useMaterial3: true,

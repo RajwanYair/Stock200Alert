@@ -8,6 +8,7 @@ library;
 
 import 'dart:io' show Platform;
 
+import 'package:flutter/material.dart' show ThemeMode;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
@@ -159,6 +160,44 @@ final sp500CandlesProvider = FutureProvider<List<domain.DailyCandle>>((
   final repo = await ref.watch(repositoryProvider.future);
   return repo.fetchAndCacheCandles('SPY');
 });
+
+/// Persists and exposes the user's [ThemeMode] preference.
+///
+/// Stored in secure storage under key `'theme_mode'`.
+/// Values: `'light'` | `'dark'` | `'system'` (default).
+final themeModeProvider =
+    AsyncNotifierProvider<ThemeModeNotifier, ThemeMode>(
+      ThemeModeNotifier.new,
+    );
+
+class ThemeModeNotifier extends AsyncNotifier<ThemeMode> {
+  static const _storageKey = 'theme_mode';
+
+  @override
+  Future<ThemeMode> build() async {
+    final storage = ref.watch(secureStorageProvider);
+    final raw = await storage.read(key: _storageKey);
+    return _parse(raw);
+  }
+
+  Future<void> setMode(ThemeMode mode) async {
+    final storage = ref.read(secureStorageProvider);
+    await storage.write(key: _storageKey, value: _serialize(mode));
+    state = AsyncData(mode);
+  }
+
+  static ThemeMode _parse(String? raw) => switch (raw) {
+    'light' => ThemeMode.light,
+    'dark' => ThemeMode.dark,
+    _ => ThemeMode.system,
+  };
+
+  static String _serialize(ThemeMode mode) => switch (mode) {
+    ThemeMode.light => 'light',
+    ThemeMode.dark => 'dark',
+    ThemeMode.system => 'system',
+  };
+}
 
 /// Returns the set of enabled [AlertType]s for [ticker].
 /// Kept separate from [tickerCandlesProvider] so the selector can invalidate
