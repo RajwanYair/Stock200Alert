@@ -1,4 +1,4 @@
-package com.stockalert.stock_alert
+package com.crosstide.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -1,8 +1,15 @@
-# Stock Alert — SMA200 Cross-Up Monitor
+# CrossTide — Stock SMA Crossover Monitor
 
-Cross-platform Flutter app that monitors stock tickers for **200-day Simple Moving Average (SMA200) cross-up events** and fires local notifications. Targets **Android** + **Windows** from a single codebase.
+> **Catch the cross. Ride the tide.**
 
-> ⚠️ **Disclaimer**: This app is for informational and educational purposes only. It is NOT financial advice. Always do your own research.
+CrossTide is a cross-platform Flutter app that monitors stock tickers for **SMA crossover events** (SMA50 / SMA150 / SMA200, Golden Cross) and fires instant local notifications. Runs on **Android** and **Windows** from a single Dart codebase. Uses **Yahoo Finance** — no API key required.
+
+[![Flutter](https://img.shields.io/badge/Flutter-3.x-blue?logo=flutter)](https://flutter.dev)
+[![Dart](https://img.shields.io/badge/Dart-3.11-blue?logo=dart)](https://dart.dev)
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![CI](https://github.com/RajwanYair/Stock200Alert/actions/workflows/ci.yml/badge.svg)](https://github.com/RajwanYair/Stock200Alert/actions/workflows/ci.yml)
+
+> ⚠️ **Disclaimer**: CrossTide is for informational and educational purposes only. It is NOT financial advice. Always do your own research before making investment decisions.
 
 ## Architecture
 
@@ -19,7 +26,7 @@ Cross-platform Flutter app that monitors stock tickers for **200-day Simple Movi
 │  Entities (DailyCandle, TickerAlertState, AppSettings)  │
 ├─────────────────────────────────────────────────────────┤
 │                        Data                             │
-│  IMarketDataProvider │ AlphaVantageProvider │ MockProvider│
+│  IMarketDataProvider │ YahooFinanceProvider │ MockProvider│
 │  StockRepository │ Drift/SQLite Database                 │
 └─────────────────────────────────────────────────────────┘
 
@@ -28,18 +35,19 @@ Background Execution:
   Windows → Timer.periodic (in-app, while running / system tray mode)
 ```
 
-## Cross-Up Rule (KEY LOGIC)
+## Key Signal Logic
 
 ```
-close[t]   = latest trading day close
-sma200[t]  = SMA of last 200 trading closes up to and including t (inclusive)
+close[t]    = latest trading day close
+sma200[t]   = SMA of last 200 trading closes (inclusive)
+sma150[t]   = SMA of last 150 trading closes
+sma50[t]    = SMA of last  50 trading closes
 
-Cross-up:  close[t-1] <= sma200[t-1]  AND  close[t] > sma200[t]
-Rising:    close[t] > close[t-1]  (configurable: 1–5 day trend strictness)
-Alert:     Cross-up AND Rising AND not already alerted for this cross-up event
+SMA200 Cross-Up:  close[t-1] <= sma200[t-1]  AND  close[t] > sma200[t]
+Golden Cross:     sma50[t-1] <= sma200[t-1]  AND  sma50[t] > sma200[t]
+Rising filter:    close[t] > close[t-1]  (configurable 1–5 day strictness)
+Alert:            idempotent — fires once per cross event, resets on cross-down
 ```
-
-Alert is **idempotent**: fires once per cross-up event. Only fires again after the price crosses back below SMA200 and then crosses up again.
 
 ## Prerequisites
 
@@ -47,12 +55,13 @@ Alert is **idempotent**: fires once per cross-up event. Only fires again after t
 - **Android**: Android Studio or Android SDK with API 21+
 - **Windows**: Visual Studio 2022 with "Desktop development with C++" workload
 - **Git**
+- **No API key needed** — Yahoo Finance data is free
 
 ## Setup
 
 ```bash
 # 1. Clone the repo
-git clone <repo-url> && cd stock_alert
+git clone https://github.com/RajwanYair/Stock200Alert.git && cd Stock200Alert
 
 # 2. Copy environment file
 cp .env.example .env
@@ -76,14 +85,18 @@ flutter test
 
 ## Market Data Provider
 
-**Alpha Vantage** (default):
-- Free tier: 25 requests/day, 5 requests/minute
+**Yahoo Finance** (default — free, no API key):
+- Uses the public `query1.finance.yahoo.com/v8/finance/chart/` endpoint
+- Returns 2+ years of daily OHLCV data (~500 candles)
+- No registration or rate-limit tokens required
+
+**Alpha Vantage** (optional, select in Settings):
+- Free tier: 25 requests/day, 5/minute
 - Get API key: https://www.alphavantage.co/support/#api-key
-- Uses `TIME_SERIES_DAILY` with `outputsize=full`
 
-**Mock Provider**: Generates synthetic data for offline development and testing.
+**Mock Provider**: Generates deterministic synthetic data for offline dev and tests.
 
-The provider interface (`IMarketDataProvider`) is abstracted — swap in Twelve Data, IEX Cloud, or any other source by implementing the interface.
+The provider interface (`IMarketDataProvider`) is fully abstracted — add any source by implementing the interface.
 
 ## Project Structure
 
@@ -140,6 +153,22 @@ Uses `flutter_local_notifications`:
 - **Android**: Notification channel with high importance; requests POST_NOTIFICATIONS permission on Android 13+
 - **Windows**: Toast notifications; `cancel()` and `getActiveNotifications()` require MSIX package identity (handled gracefully)
 - **Deep-link**: Tapping a notification navigates to the ticker detail screen
+
+## Roadmap
+
+See [docs/ROADMAP.md](docs/ROADMAP.md) for the full enhancement plan. Highlights:
+
+| Version | Feature |
+|---------|----------|
+| v1.1 | SMA50 / SMA150 overlay lines, S&P 500 benchmark, Golden Cross alert, candlestick mode |
+| v1.2 | Watchlist groups, heatmap dashboard, bulk add, ticker autocomplete |
+| v1.3 | RSI, MACD, Bollinger Bands, EMA indicators |
+| v1.4 | Price target & volume spike alerts, Telegram/Discord webhooks, alert history export |
+| v1.5 | Intraday data, delta-fetch, pre/after-hours prices |
+| v1.6 | Home screen widget (Android), MSIX packaging, iOS / macOS / Web targets |
+| v1.8 | AI pattern recognition, sentiment analysis, natural language ticker search |
+
+---
 
 ## Design Decisions
 

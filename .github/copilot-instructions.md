@@ -1,7 +1,7 @@
-# Stock200Alert — Copilot Workspace Instructions
+# CrossTide — Copilot Workspace Instructions
 
 ## Project Overview
-Cross-platform Flutter app (Android + Windows) that monitors stock tickers for **200-day Simple Moving Average (SMA) cross-up** events and fires local notifications.
+CrossTide is a cross-platform Flutter app (Android + Windows) that monitors stock tickers for **SMA crossover events** (SMA50 / SMA150 / SMA200, Golden Cross) and fires local notifications. Uses Yahoo Finance — no API key required.
 
 ## Architecture
 Clean Architecture with strict layer boundaries. Dependencies flow inward only.

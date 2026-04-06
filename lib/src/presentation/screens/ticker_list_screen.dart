@@ -32,7 +32,7 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Stock Alert'),
+        title: const Text('CrossTide'),
         actions: [
           IconButton(
             icon: _isRefreshing

@@ -1,5 +1,5 @@
+import 'package:cross_tide/src/domain/domain.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:stock_alert/src/domain/domain.dart';
 
 void main() {
   group('SmaCalculator', () {

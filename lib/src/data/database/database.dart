@@ -1,4 +1,4 @@
-// Drift Database Schema for Stock Alert.
+// Drift Database Schema for CrossTide.
 //
 // Tables:
 //   - tickers: user-managed ticker list
@@ -136,7 +136,7 @@ class AppDatabase extends _$AppDatabase {
 LazyDatabase _openConnection() {
   return LazyDatabase(() async {
     final dir = await getApplicationDocumentsDirectory();
-    final file = File(p.join(dir.path, 'stock_alert.sqlite'));
+    final file = File(p.join(dir.path, 'cross_tide.sqlite'));
     return NativeDatabase.createInBackground(file);
   });
 }

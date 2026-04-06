@@ -25,7 +25,7 @@ import 'notification_service.dart';
 import 'refresh_service.dart';
 
 const _workManagerTaskName = 'com.stockalert.refreshAll';
-const _workManagerUniqueName = 'stock_alert_periodic_refresh';
+const _workManagerUniqueName = 'cross_tide_periodic_refresh';
 
 /// Top-level callback for WorkManager (Android).
 /// Must be a top-level or static function.

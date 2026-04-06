@@ -1,7 +1,8 @@
-name: stock_alert
+name: cross_tide
 description: >
-  Cross-platform Stock Alert app. Monitors tickers for 200-day SMA cross-up
-  events and fires local notifications. Targets Android + Windows.
+  CrossTide — Cross-platform stock SMA crossover monitor.
+  Detects SMA50/SMA150/SMA200 cross-up events, benchmarks vs S&P 500, and
+  fires local notifications. Free Yahoo Finance data. Android + Windows.
 publish_to: 'none'
 version: 1.0.0+1
 

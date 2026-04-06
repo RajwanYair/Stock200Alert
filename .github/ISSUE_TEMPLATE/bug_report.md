@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-about: Report a bug in Stock Alert
+about: Report a bug in CrossTide
 title: '[BUG] '
 labels: bug
 ---

@@ -37,7 +37,7 @@ class LocalNotificationService implements INotificationService {
 
   void Function(String? payload)? _onTap;
 
-  static const _androidChannelId = 'stock_alert_cross_up';
+  static const _androidChannelId = 'cross_tide_cross_up';
   static const _androidChannelName = 'SMA200 Cross-Up Alerts';
   static const _androidChannelDesc =
       'Notifications when a stock crosses above its 200-day SMA';

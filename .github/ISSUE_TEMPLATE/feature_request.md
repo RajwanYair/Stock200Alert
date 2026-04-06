@@ -1,6 +1,6 @@
 ---
 name: Feature Request
-about: Suggest a feature for Stock Alert
+about: Suggest a feature for CrossTide
 title: '[FEATURE] '
 labels: enhancement
 ---

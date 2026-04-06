@@ -1,4 +1,4 @@
-# Stock200Alert Developer CLI
+# CrossTide Developer CLI
 # Usage: .\tool.ps1 <command>
 # Commands: setup, generate, analyze, test, format, build, run, clean, health
 

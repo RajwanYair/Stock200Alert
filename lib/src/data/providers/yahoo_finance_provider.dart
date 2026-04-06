@@ -47,7 +47,7 @@ class YahooFinanceProvider implements IMarketDataProvider {
         },
         options: Options(
           headers: {
-            'User-Agent': 'Stock200Alert/1.0',
+            'User-Agent': 'CrossTide/1.0',
             'Accept': 'application/json',
           },
           receiveTimeout: const Duration(seconds: 15),

@@ -1,4 +1,4 @@
-# Copilot Guide for Stock Alert
+# Copilot Guide for CrossTide
 
 Coding conventions, prompt patterns, and guardrails for using GitHub Copilot effectively in this project.
 

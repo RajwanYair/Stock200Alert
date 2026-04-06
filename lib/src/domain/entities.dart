@@ -1,4 +1,4 @@
-/// Stock Alert — Domain Entities
+/// CrossTide — Domain Entities
 ///
 /// Pure value objects with no framework dependencies.
 library;

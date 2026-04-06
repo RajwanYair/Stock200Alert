@@ -1,4 +1,4 @@
-// Stock Alert — Cross-platform SMA200 cross-up monitor.
+// CrossTide — Cross-platform SMA crossover monitor.
 //
 // Architecture: Clean Architecture with Riverpod for DI/state management.
 //   /domain   — Pure business logic (SMA calc, cross-up detection, alert FSM)
@@ -102,7 +102,7 @@ class StockAlertApp extends StatelessWidget {
         : appRouter;
 
     return MaterialApp.router(
-      title: 'Stock Alert',
+      title: 'CrossTide',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         colorSchemeSeed: Colors.blue,

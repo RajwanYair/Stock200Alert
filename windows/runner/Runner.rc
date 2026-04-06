@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.stockalert" "\0"
-            VALUE "FileDescription", "stock_alert" "\0"
+            VALUE "CompanyName", "com.crosstide" "\0"
+            VALUE "FileDescription", "CrossTide" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "stock_alert" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.stockalert. All rights reserved." "\0"
-            VALUE "OriginalFilename", "stock_alert.exe" "\0"
-            VALUE "ProductName", "stock_alert" "\0"
+            VALUE "InternalName", "cross_tide" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 com.crosstide. All rights reserved." "\0"
+            VALUE "OriginalFilename", "cross_tide.exe" "\0"
+            VALUE "ProductName", "CrossTide" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

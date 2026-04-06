@@ -26,7 +26,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Welcome to Stock Alert')),
+      appBar: AppBar(title: const Text('Welcome to CrossTide')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
@@ -35,7 +35,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             const Icon(Icons.show_chart, size: 64, color: Colors.blue),
             const SizedBox(height: 16),
             Text(
-              'Stock Alert — SMA200 Cross-Up Monitor',
+              'CrossTide — SMA Crossover Monitor',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
             const SizedBox(height: 24),

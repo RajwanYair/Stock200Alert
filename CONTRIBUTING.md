@@ -1,4 +1,4 @@
-# Contributing to Stock Alert
+# Contributing to CrossTide
 
 Thank you for your interest in contributing!
 
