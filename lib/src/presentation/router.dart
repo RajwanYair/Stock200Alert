@@ -13,6 +13,21 @@ import 'screens/ticker_list_screen.dart';
 final appRouter = GoRouter(
   initialLocation: '/',
   errorBuilder: (context, state) => _ErrorPage(error: state.error),
+  // Normalise crosstide:// deep-links to standard GoRouter paths.
+  // e.g. crosstide://ticker/AAPL → /ticker/AAPL
+  //      crosstide://settings    → /settings
+  redirect: (context, state) {
+    final uri = state.uri;
+    if (uri.scheme == 'crosstide') {
+      final path = uri.path.isNotEmpty ? uri.path : '/';
+      // The host acts as the first path segment in the custom scheme.
+      final host = uri.host;
+      if (host.isNotEmpty) {
+        return path.isEmpty || path == '/' ? '/$host' : '/$host$path';
+      }
+    }
+    return null; // No redirect needed for normal paths.
+  },
   routes: [
     GoRoute(
       path: '/',
@@ -46,12 +61,21 @@ final appRouter = GoRouter(
 );
 
 /// Parse notification payload to extract deep-link route.
-/// Payload format: "ticker:AAPL"
+///
+/// Payload format: `"ticker:AAPL"` → `/ticker/AAPL`
+/// Also handles the custom-scheme format `crosstide://ticker/AAPL`.
 String? parseNotificationPayload(String? payload) {
   if (payload == null) return null;
   if (payload.startsWith('ticker:')) {
     final symbol = payload.substring(7);
     return '/ticker/$symbol';
+  }
+  if (payload.startsWith('crosstide://')) {
+    final uri = Uri.tryParse(payload);
+    if (uri != null && uri.host.isNotEmpty) {
+      final path = uri.path.isEmpty ? '/' : uri.path;
+      return '/${uri.host}$path';
+    }
   }
   return null;
 }
