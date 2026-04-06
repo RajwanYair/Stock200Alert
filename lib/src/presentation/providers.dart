@@ -456,3 +456,11 @@ final healthReportProvider = FutureProvider<HealthReport>((ref) async {
   final service = await ref.watch(healthCheckServiceProvider.future);
   return service.runAll();
 });
+
+/// [SnapshotService] — exports current app state to a JSON file in
+/// the system temp directory.
+final snapshotServiceProvider = FutureProvider<SnapshotService>((ref) async {
+  final repo = await ref.watch(repositoryProvider.future);
+  final logger = ref.watch(loggerProvider);
+  return SnapshotService(repository: repo, logger: logger);
+});

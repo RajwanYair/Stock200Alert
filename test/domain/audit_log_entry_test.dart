@@ -1,6 +1,5 @@
-import 'package:flutter_test/flutter_test.dart';
-
 import 'package:cross_tide/src/domain/entities.dart';
+import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   final ts = DateTime(2025, 6, 1, 10, 30);

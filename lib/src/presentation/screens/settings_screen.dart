@@ -407,6 +407,20 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               ).animate(delay: 440.ms).fadeIn().slideY(begin: 0.1, end: 0),
               const SizedBox(height: 8),
 
+              // Export: state snapshot to JSON
+              OutlinedButton.icon(
+                onPressed: () => _exportSnapshot(context),
+                icon: const Icon(Icons.file_download_outlined, size: 18),
+                label: const Text('Export Snapshot'),
+                style: OutlinedButton.styleFrom(
+                  minimumSize: const Size(double.infinity, 44),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ).animate(delay: 460.ms).fadeIn().slideY(begin: 0.1, end: 0),
+              const SizedBox(height: 8),
+
               // About row
               Center(
                 child: Row(
@@ -434,6 +448,29 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _exportSnapshot(BuildContext context) async {
+    try {
+      final svc = await ref.read(snapshotServiceProvider.future);
+      final path = await svc.exportJson();
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Snapshot saved to:\n$path'),
+          behavior: SnackBarBehavior.floating,
+          duration: const Duration(seconds: 5),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(10),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('⚠️ Export failed: $e')),
+      );
+    }
   }
 
   Future<void> _onSave() async {
