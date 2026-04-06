@@ -20,8 +20,31 @@ class TickerDetailScreen extends ConsumerStatefulWidget {
   ConsumerState<TickerDetailScreen> createState() => _TickerDetailScreenState();
 }
 
+/// Selectable time ranges for the price chart.
+enum _ChartRange {
+  threeMonths('3M', 90),
+  sixMonths('6M', 180),
+  oneYear('1Y', 365),
+  twoYears('2Y', 730),
+  fiveYears('5Y', 1825),
+  max('Max', null);
+
+  const _ChartRange(this.label, this._days);
+
+  final String label;
+  final int? _days;
+
+  /// The earliest date to include, or null for all available data.
+  DateTime? get cutoff {
+    final days = _days;
+    if (days == null) return null;
+    return DateTime.now().subtract(Duration(days: days));
+  }
+}
+
 class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
   bool _isRefreshing = false;
+  _ChartRange _chartRange = _ChartRange.oneYear;
 
   @override
   Widget build(BuildContext context) {
@@ -94,16 +117,23 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
           const smaCalc = SmaCalculator();
           final smaSeries = smaCalc.computeSeries(candles, period: 200);
 
-          final chartStart = candles.length > 250 ? candles.length - 250 : 0;
-          final chartCandles = candles.sublist(chartStart);
-          final chartSma200 = smaSeries.sublist(chartStart);
+          // Filter candles to selected time range
+          final cutoff = _chartRange.cutoff;
+          final rangeStart = cutoff == null
+              ? 0
+              : candles.indexWhere((c) => !c.date.isBefore(cutoff));
+          final rangeStartIdx = rangeStart < 0 ? 0 : rangeStart;
+          // Always need at least 200 candles for SMA accuracy — use all prior
+          // candles for computation but only show from rangeStartIdx onward.
+          final chartCandles = candles.sublist(rangeStartIdx);
+          final chartSma200 = smaSeries.sublist(rangeStartIdx);
           // Pre-compute SMA50 and SMA150 series for the chart overlays
           final chartSma50 = smaCalc
               .computeSeries(candles, period: 50)
-              .sublist(chartStart);
+              .sublist(rangeStartIdx);
           final chartSma150 = smaCalc
               .computeSeries(candles, period: 150)
-              .sublist(chartStart);
+              .sublist(rangeStartIdx);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -126,6 +156,8 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                   chartSma50: chartSma50,
                   chartSma150: chartSma150,
                   chartSma200: chartSma200,
+                  selectedRange: _chartRange,
+                  onRangeChanged: (r) => setState(() => _chartRange = r),
                 ).animate(delay: 80.ms).fadeIn(duration: 300.ms),
                 const SizedBox(height: 16),
                 _AlertStateCard(
@@ -403,6 +435,8 @@ class _ChartSection extends StatefulWidget {
     required this.chartSma50,
     required this.chartSma150,
     required this.chartSma200,
+    required this.selectedRange,
+    required this.onRangeChanged,
   });
 
   final ColorScheme cs;
@@ -410,6 +444,8 @@ class _ChartSection extends StatefulWidget {
   final List<(DateTime, double?)> chartSma50;
   final List<(DateTime, double?)> chartSma150;
   final List<(DateTime, double?)> chartSma200;
+  final _ChartRange selectedRange;
+  final ValueChanged<_ChartRange> onRangeChanged;
 
   @override
   State<_ChartSection> createState() => _ChartSectionState();
@@ -508,6 +544,25 @@ class _ChartSectionState extends State<_ChartSection> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Time-range selector row
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: _ChartRange.values.map((r) {
+                  final selected = r == widget.selectedRange;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 4),
+                    child: ChoiceChip(
+                      label: Text(r.label, style: const TextStyle(fontSize: 11)),
+                      selected: selected,
+                      onSelected: (_) => widget.onRangeChanged(r),
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+            const SizedBox(height: 8),
             // SMA toggle chips
             Wrap(
               spacing: 6,
