@@ -295,16 +295,18 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _onSave() async {
-    final repo = await ref.read(repositoryProvider.future);
-    await repo.saveSettings(_settings);
+    try {
+      final repo = await ref.read(repositoryProvider.future);
+      if (!mounted) return;
+      await repo.saveSettings(_settings);
 
-    const storage = FlutterSecureStorage();
-    final apiKey = _apiKeyController.text.trim();
-    if (apiKey.isNotEmpty) {
-      await storage.write(key: 'market_data_api_key', value: apiKey);
-    }
+      const storage = FlutterSecureStorage();
+      final apiKey = _apiKeyController.text.trim();
+      if (apiKey.isNotEmpty) {
+        await storage.write(key: 'market_data_api_key', value: apiKey);
+      }
 
-    if (mounted) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: const Row(
@@ -322,6 +324,11 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           duration: const Duration(seconds: 2),
         ),
       );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('⚠️ Failed to save settings: $e')));
     }
   }
 }

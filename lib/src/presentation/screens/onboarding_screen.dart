@@ -212,13 +212,21 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
   }
 
   Future<void> _onContinue() async {
-    const storage = FlutterSecureStorage();
-    final apiKey = _apiKeyController.text.trim();
-    if (apiKey.isNotEmpty) {
-      await storage.write(key: 'market_data_api_key', value: apiKey);
+    try {
+      const storage = FlutterSecureStorage();
+      final apiKey = _apiKeyController.text.trim();
+      if (apiKey.isNotEmpty) {
+        await storage.write(key: 'market_data_api_key', value: apiKey);
+      }
+      await storage.write(key: 'onboarding_complete', value: 'true');
+      if (!mounted) return;
+      context.go('/');
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('⚠️ Setup failed: $e')));
     }
-    await storage.write(key: 'onboarding_complete', value: 'true');
-    if (mounted) context.go('/');
   }
 }
 

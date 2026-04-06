@@ -7,8 +7,10 @@
 //   /presentation — UI (screens, router, Riverpod providers)
 //
 // Targets: Android (WorkManager background) + Windows (timer + tray mode).
+import 'dart:async' show runZonedGuarded, unawaited;
 import 'dart:io' show Platform, exit;
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,18 +21,66 @@ import 'package:logger/logger.dart';
 import 'src/application/application.dart';
 import 'src/presentation/presentation.dart';
 
+/// Global crash log service — initialized once at startup, survives all zones.
+final _crashLog = CrashLogService.instance;
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Initialize crash logger FIRST — before anything else can fail.
+  await _crashLog.initialize();
+
   final logger = Logger();
 
+  // ---- Global error handlers --------------------------------------------
+  // 1) Flutter framework errors (layout, rendering, gestures)
+  FlutterError.onError = (FlutterErrorDetails details) {
+    FlutterError.presentError(
+      details,
+    ); // still show the default red screen in debug
+    _crashLog.writeFlutterError(details);
+    logger.e(
+      'FlutterError: ${details.exceptionAsString()}',
+      error: details.exception,
+      stackTrace: details.stack,
+    );
+  };
+
+  // 2) Platform-level errors that escape Dart zones (e.g. native callbacks)
+  PlatformDispatcher.instance.onError = (error, stack) {
+    unawaited(
+      _crashLog.write(
+        error: error,
+        stackTrace: stack,
+        context: 'PlatformDispatcher.onError',
+      ),
+    );
+    logger.e('PlatformDispatcher error', error: error, stackTrace: stack);
+    return true; // true = error handled, don't terminate
+  };
+
+  // 3) Wrap the entire app in a guarded zone to catch async errors
+  await runZonedGuarded(
+    () async {
+      await _appMain(logger);
+    },
+    (error, stackTrace) {
+      unawaited(
+        _crashLog.write(
+          error: error,
+          stackTrace: stackTrace,
+          context: 'runZonedGuarded (uncaught async)',
+        ),
+      );
+      logger.e('Uncaught async error', error: error, stackTrace: stackTrace);
+    },
+  );
+}
+
+/// The actual application startup — separated so the guarded zone wraps it.
+Future<void> _appMain(Logger logger) async {
   // ---- Headless mode (Windows Task Scheduler) ---------------------------
-  // When schtasks.exe launches the app with --background-refresh, run a
-  // single refresh cycle and exit — no UI, no tray, no event loop.
-  if (Platform.isWindows &&
-      const bool.fromEnvironment('dart.vm.product', defaultValue: false) ==
-          false &&
-      _isHeadlessRefresh()) {
+  if (Platform.isWindows && _isHeadlessRefresh()) {
     await _runHeadlessRefresh(logger);
     return;
   }
@@ -240,23 +290,18 @@ class StockAlertApp extends StatelessWidget {
 /// Check if the app was launched with `--background-refresh` by the Windows
 /// Task Scheduler. Inspects platform-dispatched command-line arguments.
 bool _isHeadlessRefresh() {
-  // Command-line args are passed via DartProject::set_dart_entrypoint_arguments
-  // in the Windows runner (main.cpp). In release mode they arrive as
-  // Platform.executableArguments; in debug mode via environment.
-  final args = <String>[
-    ...Platform.executableArguments,
-    // The runner passes them as dart entrypoint args
-  ];
+  final args = <String>[...Platform.executableArguments];
   return args.contains('--background-refresh');
 }
 
 /// Run a single refresh cycle without showing any UI and then exit.
 Future<void> _runHeadlessRefresh(Logger logger) async {
   logger.i('Headless background-refresh started');
+  ProviderContainer? container;
   try {
     await dotenv.load().catchError((_) {});
 
-    final container = ProviderContainer();
+    container = ProviderContainer();
     final repo = await container.read(repositoryProvider.future);
     final notificationService = container.read(notificationServiceProvider);
     await notificationService.initialize();
@@ -269,9 +314,15 @@ Future<void> _runHeadlessRefresh(Logger logger) async {
 
     final results = await refreshService.refreshAll();
     logger.i('Headless refresh complete: $results');
-    container.dispose();
   } catch (e, st) {
     logger.e('Headless refresh failed', error: e, stackTrace: st);
+    await _crashLog.write(
+      error: e,
+      stackTrace: st,
+      context: 'Headless background-refresh',
+    );
+  } finally {
+    container?.dispose();
   }
   exit(0);
 }

@@ -156,20 +156,43 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
     final symbol = _tickerController.text.trim().toUpperCase();
     if (symbol.isEmpty) return;
     Navigator.pop(dialogContext);
-    final repo = await ref.read(repositoryProvider.future);
-    await repo.addTicker(symbol);
+    try {
+      final repo = await ref.read(repositoryProvider.future);
+      if (!mounted) return;
+      await repo.addTicker(symbol);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('⚠️ Failed to add $symbol: $e')));
+    }
   }
 
   Future<void> _removeTicker(String symbol) async {
-    final repo = await ref.read(repositoryProvider.future);
-    await repo.removeTicker(symbol);
+    try {
+      final repo = await ref.read(repositoryProvider.future);
+      if (!mounted) return;
+      await repo.removeTicker(symbol);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('⚠️ Failed to remove $symbol: $e')),
+      );
+    }
   }
 
   Future<void> _onRefreshAll() async {
+    if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
     try {
       final service = await ref.read(refreshServiceProvider.future);
+      if (!mounted) return;
       await service.refreshAll();
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('⚠️ Refresh failed: $e')));
     } finally {
       if (mounted) setState(() => _isRefreshing = false);
     }

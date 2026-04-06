@@ -131,12 +131,20 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
   }
 
   Future<void> _onRefresh() async {
+    if (_isRefreshing) return;
     setState(() => _isRefreshing = true);
     try {
       final service = await ref.read(refreshServiceProvider.future);
+      if (!mounted) return;
       await service.refreshTicker(widget.symbol);
+      if (!mounted) return;
       ref.invalidate(tickerCandlesProvider(widget.symbol));
       ref.invalidate(tickerAlertStateProvider(widget.symbol));
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('⚠️ Refresh failed: $e')));
     } finally {
       if (mounted) setState(() => _isRefreshing = false);
     }
