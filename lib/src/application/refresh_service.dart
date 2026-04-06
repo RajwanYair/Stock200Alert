@@ -169,6 +169,17 @@ class RefreshService {
     // 6. Price target check (independent of other alert types)
     if (enabledAlertTypes.contains(AlertType.priceTarget)) {
       await checkPriceTargets(upper, candles.last.close, settings: settings);
+    }
+
+    // 7. Percentage-move check
+    if (enabledAlertTypes.contains(AlertType.pctMove) &&
+        candles.length >= 2) {
+      await checkPctMove(
+        upper,
+        candles.last.close,
+        candles[candles.length - 2].close,
+        settings: settings,
+      );
     }    if (wantGolden || wantDeath) {
       final crossEvents = _goldenCrossDetector.evaluateBoth(
         ticker: upper,
@@ -205,6 +216,46 @@ class RefreshService {
       _logger.d('$upper: no alerts fired this cycle');
     }
     return firedAny;
+  }
+
+  /// Check pending percentage-move thresholds for [symbol].
+  /// Fires a notification if |close/prevClose - 1| × 100 ≥ any threshold.
+  Future<void> checkPctMove(
+    String symbol,
+    double latestClose,
+    double prevClose, {
+    AppSettings? settings,
+  }) async {
+    if (prevClose == 0) return;
+    settings ??= await repository.getSettings();
+    final thresholds = await repository.getPctMoveThresholds(symbol);
+    if (thresholds.isEmpty) return;
+
+    final pct = ((latestClose - prevClose) / prevClose) * 100;
+    final inQuiet = _alertStateMachine.isInQuietHours(
+      now: DateTime.now(),
+      quietStart: settings.quietHoursStart,
+      quietEnd: settings.quietHoursEnd,
+    );
+
+    for (final t in thresholds) {
+      if (pct.abs() >= t.thresholdPct) {
+        _logger.i(
+          '$symbol: ${pct.toStringAsFixed(1)}% move ≥ threshold '
+          '${t.thresholdPct}%',
+        );
+        if (!inQuiet) {
+          await notificationService.showPctMoveAlert(
+            ticker: symbol,
+            close: latestClose,
+            prevClose: prevClose,
+            thresholdPct: t.thresholdPct,
+          );
+        }
+        // Only fire once per cycle (loudest/first matching threshold)
+        break;
+      }
+    }
   }
 
   /// Check pending price targets for [symbol] against [latestClose].

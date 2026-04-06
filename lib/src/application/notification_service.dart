@@ -21,6 +21,12 @@ abstract class INotificationService {
     required double close,
     required double target,
   });
+  Future<void> showPctMoveAlert({
+    required String ticker,
+    required double close,
+    required double prevClose,
+    required double thresholdPct,
+  });
   Future<void> cancelAll();
 }
 
@@ -146,6 +152,39 @@ class LocalNotificationService implements INotificationService {
       _logger.i('Price target notification shown for $ticker @ \$$target');
     } catch (e) {
       _logger.e('Failed to show price target notification: $e');
+    }
+  }
+
+  @override
+  Future<void> showPctMoveAlert({
+    required String ticker,
+    required double close,
+    required double prevClose,
+    required double thresholdPct,
+  }) async {
+    final pct = ((close - prevClose) / prevClose) * 100;
+    final sign = pct >= 0 ? '▲' : '▼';
+    final id = (ticker.hashCode.abs() + thresholdPct.hashCode.abs() + 1) % 100000;
+    const androidDetails = AndroidNotificationDetails(
+      _androidChannelId,
+      _androidChannelName,
+      channelDescription: _androidChannelDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    const details = NotificationDetails(android: androidDetails);
+    try {
+      await _plugin.show(
+        id: id,
+        title: '$ticker — $sign${pct.abs().toStringAsFixed(1)}% Move!',
+        body:
+            'Close: \$${close.toStringAsFixed(2)} '
+            '($sign${pct.abs().toStringAsFixed(1)}% from \$${prevClose.toStringAsFixed(2)})',
+        notificationDetails: details,
+        payload: 'ticker:$ticker',
+      );
+    } catch (e) {
+      _logger.e('Failed to show pct-move notification: $e');
     }
   }
 

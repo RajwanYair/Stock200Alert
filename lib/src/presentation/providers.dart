@@ -238,6 +238,15 @@ final priceTargetsProvider = StreamProvider.family<
   yield* repo.watchPriceTargets(symbol);
 });
 
+/// Percentage-move thresholds for a specific symbol (live stream).
+final pctMoveThresholdsProvider = StreamProvider.family<
+  List<domain.PctMoveThreshold>,
+  String
+>((ref, symbol) async* {
+  final repo = await ref.watch(repositoryProvider.future);
+  yield* repo.watchPctMoveThresholds(symbol);
+});
+
 /// Active group filter. Null = show all tickers.
 final activeGroupFilterProvider = NotifierProvider<ActiveGroupFilter, String?>(
   ActiveGroupFilter.new,

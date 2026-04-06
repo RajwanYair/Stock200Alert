@@ -69,6 +69,18 @@ class PriceTargetsTable extends Table {
   DateTimeColumn get firedAt => dateTime().nullable()();
 }
 
+class PctMoveThresholdsTable extends Table {
+  @override
+  String get tableName => 'pct_move_thresholds';
+
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get symbol => text().withLength(min: 1, max: 10)();
+  /// Minimum absolute percentage move to trigger (e.g. 5.0 = 5%).
+  RealColumn get thresholdPct => real()();
+  TextColumn get note => text().nullable()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+}
+
 class DailyCandles extends Table {
   TextColumn get ticker => text().withLength(min: 1, max: 10)();
   DateTimeColumn get date => dateTime()();
@@ -127,6 +139,7 @@ class AppSettingsTable extends Table {
     AppSettingsTable,
     WatchlistGroups,
     PriceTargetsTable,
+    PctMoveThresholdsTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
@@ -136,7 +149,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 6;
+  int get schemaVersion => 7;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -160,6 +173,9 @@ class AppDatabase extends _$AppDatabase {
       }
       if (from < 6) {
         await migrator.createTable(priceTargetsTable);
+      }
+      if (from < 7) {
+        await migrator.createTable(pctMoveThresholdsTable);
       }
     },
   );
@@ -263,6 +279,31 @@ class AppDatabase extends _$AppDatabase {
 
   Future<int> deletePriceTarget(int id) =>
       (delete(priceTargetsTable)..where((t) => t.id.equals(id))).go();
+
+  // ---- Pct-Move Thresholds ----
+
+  Future<List<PctMoveThresholdsTableData>> getPctMoveThresholds(
+    String symbol,
+  ) =>
+      (select(pctMoveThresholdsTable)
+            ..where((t) => t.symbol.equals(symbol)))
+          .get();
+
+  Stream<List<PctMoveThresholdsTableData>> watchPctMoveThresholds(
+    String symbol,
+  ) =>
+      (select(pctMoveThresholdsTable)
+            ..where((t) => t.symbol.equals(symbol)))
+          .watch();
+
+  Future<List<PctMoveThresholdsTableData>> getAllPctMoveThresholds() =>
+      select(pctMoveThresholdsTable).get();
+
+  Future<int> insertPctMoveThreshold(PctMoveThresholdsTableCompanion entry) =>
+      into(pctMoveThresholdsTable).insert(entry);
+
+  Future<int> deletePctMoveThreshold(int id) =>
+      (delete(pctMoveThresholdsTable)..where((t) => t.id.equals(id))).go();
 }
 
 LazyDatabase _openConnection() {

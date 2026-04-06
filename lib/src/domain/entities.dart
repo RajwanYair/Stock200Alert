@@ -49,6 +49,9 @@ enum AlertType {
 
   /// Price reaches or exceeds a user-defined target.
   priceTarget,
+
+  /// Price moves by a set percentage from the previous close (up or down).
+  pctMove,
 }
 
 /// Extension helpers for [AlertType].
@@ -60,6 +63,7 @@ extension AlertTypeX on AlertType {
     AlertType.goldenCross => 'Golden Cross (50↑200)',
     AlertType.deathCross => 'Death Cross (50↓200)',
     AlertType.priceTarget => 'Price Target',
+    AlertType.pctMove => '% Move Alert',
   };
 
   String get description => switch (this) {
@@ -75,6 +79,8 @@ extension AlertTypeX on AlertType {
       'SMA50 crosses below SMA200 — bearish long-term signal',
     AlertType.priceTarget =>
       'Price reaches or exceeds your target price',
+    AlertType.pctMove =>
+      'Price moves ≥ N% from the previous session close',
   };
 }
 
@@ -374,6 +380,28 @@ class AppSettings extends Equatable {
 /// management patterns. Each profile pre-fills [AppSettings] with sensible
 /// defaults. [custom] means the user has manually overridden individual fields.
 enum AlertProfile { aggressive, balanced, conservative, custom }
+
+/// A user-defined percentage-move threshold for a ticker.
+/// Fires when |close / prevClose - 1| × 100 ≥ thresholdPct.
+class PctMoveThreshold extends Equatable {
+  const PctMoveThreshold({
+    this.id,
+    required this.symbol,
+    required this.thresholdPct,
+    this.note,
+    this.createdAt,
+  });
+
+  final int? id;
+  final String symbol;
+  /// Minimum absolute percentage move to trigger (e.g. 5.0 = 5%).
+  final double thresholdPct;
+  final String? note;
+  final DateTime? createdAt;
+
+  @override
+  List<Object?> get props => [id, symbol, thresholdPct, note, createdAt];
+}
 
 /// A user-defined price target for a ticker.
 class PriceTarget extends Equatable {

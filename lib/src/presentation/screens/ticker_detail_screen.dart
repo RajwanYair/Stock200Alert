@@ -210,6 +210,10 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                 _PriceTargetsCard(
                   symbol: widget.symbol,
                 ).animate(delay: 300.ms).fadeIn(duration: 300.ms),
+                const SizedBox(height: 16),
+                _PctMoveCard(
+                  symbol: widget.symbol,
+                ).animate(delay: 360.ms).fadeIn(duration: 300.ms),
               ],
             ),
           );
@@ -1147,6 +1151,177 @@ class _TargetTile extends ConsumerWidget {
   }
 }
 
+// ---------------------------------------------------------------------------
+// Pct-Move Threshold card
+// ---------------------------------------------------------------------------
+
+class _PctMoveCard extends ConsumerStatefulWidget {
+  const _PctMoveCard({required this.symbol});
+  final String symbol;
+
+  @override
+  ConsumerState<_PctMoveCard> createState() => _PctMoveCardState();
+}
+
+class _PctMoveCardState extends ConsumerState<_PctMoveCard> {
+  final _pctController = TextEditingController();
+  final _noteController = TextEditingController();
+
+  @override
+  void dispose() {
+    _pctController.dispose();
+    _noteController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final async = ref.watch(pctMoveThresholdsProvider(widget.symbol));
+    final cs = Theme.of(context).colorScheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                const Icon(Icons.percent_rounded, size: 18),
+                const SizedBox(width: 8),
+                Text(
+                  '% Move Alerts',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const Spacer(),
+                FilledButton.tonal(
+                  onPressed: () => _showAddDialog(context),
+                  child: const Text('+ Add'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Fires when price moves ≥ N% from previous close.',
+              style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+            ),
+            const SizedBox(height: 12),
+            switch (async) {
+              AsyncData(:final value) when value.isEmpty => Text(
+                'No thresholds set.',
+                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 13),
+              ),
+              AsyncData(:final value) => Column(
+                children: value
+                    .map(
+                      (t) => _PctMoveTile(
+                        threshold: t,
+                        symbol: widget.symbol,
+                      ),
+                    )
+                    .toList(),
+              ),
+              AsyncLoading() => const LinearProgressIndicator(),
+              _ => const SizedBox.shrink(),
+            },
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showAddDialog(BuildContext context) async {
+    _pctController.clear();
+    _noteController.clear();
+
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add % Move Alert'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            TextField(
+              controller: _pctController,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              decoration: const InputDecoration(
+                labelText: 'Threshold (%)',
+                suffixText: '%',
+                border: OutlineInputBorder(),
+                helperText: 'e.g. 5 fires when price moves ±5%',
+              ),
+              autofocus: true,
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: _noteController,
+              decoration: const InputDecoration(
+                labelText: 'Note (optional)',
+                border: OutlineInputBorder(),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final pct = double.tryParse(_pctController.text.trim());
+              if (pct == null || pct <= 0) return;
+              Navigator.of(ctx).pop();
+              final repo = await ref.read(repositoryProvider.future);
+              await repo.addPctMoveThreshold(
+                PctMoveThreshold(
+                  symbol: widget.symbol,
+                  thresholdPct: pct,
+                  note: _noteController.text.trim().isEmpty
+                      ? null
+                      : _noteController.text.trim(),
+                ),
+              );
+              ref.invalidate(pctMoveThresholdsProvider(widget.symbol));
+            },
+            child: const Text('Add'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PctMoveTile extends ConsumerWidget {
+  const _PctMoveTile({required this.threshold, required this.symbol});
+  final PctMoveThreshold threshold;
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.trending_up_rounded, size: 20),
+      title: Text(
+        '±${threshold.thresholdPct.toStringAsFixed(1)}%',
+        style: const TextStyle(fontWeight: FontWeight.w600),
+      ),
+      subtitle: threshold.note != null
+          ? Text(threshold.note!, maxLines: 1, overflow: TextOverflow.ellipsis)
+          : null,
+      trailing: IconButton(
+        icon: const Icon(Icons.delete_outline_rounded, size: 18),
+        onPressed: () async {
+          if (threshold.id == null) return;
+          final repo = await ref.read(repositoryProvider.future);
+          await repo.deletePctMoveThreshold(threshold.id!);
+          ref.invalidate(pctMoveThresholdsProvider(symbol));
+        },
+      ),
+    );
+  }
+}
+
 class _CandlestickPainter extends CustomPainter {
   _CandlestickPainter({
     required this.candles,
@@ -1786,6 +1961,7 @@ class _AlertTypeSelectorCard extends ConsumerWidget {
     AlertType.goldenCross => Colors.amber.shade800,
     AlertType.deathCross => Colors.red.shade700,
     AlertType.priceTarget => Colors.teal.shade700,
+    AlertType.pctMove => Colors.blue.shade700,
   };
 
   Future<void> _toggle(

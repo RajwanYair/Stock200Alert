@@ -343,4 +343,48 @@ class StockRepository {
         createdAt: row.createdAt,
         firedAt: row.firedAt,
       );
+
+  // ---- Pct-Move Thresholds ----
+
+  Stream<List<domain.PctMoveThreshold>> watchPctMoveThresholds(
+    String symbol,
+  ) =>
+      db.watchPctMoveThresholds(symbol.toUpperCase().trim()).map(
+        (rows) => rows.map(_pctMoveFromRow).toList(),
+      );
+
+  Future<List<domain.PctMoveThreshold>> getPctMoveThresholds(
+    String symbol,
+  ) async {
+    final rows =
+        await db.getPctMoveThresholds(symbol.toUpperCase().trim());
+    return rows.map(_pctMoveFromRow).toList();
+  }
+
+  Future<List<domain.PctMoveThreshold>> getAllPctMoveThresholds() async {
+    final rows = await db.getAllPctMoveThresholds();
+    return rows.map(_pctMoveFromRow).toList();
+  }
+
+  Future<void> addPctMoveThreshold(domain.PctMoveThreshold t) async {
+    await db.insertPctMoveThreshold(
+      PctMoveThresholdsTableCompanion.insert(
+        symbol: t.symbol.toUpperCase().trim(),
+        thresholdPct: t.thresholdPct,
+        note: Value(t.note),
+      ),
+    );
+  }
+
+  Future<void> deletePctMoveThreshold(int id) =>
+      db.deletePctMoveThreshold(id);
+
+  domain.PctMoveThreshold _pctMoveFromRow(PctMoveThresholdsTableData row) =>
+      domain.PctMoveThreshold(
+        id: row.id,
+        symbol: row.symbol,
+        thresholdPct: row.thresholdPct,
+        note: row.note,
+        createdAt: row.createdAt,
+      );
 }
