@@ -22,11 +22,11 @@ dependencies:
   dio: ^5.8.0+1
 
   # Serialization
-  freezed_annotation: ^2.4.4
-  json_annotation: ^4.9.0
+  freezed_annotation: ^3.1.0
+  json_annotation: ^4.11.0
 
   # Persistence – Drift (SQLite): type-safe, migration-friendly, in-memory for tests
-  drift: ^2.24.0
+  drift: ^2.32.1
   sqlite3_flutter_libs: ^0.5.32
 
   # Secure storage for API keys
@@ -62,11 +62,11 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
-  build_runner: ^2.4.15
-  freezed: ^2.5.8
-  json_serializable: ^6.9.4
-  drift_dev: ^2.24.0
-  mockito: ^5.4.5
+  build_runner: ^2.13.1
+  freezed: ^3.2.5
+  json_serializable: ^6.13.1
+  drift_dev: ^2.32.1
+  mockito: ^5.6.4
   mocktail: ^1.0.4
 
 flutter:
