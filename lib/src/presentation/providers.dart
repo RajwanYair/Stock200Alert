@@ -133,10 +133,12 @@ final notificationServiceProvider = Provider<INotificationService>((ref) {
 
 final refreshServiceProvider = FutureProvider<RefreshService>((ref) async {
   final repo = await ref.watch(repositoryProvider.future);
+  final webhook = await ref.watch(webhookServiceProvider.future);
   return RefreshService(
     repository: repo,
     notificationService: ref.read(notificationServiceProvider),
     logger: ref.read(loggerProvider),
+    webhookService: webhook,
   );
 });
 
@@ -474,4 +476,43 @@ final watchlistExportImportServiceProvider =
   final repo = await ref.watch(repositoryProvider.future);
   final logger = ref.watch(loggerProvider);
   return WatchlistExportImportService(repository: repo, logger: logger);
+});
+
+// ---------------------------------------------------------------------------
+// Webhook service  (credentials stored in FlutterSecureStorage)
+// ---------------------------------------------------------------------------
+
+/// Keys used to persist webhook credentials in secure storage.
+class WebhookKeys {
+  static const telegramBotUrl = 'webhook_telegram_url';
+  static const telegramChatId = 'webhook_telegram_chat_id';
+  static const discordUrl = 'webhook_discord_url';
+}
+
+/// Provides a [WebhookService] pre-configured from secure storage.
+///
+/// Re-evaluated whenever the secure storage values change (via rebuild).
+final webhookServiceProvider = FutureProvider<WebhookService>((ref) async {
+  final storage = ref.read(secureStorageProvider);
+  final logger = ref.read(loggerProvider);
+
+  final telegramUrl = await storage.read(key: WebhookKeys.telegramBotUrl);
+  final telegramChatId = await storage.read(key: WebhookKeys.telegramChatId);
+  final discordUrl = await storage.read(key: WebhookKeys.discordUrl);
+
+  final configs = <WebhookConfig>[
+    if ((telegramUrl?.isNotEmpty ?? false) &&
+        (telegramChatId?.isNotEmpty ?? false))
+      WebhookConfig(
+        type: WebhookType.telegram,
+        url: telegramUrl!,
+        telegramChatId: telegramChatId,
+      ),
+    if (discordUrl?.isNotEmpty ?? false)
+      WebhookConfig(type: WebhookType.discord, url: discordUrl!),
+  ];
+
+  final svc = WebhookService(logger: logger);
+  svc.configure(configs);
+  return svc;
 });

@@ -17,11 +17,10 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 - Riverpod state management, GoRouter navigation
 - Local notifications (Android channels + Windows toasts)
 - WorkManager background (Android) + Timer (Windows)
-- **Alert Profiles** — `AlertProfile` enum (Aggressive / Balanced / Conservative / Custom)  
-  with preset `AppSettings` defaults and `displayName` / `description` helpers
+- **Alert Profiles** — `AlertProfile` enum (Aggressive / Balanced / Conservative / Custom)
 - **HealthCheckService** — startup diagnostics: network, database, data freshness
 - Clean Architecture (domain → data → application → presentation)
-- 147 passing unit tests (domain layer fully covered)
+- 205 passing unit tests (domain + data + application layers covered)
 - GitHub Actions CI/CD, bump-version workflow, release workflow (ZIP + MSIX + APK)
 - Pre-commit hooks (dart format, analyze, secret scan, YAML/JSON/Markdown lint)
 - VS Code tasks: quick release bumps via `gh workflow run`
@@ -32,10 +31,23 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 - **Volume spike alerts** — N× 20-day average daily volume; configurable multiplier
 - **Alert history timeline** — scrollable log of all past alerts, acknowledge + swipe-to-dismiss
 - **Export alert history** — CSV and JSON export to documents directory
-- **Upcoming earnings indicator** — `_EarningsBadge` in ticker detail AppBar, Yahoo Finance calendar events
+- **Upcoming earnings indicator** — `_EarningsBadge` in ticker detail AppBar
 - **Dynamic accent color** — 10-color palette picker in settings; persisted, live theme update
-- **Deep-link support** — `crosstide://ticker/AAPL` scheme (Android intent-filter + GoRouter redirect)
-- **Crash log viewer** — in-app `/crash-logs` screen with copy + clear; accessible from Settings
+- **Deep-link support** — `crosstide://ticker/AAPL` scheme
+- **Crash log viewer** — `/crash-logs` screen accessible from Settings
+- **Multiple data provider fallback chain** — Yahoo → AlphaVantage → Mock (`FallbackMarketDataProvider`)
+- **Rate-limit-aware request scheduler** — `ThrottledMarketDataProvider` (burst + exponential backoff)
+- **Intraday quotes** — `IntradayQuote` entity + `_QuoteBar` chip on ticker detail
+- **Pre-market/after-hours indicator** — `_InlineMarketState` chip on ticker list cards
+- **Offline mode banner** — global connectivity banner via `connectivityProvider`
+- **Delta fetch optimization** — only fetches new candles since last cached date
+- **Proxy auto-detection** — `proxy_detector.dart` reads HTTPS_PROXY/HTTP_PROXY env vars
+- **Alert sensitivity stats** — `AlertSensitivityStats` entity + `_SensitivityStatsCard`
+- **Audit log** — `AuditLogTable` (DB schema v12) + `/audit-log` screen
+- **State snapshot export** — `SnapshotService` writes JSON to `$TEMP`
+- **Alert profile dry-run preview** — diff dialog before applying a profile
+- **Watchlist export/import** — `WatchlistExportImportService` with JSON serialization (S53)
+- **Telegram/Discord webhook alerts** — `WebhookService` fires on every alert; credentials in secure storage (S54)
 
 ---
 
@@ -103,35 +115,29 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 
 ## v1.4 — Notifications & Alert Engine
 
-- [ ] **Price target alerts** — notify when price hits $X
-- [ ] **Percentage-move alerts** — notify on ±N% intraday move
-- [ ] **Volume spike alerts** — 2× average daily volume
-- [ ] Alert history timeline — scrollable log of all past alerts with price context
-- [ ] **Export alert history to CSV / JSON**  
-  *Inspired by DupDetector's multi-format export (JSON, CSV, HTML)*
+- [x] **Price target alerts** — notify when price hits $X
+- [x] **Percentage-move alerts** — notify on ±N% intraday move
+- [x] **Volume spike alerts** — 2× average daily volume
+- [x] Alert history timeline — scrollable log of all past alerts with price context
+- [x] **Export alert history to CSV / JSON**
 - [ ] Per-ticker notification sound customization
 - [ ] **Notification channel fallback chain**:  
-  push → Windows toast → in-app banner → silent log  
-  *Mirrors the graceful-fallback pattern from OptimizeBrowsers*
-- [ ] **Telegram / Discord webhook** integration  
-  *Inspired by FileProcessor's plugin/hook architecture; see v1.8 for full plugin system*
+  push → Windows toast → in-app banner → silent log
+- [x] **Telegram / Discord webhook** integration (S54) — `WebhookService`; credentials in secure storage
 - [ ] Email digest — daily summary of watchlist status
 
 ---
 
 ## v1.5 — Data & Performance
 
-- [ ] **Multiple data provider fallback chain** — Yahoo → AlphaVantage → Mock  
-  *Mirrors UbuntuEnhancer's repository validation and PPA's package-manager chain*
-- [ ] Intraday data support (1m / 5m / 15m candles)
-- [ ] Pre-market / after-hours price display
-- [ ] **Offline mode** — full SQLite cache, last-known data when offline  
-  *Inspired by portable-deployment philosophy (ComicSorter 2-file model)*
-- [ ] Background sync optimization — delta fetch (only new candles)
-- [ ] **Data freshness indicator** ("Updated 3 min ago") using HealthCheckService result
-- [ ] Rate-limit-aware request scheduler
-- [ ] **Corporate / Intel proxy auto-detection** on Windows  
-  *Directly lifted from Scripts.UbuntuEnhancer intel proxy pattern*
+- [x] **Multiple data provider fallback chain** — Yahoo → AlphaVantage → Mock (`FallbackMarketDataProvider`)
+- [x] Intraday data support (1m / 5m / 15m candles) — `IntradayQuote` entity + `_QuoteBar` widget
+- [x] Pre-market / after-hours price display — `_InlineMarketState` chip
+- [x] **Offline mode** — full SQLite cache, last-known data when offline + connectivity banner
+- [x] Background sync optimization — delta fetch (only new candles since last cached date)
+- [ ] **Data freshness indicator** ("Updated 3 min ago") per ticker
+- [x] Rate-limit-aware request scheduler — `ThrottledMarketDataProvider`
+- [x] **Corporate / Intel proxy auto-detection** on Windows — `proxy_detector.dart`
 
 ---
 
@@ -161,32 +167,33 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 > (change-history + rollback)
 
 ### Alert Metrics Dashboard
-- [ ] Per-ticker sensitivity stats: signal count, false-positive rate, avg days-to-next-cross
+- [x] Per-ticker sensitivity stats: signal count, unique alert types, first/last fired (S49 `AlertSensitivityStats`)
 - [ ] "Mean time to alert" (data age at alert-fire time)
 - [ ] Export daily metrics summary as JSON
 - [ ] Optional Prometheus endpoint (`/metrics`) for power users with Grafana
 
 ### Snapshot & Drift Detection
-- [ ] Daily JSON snapshot of all `TickerAlertState` values
-- [ ] Diff view: "Yesterday you had 12 alerts enabled; today 11. What changed?"
+- [x] Daily JSON snapshot of all `TickerAlertState` values — `SnapshotService` (S51)
+- [x] Diff view: alert profile changes previewed before apply — `previewDiff()` (S52)
 - [ ] Anomaly detection: flag if same ticker cross-ups repeatedly within hours
 - [ ] **Rollback** — revert settings to a previous snapshot
 
 ### Audit Log
-- [ ] Every setting change recorded: `{timestamp, field, old_value, new_value}`
-- [ ] Surfaced in Settings → Audit Log screen (sortable, filterable)
+- [x] Every setting change recorded: `{timestamp, field, old_value, new_value}` — `AuditLogTable` (S50)
+- [x] Surfaced in Settings → Audit Log screen (sortable, filterable) — `/audit-log` (S50)
 - [ ] Scrollable alert-event log: `{symbol, time, price, sma200, trigger_type}`
 
 ### Dry-Run / Preview Mode
-- [ ] Before enabling a profile: "This will fire ~N daily alerts based on last 30 days"
-- [ ] Confirm / Cancel dialog with impact summary
-- [ ] Preview applies in-memory, no DB write until confirmed
+- [x] Before enabling a profile: diff dialog with field-level old → new preview (S52)
+- [x] Confirm / Cancel dialog with impact summary
+- [x] Preview applies in-memory, no DB write until confirmed
 
 ---
 
 ## v1.8 — Social & Community Features
 
-- [ ] **Share watchlist** — export/import as JSON or shareable link
+- [x] **Share watchlist** — export/import as JSON — `WatchlistExportImportService` (S53)
+- [ ] Shareable link (deep-link URL with encoded watchlist)
 - [ ] **Public leaderboard** — opt-in: "Most cross-ups caught this month"
 - [ ] Community-curated watchlists (e.g., "ARK Innovation Picks")
 - [ ] In-app news feed for watchlist tickers (RSS/Atom aggregation)

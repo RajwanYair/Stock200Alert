@@ -357,6 +357,19 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 begin: 0.04,
                 end: 0,
               ),
+              const SizedBox(height: 12),
+
+              // Webhook notifications
+              _SettingsSection(
+                icon: Icons.webhook_rounded,
+                title: '🔔 Webhook Notifications',
+                subtitle:
+                    'Push alerts to Telegram or Discord when a cross fires',
+                child: _WebhookSettingsCard(),
+              ).animate(delay: 390.ms).fadeIn(duration: 300.ms).slideY(
+                begin: 0.04,
+                end: 0,
+              ),
               const SizedBox(height: 24),
 
               // Save Button
@@ -1547,6 +1560,138 @@ class _ProviderPicker extends StatelessWidget {
           ),
         );
       }).toList(),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Webhook Settings Card
+// ---------------------------------------------------------------------------
+
+/// Reads/writes webhook credentials to [FlutterSecureStorage] and triggers
+/// a rebuild of [webhookServiceProvider] so new URLs are picked up immediately.
+class _WebhookSettingsCard extends ConsumerStatefulWidget {
+  const _WebhookSettingsCard();
+
+  @override
+  ConsumerState<_WebhookSettingsCard> createState() =>
+      _WebhookSettingsCardState();
+}
+
+class _WebhookSettingsCardState extends ConsumerState<_WebhookSettingsCard> {
+  final _tgUrlCtrl = TextEditingController();
+  final _tgChatCtrl = TextEditingController();
+  final _dcUrlCtrl = TextEditingController();
+  bool _loaded = false;
+
+  @override
+  void dispose() {
+    _tgUrlCtrl.dispose();
+    _tgChatCtrl.dispose();
+    _dcUrlCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadCredentials() async {
+    final storage = ref.read(secureStorageProvider);
+    _tgUrlCtrl.text =
+        await storage.read(key: WebhookKeys.telegramBotUrl) ?? '';
+    _tgChatCtrl.text =
+        await storage.read(key: WebhookKeys.telegramChatId) ?? '';
+    _dcUrlCtrl.text = await storage.read(key: WebhookKeys.discordUrl) ?? '';
+    if (mounted) setState(() => _loaded = true);
+  }
+
+  Future<void> _saveCredentials() async {
+    final storage = ref.read(secureStorageProvider);
+    await storage.write(
+      key: WebhookKeys.telegramBotUrl,
+      value: _tgUrlCtrl.text.trim(),
+    );
+    await storage.write(
+      key: WebhookKeys.telegramChatId,
+      value: _tgChatCtrl.text.trim(),
+    );
+    await storage.write(
+      key: WebhookKeys.discordUrl,
+      value: _dcUrlCtrl.text.trim(),
+    );
+    // Invalidate provider so it re-reads updated credentials on next access.
+    ref.invalidate(webhookServiceProvider);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Webhook credentials saved'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_loaded) {
+      _loadCredentials();
+      return const Center(child: CircularProgressIndicator());
+    }
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Telegram',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+        ),
+        const SizedBox(height: 4),
+        TextField(
+          controller: _tgUrlCtrl,
+          decoration: const InputDecoration(
+            labelText: 'Bot URL',
+            hintText: 'https://api.telegram.org/bot<TOKEN>/sendMessage',
+            isDense: true,
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.url,
+          autocorrect: false,
+        ),
+        const SizedBox(height: 6),
+        TextField(
+          controller: _tgChatCtrl,
+          decoration: const InputDecoration(
+            labelText: 'Chat ID',
+            hintText: '-100123456789',
+            isDense: true,
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.number,
+          autocorrect: false,
+        ),
+        const SizedBox(height: 12),
+        const Text(
+          'Discord',
+          style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+        ),
+        const SizedBox(height: 4),
+        TextField(
+          controller: _dcUrlCtrl,
+          decoration: const InputDecoration(
+            labelText: 'Webhook URL',
+            hintText: 'https://discord.com/api/webhooks/...',
+            isDense: true,
+            border: OutlineInputBorder(),
+          ),
+          keyboardType: TextInputType.url,
+          autocorrect: false,
+        ),
+        const SizedBox(height: 12),
+        Align(
+          alignment: Alignment.centerRight,
+          child: FilledButton.tonalIcon(
+            onPressed: _saveCredentials,
+            icon: const Icon(Icons.save_outlined, size: 16),
+            label: const Text('Save Webhooks'),
+          ),
+        ),
+      ],
     );
   }
 }

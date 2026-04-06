@@ -4,23 +4,29 @@
 /// Used by both Android WorkManager callback and Windows periodic timer.
 library;
 
+import 'dart:async' show unawaited;
+
 import 'package:logger/logger.dart';
 
 import '../data/providers/yahoo_finance_provider.dart';
 import '../data/repository.dart';
 import '../domain/domain.dart';
 import 'notification_service.dart';
+import 'webhook_service.dart';
 
 class RefreshService {
   RefreshService({
     required this.repository,
     required this.notificationService,
     Logger? logger,
-  }) : _logger = logger ?? Logger();
+    WebhookService? webhookService,
+  }) : _logger = logger ?? Logger(),
+       _webhook = webhookService;
 
   final StockRepository repository;
   final INotificationService notificationService;
   final Logger _logger;
+  final WebhookService? _webhook;
 
   final _smaCalculator = const SmaCalculator();
   final _crossUpDetector = const CrossUpDetector();
@@ -70,7 +76,7 @@ class RefreshService {
     return results;
   }
 
-  /// Append an entry to the persistent alert history log.
+  /// Append an entry to the persistent alert history log and fire webhooks.
   Future<void> _appendHistory({
     required String symbol,
     required String alertType,
@@ -85,6 +91,9 @@ class RefreshService {
     } catch (e) {
       _logger.w('Failed to append alert history: $e');
     }
+    // Fire-and-forget webhook delivery (failures are swallowed inside send())
+    final webhookMsg = '📊 *CrossTide Alert* — $symbol\n$message';
+    unawaited(_webhook?.send(webhookMsg));
   }
 
   /// Refresh a single ticker.
