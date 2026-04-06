@@ -23,6 +23,74 @@ class TickerListScreen extends ConsumerStatefulWidget {
 class _TickerListScreenState extends ConsumerState<TickerListScreen> {
   final _tickerController = TextEditingController();
   bool _isRefreshing = false;
+  final Set<String> _selectedSymbols = {};
+  bool get _isSelecting => _selectedSymbols.isNotEmpty;
+
+  void _enterSelection(String symbol) {
+    setState(() => _selectedSymbols.add(symbol));
+  }
+
+  void _toggleSelection(String symbol) {
+    setState(() {
+      if (_selectedSymbols.contains(symbol)) {
+        _selectedSymbols.remove(symbol);
+      } else {
+        _selectedSymbols.add(symbol);
+      }
+    });
+  }
+
+  void _clearSelection() {
+    setState(() => _selectedSymbols.clear());
+  }
+
+  Future<void> _batchDelete() async {
+    final toDelete = Set<String>.from(_selectedSymbols);
+    _clearSelection();
+    try {
+      final repo = await ref.read(repositoryProvider.future);
+      if (!mounted) return;
+      for (final sym in toDelete) {
+        await repo.removeTicker(sym);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('🗑 Removed ${toDelete.length} ticker(s)')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('⚠️ Batch delete failed: $e')),
+      );
+    }
+  }
+
+  Future<void> _batchMoveToGroup(String? groupId) async {
+    final toMove = Set<String>.from(_selectedSymbols);
+    _clearSelection();
+    try {
+      final repo = await ref.read(repositoryProvider.future);
+      if (!mounted) return;
+      for (final sym in toMove) {
+        await repo.updateTickerGroup(sym, groupId);
+      }
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            groupId == null
+                ? '📂 Moved ${toMove.length} ticker(s) to No Group'
+                : '📂 Moved ${toMove.length} ticker(s) to group',
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('⚠️ Batch move failed: $e')),
+      );
+    }
+  }
 
   @override
   void dispose() {
@@ -41,43 +109,70 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
 
     return Scaffold(
       backgroundColor: cs.surface,
-      appBar: AppBar(
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SvgPicture.asset('assets/svg/logo.svg', width: 32, height: 32),
-            const SizedBox(width: 10),
-            const Text('CrossTide'),
-          ],
-        ),
-        actions: [
-          if (_isRefreshing)
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 12),
-              child: Center(
-                child: SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Colors.white,
-                  ),
-                ),
+      appBar: _isSelecting
+          ? AppBar(
+              leading: IconButton(
+                icon: const Icon(Icons.close),
+                onPressed: _clearSelection,
               ),
+              title: Text('${_selectedSymbols.length} selected'),
+              backgroundColor: cs.secondaryContainer,
+              foregroundColor: cs.onSecondaryContainer,
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded),
+                  tooltip: 'Delete selected',
+                  onPressed: () => _batchDelete(),
+                ),
+                PopupMenuButton<String>(
+                  icon: const Icon(Icons.drive_file_move_outline_rounded),
+                  tooltip: 'Move to group',
+                  onSelected: (groupId) => _batchMoveToGroup(groupId.isEmpty ? null : groupId),
+                  itemBuilder: (_) => [
+                    const PopupMenuItem(value: '', child: Text('No group')),
+                    ...((ref.watch(watchlistGroupsProvider).valueOrNull ?? <WatchlistGroup>[])
+                        .map((g) => PopupMenuItem(value: g.id, child: Text(g.name)))),
+                  ],
+                ),
+              ],
             )
-          else
-            IconButton(
-              icon: const Icon(Icons.sync_rounded),
-              onPressed: _onRefreshAll,
-              tooltip: '🔄 Refresh all tickers',
+          : AppBar(
+              title: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  SvgPicture.asset('assets/svg/logo.svg', width: 32, height: 32),
+                  const SizedBox(width: 10),
+                  const Text('CrossTide'),
+                ],
+              ),
+              actions: [
+                if (_isRefreshing)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ),
+                  )
+                else
+                  IconButton(
+                    icon: const Icon(Icons.sync_rounded),
+                    onPressed: _onRefreshAll,
+                    tooltip: '🔄 Refresh all tickers',
+                  ),
+                IconButton(
+                  icon: const Icon(Icons.tune_rounded),
+                  onPressed: () => context.push('/settings'),
+                  tooltip: '⚙️ Settings',
+                ),
+              ],
             ),
-          IconButton(
-            icon: const Icon(Icons.tune_rounded),
-            onPressed: () => context.push('/settings'),
-            tooltip: '⚙️ Settings',
-          ),
-        ],
-      ),
       body: tickersAsync.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => _ErrorState(message: '$e'),
@@ -105,17 +200,21 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
                     : ReorderableListView.builder(
                         padding: const EdgeInsets.fromLTRB(12, 6, 12, 100),
                         itemCount: filtered.length,
+                        buildDefaultDragHandles: !_isSelecting,
                         onReorder: (oldIndex, newIndex) =>
                             _onReorder(tickers, filtered, oldIndex, newIndex),
                         itemBuilder: (context, index) {
+                          final sym = filtered[index].symbol;
                           return _TickerCard(
-                            key: ValueKey(filtered[index].symbol),
+                            key: ValueKey(sym),
                             ticker: filtered[index],
-                            onRemove: () =>
-                                _removeTicker(filtered[index].symbol),
-                            onTap: () => context.push(
-                              '/ticker/${filtered[index].symbol}',
-                            ),
+                            isSelected: _selectedSymbols.contains(sym),
+                            isSelecting: _isSelecting,
+                            onLongPress: () => _enterSelection(sym),
+                            onTap: _isSelecting
+                                ? () => _toggleSelection(sym)
+                                : () => context.push('/ticker/$sym'),
+                            onRemove: () => _removeTicker(sym),
                           );
                         },
                       ),
@@ -124,16 +223,17 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
           );
         },
       ),
-      floatingActionButton:
-          FloatingActionButton.extended(
-            onPressed: _showAddDialog,
-            icon: const Icon(Icons.add_chart_rounded),
-            label: const Text('Add Ticker'),
-          ).animate().scale(
-            begin: const Offset(0.7, 0.7),
-            duration: 400.ms,
-            curve: Curves.elasticOut,
-          ),
+      floatingActionButton: _isSelecting
+          ? null
+          : FloatingActionButton.extended(
+              onPressed: _showAddDialog,
+              icon: const Icon(Icons.add_chart_rounded),
+              label: const Text('Add Ticker'),
+            ).animate().scale(
+              begin: const Offset(0.7, 0.7),
+              duration: 400.ms,
+              curve: Curves.elasticOut,
+            ),
     );
   }
 
@@ -257,11 +357,17 @@ class _TickerCard extends ConsumerWidget {
     required this.ticker,
     required this.onRemove,
     required this.onTap,
+    required this.onLongPress,
+    this.isSelected = false,
+    this.isSelecting = false,
   });
 
   final Ticker ticker;
   final VoidCallback onRemove;
   final VoidCallback onTap;
+  final VoidCallback onLongPress;
+  final bool isSelected;
+  final bool isSelecting;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -292,8 +398,10 @@ class _TickerCard extends ConsumerWidget {
         : null;
 
     return Dismissible(
-      key: ValueKey(ticker.symbol),
-      direction: DismissDirection.endToStart,
+      key: ValueKey('dismissible_${ticker.symbol}'),
+      direction: isSelecting
+          ? DismissDirection.none
+          : DismissDirection.endToStart,
       confirmDismiss: (_) async {
         return await showDialog<bool>(
           context: context,
@@ -340,15 +448,31 @@ class _TickerCard extends ConsumerWidget {
         ),
       ),
       child: Card(
-        color: bgColor,
+        color: isSelected
+            ? cs.primaryContainer.withAlpha(200)
+            : bgColor,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+          side: isSelected
+              ? BorderSide(color: cs.primary, width: 2)
+              : BorderSide.none,
+        ),
         child: InkWell(
           borderRadius: BorderRadius.circular(16),
           onTap: onTap,
+          onLongPress: onLongPress,
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             child: Row(
               children: [
-                // Left: Status icon circle
+                // Checkbox or status icon
+                if (isSelecting)
+                  Checkbox(
+                    value: isSelected,
+                    onChanged: (_) => onTap(),
+                    activeColor: cs.primary,
+                  )
+                else
                 Container(
                   width: 48,
                   height: 48,
