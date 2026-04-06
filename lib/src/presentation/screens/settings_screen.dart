@@ -281,6 +281,17 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 begin: 0.04,
                 end: 0,
               ),
+              // Default indicators selector
+              _SettingsSection(
+                icon: Icons.show_chart_rounded,
+                title: '📐 Default Indicators',
+                subtitle: 'Indicators pre-enabled when opening a chart',
+                child: _DefaultIndicatorsEditor(
+                  value: _settings.defaultIndicators,
+                  onChanged: (v) =>
+                      setState(() => _settings = _settings.copyWith(defaultIndicators: v)),
+                ),
+              ).animate(delay: 390.ms).fadeIn(duration: 300.ms).slideY(begin: 0.04, end: 0),
               const SizedBox(height: 24),
 
               // Watchlist Groups management
@@ -618,6 +629,56 @@ class _MiniPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(8),
       ),
       child: Text(text, style: const TextStyle(fontSize: 10)),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Default Indicators Editor
+// ---------------------------------------------------------------------------
+
+const _kIndicatorOptions = [
+  'SMA50',
+  'SMA150',
+  'SMA200',
+  'EMA:20',
+  'EMA:50',
+  'RSI:14',
+  'MACD',
+  'BB',
+];
+
+class _DefaultIndicatorsEditor extends StatelessWidget {
+  const _DefaultIndicatorsEditor({
+    required this.value,
+    required this.onChanged,
+  });
+
+  final List<String> value;
+  final ValueChanged<List<String>> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 6,
+      runSpacing: 4,
+      children: _kIndicatorOptions.map((ind) {
+        final selected = value.contains(ind);
+        return FilterChip(
+          label: Text(ind, style: const TextStyle(fontSize: 11)),
+          selected: selected,
+          onSelected: (on) {
+            final updated = List<String>.from(value);
+            if (on) {
+              updated.add(ind);
+            } else {
+              updated.remove(ind);
+            }
+            onChanged(updated);
+          },
+          visualDensity: VisualDensity.compact,
+        );
+      }).toList(),
     );
   }
 }

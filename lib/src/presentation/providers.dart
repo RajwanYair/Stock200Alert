@@ -230,7 +230,17 @@ final watchlistGroupsProvider = StreamProvider<List<db.WatchlistGroup>>((
 });
 
 /// Active group filter. Null = show all tickers.
-final activeGroupFilterProvider = StateProvider<String?>((ref) => null);
+final activeGroupFilterProvider = NotifierProvider<ActiveGroupFilter, String?>(
+  ActiveGroupFilter.new,
+);
+
+class ActiveGroupFilter extends Notifier<String?> {
+  @override
+  String? build() => null;
+
+  // ignore: use_setters_to_change_properties
+  void set(String? value) => state = value;
+}
 
 // ---------------------------------------------------------------------------
 // Refresh action

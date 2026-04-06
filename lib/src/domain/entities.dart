@@ -299,6 +299,7 @@ class AppSettings extends Equatable {
     this.providerName = 'yahoo_finance',
     this.cacheTtlMinutes = 30,
     this.advancedMode = false,
+    this.defaultIndicators = const [],
   });
 
   /// How often to check for new data (Android: constrained by WorkManager min ~15 min).
@@ -324,6 +325,9 @@ class AppSettings extends Equatable {
   /// When false, show a simplified view for novice users.
   final bool advancedMode;
 
+  /// Default indicators to show on the chart (e.g. 'EMA:20', 'RSI:14', 'MACD', 'BB').
+  final List<String> defaultIndicators;
+
   AppSettings copyWith({
     int? refreshIntervalMinutes,
     int? quietHoursStart,
@@ -332,6 +336,7 @@ class AppSettings extends Equatable {
     String? providerName,
     int? cacheTtlMinutes,
     bool? advancedMode,
+    List<String>? defaultIndicators,
   }) {
     return AppSettings(
       refreshIntervalMinutes:
@@ -342,6 +347,7 @@ class AppSettings extends Equatable {
       providerName: providerName ?? this.providerName,
       cacheTtlMinutes: cacheTtlMinutes ?? this.cacheTtlMinutes,
       advancedMode: advancedMode ?? this.advancedMode,
+      defaultIndicators: defaultIndicators ?? this.defaultIndicators,
     );
   }
 
@@ -354,6 +360,7 @@ class AppSettings extends Equatable {
     providerName,
     cacheTtlMinutes,
     advancedMode,
+    defaultIndicators,
   ];
 }
 

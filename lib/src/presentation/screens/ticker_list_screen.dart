@@ -50,7 +50,7 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
   bool _isStale(List<Ticker> tickers) {
     final cutoff = DateTime.now().subtract(const Duration(hours: 24));
     return tickers.any(
-      (t) => t.lastUpdated == null || t.lastUpdated!.isBefore(cutoff),
+      (t) => t.lastRefreshAt == null || t.lastRefreshAt!.isBefore(cutoff),
     );
   }
 
@@ -139,13 +139,15 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
                   onPressed: () => _batchDelete(),
                 ),
                 PopupMenuButton<String>(
-                  icon: const Icon(Icons.drive_file_move_outline_rounded),
+                  icon: const Icon(Icons.drive_file_move_outlined),
                   tooltip: 'Move to group',
                   onSelected: (groupId) => _batchMoveToGroup(groupId.isEmpty ? null : groupId),
                   itemBuilder: (_) => [
                     const PopupMenuItem(value: '', child: Text('No group')),
-                    ...((ref.watch(watchlistGroupsProvider).valueOrNull ?? <WatchlistGroup>[])
-                        .map((g) => PopupMenuItem(value: g.id, child: Text(g.name)))),
+                    ...(switch (ref.watch(watchlistGroupsProvider)) {
+                      AsyncData(:final value) => value,
+                      _ => const <WatchlistGroup>[],
+                    }).map((g) => PopupMenuItem<String>(value: g.id, child: Text(g.name))),
                   ],
                 ),
               ],
@@ -211,12 +213,15 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
               .length;
           final belowCount = withData.length - aboveCount;
           final lastUpdated = tickers
-              .map((t) => t.lastUpdated)
+              .map((t) => t.lastRefreshAt)
               .whereType<DateTime>()
               .fold<DateTime?>(null, (best, dt) => best == null || dt.isAfter(best) ? dt : best);
 
           final groupsAsync = ref.watch(watchlistGroupsProvider);
-          final groups = groupsAsync.valueOrNull ?? const <WatchlistGroup>[];
+          final groups = switch (groupsAsync) {
+            AsyncData(:final value) => value,
+            _ => const <WatchlistGroup>[],
+          };
           final activeGroup = ref.watch(activeGroupFilterProvider);
 
           // Filter by group if one is selected
@@ -322,7 +327,10 @@ class _TickerListScreenState extends ConsumerState<TickerListScreen> {
 
   void _showAddDialog() {
     _tickerController.clear();
-    final sp500 = ref.read(sp500TickersProvider).valueOrNull ?? const <String>[];
+    final sp500 = switch (ref.read(sp500TickersProvider)) {
+      AsyncData(:final value) => value,
+      _ => const <String>[],
+    };
     showDialog<void>(
       context: context,
       builder: (ctx) => _AddTickersDialog(
@@ -1169,7 +1177,7 @@ class _GroupFilterRow extends ConsumerWidget {
               label: const Text('All'),
               selected: activeGroup == null,
               onSelected: (_) =>
-                  ref.read(activeGroupFilterProvider.notifier).state = null,
+                  ref.read(activeGroupFilterProvider.notifier).set(null),
             ),
           ),
           ...groups.map((g) {
@@ -1186,7 +1194,7 @@ class _GroupFilterRow extends ConsumerWidget {
                 selected: isSelected,
                 onSelected: (_) => ref
                     .read(activeGroupFilterProvider.notifier)
-                    .state = isSelected ? null : g.id,
+                    .set(isSelected ? null : g.id),
               ),
             );
           }),

@@ -59,11 +59,10 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
       _ => const <String, String>{},
     };
     final sector = sectorMap[widget.symbol];
-    final sectorMap = switch (ref.watch(sectorMapProvider)) {
-      AsyncData(:final value) => value,
-      _ => const <String, String>{},
+    final defaultIndicators = switch (ref.watch(settingsProvider)) {
+      AsyncData(:final value) => value.defaultIndicators,
+      _ => const <String>[],
     };
-    final sector = sectorMap[widget.symbol];
 
     return Scaffold(
       appBar: AppBar(
@@ -197,6 +196,7 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                   selectedRange: _chartRange,
                   onRangeChanged: (r) => setState(() => _chartRange = r),
                   spyCandles: spyCandles,
+                  defaultIndicators: defaultIndicators,
                 ).animate(delay: 80.ms).fadeIn(duration: 300.ms),
                 const SizedBox(height: 16),
                 _AlertStateCard(
@@ -477,6 +477,7 @@ class _ChartSection extends StatefulWidget {
     required this.selectedRange,
     required this.onRangeChanged,
     this.spyCandles = const [],
+    this.defaultIndicators = const [],
   });
 
   final ColorScheme cs;
@@ -488,21 +489,37 @@ class _ChartSection extends StatefulWidget {
   final ValueChanged<_ChartRange> onRangeChanged;
   /// SPY candles for the benchmark overlay (empty list = not loaded yet).
   final List<DailyCandle> spyCandles;
+  /// Indicator keys pre-enabled from user preferences.
+  final List<String> defaultIndicators;
 
   @override
   State<_ChartSection> createState() => _ChartSectionState();
 }
 
 class _ChartSectionState extends State<_ChartSection> {
-  bool _showSma50 = false;
-  bool _showSma150 = false;
-  bool _showSma200 = true;
-  bool _showSpy = false;
+  late bool _showSma50;
+  late bool _showSma150;
+  late bool _showSma200;
+  late bool _showSpy;
   bool _candlestickMode = false;
-  bool _showEma20 = false;
-  bool _showBollinger = false;
-  bool _showRsi = false;
-  bool _showMacd = false;
+  late bool _showEma20;
+  late bool _showBollinger;
+  late bool _showRsi;
+  late bool _showMacd;
+
+  @override
+  void initState() {
+    super.initState();
+    final d = widget.defaultIndicators;
+    _showSma50 = d.contains('SMA50');
+    _showSma150 = d.contains('SMA150');
+    _showSma200 = d.isEmpty || d.contains('SMA200');
+    _showSpy = d.contains('SPY');
+    _showEma20 = d.contains('EMA:20') || d.contains('EMA:50');
+    _showBollinger = d.contains('BB');
+    _showRsi = d.contains('RSI:14');
+    _showMacd = d.contains('MACD');
+  }
 
   /// Build SPY normalized spots: SPY close indexed to the first price value.
   List<FlSpot> _buildSpySpots(List<FlSpot> priceSpots) {

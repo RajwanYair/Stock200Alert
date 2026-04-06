@@ -37,9 +37,7 @@ void main() {
       final closes = [...List.filled(20, 100.0), 200.0];
       final candles = makeCandles(closes);
       final ema = calc.compute(candles, period: 10)!;
-      const sma =
-          (100.0 * 10) / 10; // SMA of last 10 = 100 + 100*9+200)/10 = 110
-      // EMA puts more weight on 200 than SMA; result > 100
+      // EMA puts more weight on the new 200 candle vs SMA; result > 100
       expect(ema, greaterThan(100.0));
     });
 

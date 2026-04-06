@@ -271,6 +271,9 @@ class StockRepository {
       providerName: row.providerName,
       cacheTtlMinutes: row.cacheTtlMinutes,
       advancedMode: row.advancedMode != 0,
+      defaultIndicators: row.defaultIndicators.isEmpty
+          ? const []
+          : row.defaultIndicators.split(','),
     );
   }
 
@@ -285,6 +288,7 @@ class StockRepository {
         providerName: Value(settings.providerName),
         cacheTtlMinutes: Value(settings.cacheTtlMinutes),
         advancedMode: Value(settings.advancedMode ? 1 : 0),
+        defaultIndicators: Value(settings.defaultIndicators.join(',')),
       ),
     );
   }
