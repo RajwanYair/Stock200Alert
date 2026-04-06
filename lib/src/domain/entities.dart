@@ -555,3 +555,60 @@ extension AlertProfileDefaults on AlertProfile {
     }
   }
 }
+
+// ---------------------------------------------------------------------------
+// IntradayQuote — real-time price snapshot
+// ---------------------------------------------------------------------------
+
+/// Real-time quote snapshot fetched from Yahoo Finance (1-minute chart).
+///
+/// Since this is ephemeral display data it is NOT stored in the database.
+/// TTL is enforced by the UI layer (discard after 2 minutes).
+class IntradayQuote extends Equatable {
+  const IntradayQuote({
+    required this.symbol,
+    required this.price,
+    required this.fetchedAt,
+    this.prevClose,
+    this.change,
+    this.changePct,
+    this.marketState = 'CLOSED',
+    this.preMarketPrice,
+    this.postMarketPrice,
+  });
+
+  final String symbol;
+  final double price;
+  final double? prevClose;
+  final double? change;
+  final double? changePct;
+
+  /// Yahoo market state: 'PRE', 'REGULAR', 'POST', 'CLOSED'.
+  final String marketState;
+
+  final double? preMarketPrice;
+  final double? postMarketPrice;
+  final DateTime fetchedAt;
+
+  bool get isPreMarket => marketState == 'PRE';
+  bool get isRegularHours => marketState == 'REGULAR';
+  bool get isAfterHours => marketState == 'POST';
+
+  /// Whether this quote is stale (fetched more than [ttlMinutes] ago).
+  bool isStale({int ttlMinutes = 2}) =>
+      DateTime.now().difference(fetchedAt).inMinutes >= ttlMinutes;
+
+  @override
+  List<Object?> get props => [
+    symbol,
+    price,
+    prevClose,
+    change,
+    changePct,
+    marketState,
+    preMarketPrice,
+    postMarketPrice,
+    fetchedAt,
+  ];
+}
+

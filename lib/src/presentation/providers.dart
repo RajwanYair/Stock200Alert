@@ -194,6 +194,31 @@ final tickerEntryProvider =
       return all.where((t) => t.symbol == symbol.toUpperCase()).firstOrNull;
     });
 
+/// Real-time intraday quote for a symbol.
+///
+/// Fetches once on first watch; call [ref.invalidate] to refresh.
+/// Returns null when the provider is not Yahoo Finance or on error.
+final intradayQuoteProvider =
+    FutureProvider.family<domain.IntradayQuote?, String>((ref, symbol) async {
+      final provider = await ref.watch(marketDataProviderProvider.future);
+      // Walk through wrapper types to find the Yahoo provider.
+      YahooFinanceProvider? yahoo;
+      if (provider is YahooFinanceProvider) {
+        yahoo = provider;
+      } else if (provider is ThrottledMarketDataProvider &&
+          provider.inner is FallbackMarketDataProvider) {
+        final fallback = provider.inner as FallbackMarketDataProvider;
+        // ignore: prefer_type_over_var
+        for (final p in fallback.providers) {
+          if (p is YahooFinanceProvider) {
+            yahoo = p;
+            break;
+          }
+        }
+      }
+      return yahoo?.fetchQuote(symbol);
+    });
+
 /// Derives the accent seed [Color] from the persisted [AppSettings].
 /// Falls back to the default deep-blue if settings aren't loaded yet.
 final accentColorProvider = Provider<Color>((ref) {

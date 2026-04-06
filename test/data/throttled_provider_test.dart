@@ -17,7 +17,7 @@ class _CountingProvider implements IMarketDataProvider {
   Future<List<DailyCandle>> fetchDailyHistory(String ticker) async {
     calls++;
     if (shouldFail) {
-      throw MarketDataException('forced fail', isRetryable: true);
+      throw const MarketDataException('forced fail', isRetryable: true);
     }
     return [];
   }

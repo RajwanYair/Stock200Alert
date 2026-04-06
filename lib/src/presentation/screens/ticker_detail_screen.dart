@@ -183,50 +183,58 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
             _ => const <DailyCandle>[],
           };
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SummaryCard(
-                      symbol: widget.symbol,
-                      candles: candles,
-                      smaSeries: smaSeries,
-                      alertStateAsync: alertStateAsync,
-                    )
-                    .animate()
-                    .fadeIn(duration: 300.ms)
-                    .slideY(begin: 0.04, end: 0),
-                const SizedBox(height: 16),
-                _ChartSection(
-                  cs: cs,
-                  chartCandles: chartCandles,
-                  chartSma50: chartSma50,
-                  chartSma150: chartSma150,
-                  chartSma200: chartSma200,
-                  selectedRange: _chartRange,
-                  onRangeChanged: (r) => setState(() => _chartRange = r),
-                  spyCandles: spyCandles,
-                  defaultIndicators: defaultIndicators,
-                ).animate(delay: 80.ms).fadeIn(duration: 300.ms),
-                const SizedBox(height: 16),
-                _AlertStateCard(
-                  stateAsync: alertStateAsync,
-                ).animate(delay: 160.ms).fadeIn(duration: 300.ms),
-                const SizedBox(height: 16),
-                _AlertTypeSelectorCard(
-                  symbol: widget.symbol,
-                ).animate(delay: 240.ms).fadeIn(duration: 300.ms),
-                const SizedBox(height: 16),
-                _PriceTargetsCard(
-                  symbol: widget.symbol,
-                ).animate(delay: 300.ms).fadeIn(duration: 300.ms),
-                const SizedBox(height: 16),
-                _PctMoveCard(
-                  symbol: widget.symbol,
-                ).animate(delay: 360.ms).fadeIn(duration: 300.ms),
-              ],
-            ),
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _QuoteBar(symbol: widget.symbol),
+              Expanded(
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _SummaryCard(
+                            symbol: widget.symbol,
+                            candles: candles,
+                            smaSeries: smaSeries,
+                            alertStateAsync: alertStateAsync,
+                          )
+                          .animate()
+                          .fadeIn(duration: 300.ms)
+                          .slideY(begin: 0.04, end: 0),
+                      const SizedBox(height: 16),
+                      _ChartSection(
+                        cs: cs,
+                        chartCandles: chartCandles,
+                        chartSma50: chartSma50,
+                        chartSma150: chartSma150,
+                        chartSma200: chartSma200,
+                        selectedRange: _chartRange,
+                        onRangeChanged: (r) => setState(() => _chartRange = r),
+                        spyCandles: spyCandles,
+                        defaultIndicators: defaultIndicators,
+                      ).animate(delay: 80.ms).fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
+                      _AlertStateCard(
+                        stateAsync: alertStateAsync,
+                      ).animate(delay: 160.ms).fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
+                      _AlertTypeSelectorCard(
+                        symbol: widget.symbol,
+                      ).animate(delay: 240.ms).fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
+                      _PriceTargetsCard(
+                        symbol: widget.symbol,
+                      ).animate(delay: 300.ms).fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
+                      _PctMoveCard(
+                        symbol: widget.symbol,
+                      ).animate(delay: 360.ms).fadeIn(duration: 300.ms),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           );
         },
       ),
@@ -2087,6 +2095,130 @@ class _EarningsBadge extends StatelessWidget {
             color: fg,
             fontWeight: FontWeight.w700,
           ),
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Intraday Quote Bar
+// ---------------------------------------------------------------------------
+
+/// Real-time price row shown below the AppBar in ticker detail.
+///
+/// Shows: current price, change amount + %, market state badge.
+/// Pre-market and after-hours prices shown when available.
+class _QuoteBar extends ConsumerWidget {
+  const _QuoteBar({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final quoteAsync = ref.watch(intradayQuoteProvider(symbol));
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return switch (quoteAsync) {
+      AsyncLoading() => const SizedBox.shrink(),
+      AsyncError() => const SizedBox.shrink(),
+      AsyncData(:final value) when value == null => const SizedBox.shrink(),
+      AsyncData(:final value!) => Container(
+        color: cs.surfaceContainerHighest.withValues(alpha: 0.4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+        child: Row(
+          children: [
+            Text(
+              '\$${value.price.toStringAsFixed(2)}',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(width: 8),
+            if (value.change != null && value.changePct != null)
+              _ChangeChip(
+                change: value.change!,
+                changePct: value.changePct!,
+              ),
+            const Spacer(),
+            _MarketStateBadge(state: value.marketState),
+            if (value.isPreMarket && value.preMarketPrice != null) ...[
+              const SizedBox(width: 6),
+              Text(
+                'Pre: \$${value.preMarketPrice!.toStringAsFixed(2)}',
+                style: textTheme.bodySmall?.copyWith(color: cs.outline),
+              ),
+            ],
+            if (value.isAfterHours && value.postMarketPrice != null) ...[
+              const SizedBox(width: 6),
+              Text(
+                'AH: \$${value.postMarketPrice!.toStringAsFixed(2)}',
+                style: textTheme.bodySmall?.copyWith(color: cs.outline),
+              ),
+            ],
+          ],
+        ),
+      ),
+    };
+  }
+}
+
+class _ChangeChip extends StatelessWidget {
+  const _ChangeChip({required this.change, required this.changePct});
+
+  final double change;
+  final double changePct;
+
+  @override
+  Widget build(BuildContext context) {
+    final isPositive = change >= 0;
+    final bg = isPositive ? Colors.green.shade700 : Colors.red.shade700;
+    final sign = isPositive ? '+' : '';
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: bg,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        '$sign${change.toStringAsFixed(2)} ($sign${changePct.toStringAsFixed(2)}%)',
+        style: const TextStyle(
+          color: Colors.white,
+          fontSize: 11,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
+  }
+}
+
+class _MarketStateBadge extends StatelessWidget {
+  const _MarketStateBadge({required this.state});
+
+  final String state;
+
+  @override
+  Widget build(BuildContext context) {
+    final (label, color) = switch (state) {
+      'REGULAR' => ('Market Open', Colors.green.shade600),
+      'PRE' => ('Pre-Market', Colors.orange.shade600),
+      'POST' => ('After Hours', Colors.blue.shade600),
+      _ => ('Closed', Colors.grey.shade500),
+    };
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.15),
+        border: Border.all(color: color),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          color: color,
+          fontWeight: FontWeight.w700,
         ),
       ),
     );

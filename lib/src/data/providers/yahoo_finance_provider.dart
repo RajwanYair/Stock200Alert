@@ -180,8 +180,75 @@ class YahooFinanceProvider implements IMarketDataProvider {
     }
   }
 
-  /// Fetches the next expected earnings date from Yahoo Finance quoteSummary.
+  /// Fetches a real-time quote for [ticker].
   ///
+  /// Uses the v8 chart API with `range=1d` and `interval=1m` to get the
+  /// current session's latest traded price, previous close, and market state.
+  /// Returns null on any error (non-critical — display falls back to EOD data).
+  Future<IntradayQuote?> fetchQuote(String ticker) async {
+    try {
+      final response = await _dio.get<Map<String, dynamic>>(
+        '$_baseUrl/${ticker.toUpperCase()}',
+        queryParameters: {
+          'range': '1d',
+          'interval': '1m',
+          'includePrePost': 'true',
+        },
+        options: Options(
+          headers: {
+            'User-Agent': 'CrossTide/1.0',
+            'Accept': 'application/json',
+          },
+          receiveTimeout: const Duration(seconds: 10),
+          sendTimeout: const Duration(seconds: 8),
+        ),
+      );
+      final data = response.data;
+      if (data == null) return null;
+      final chart = data['chart'] as Map<String, dynamic>?;
+      final resultList = chart?['result'] as List<dynamic>?;
+      if (resultList == null || resultList.isEmpty) return null;
+      final result = resultList.first as Map<String, dynamic>;
+      final meta = result['meta'] as Map<String, dynamic>?;
+      if (meta == null) return null;
+
+      final price =
+          (meta['regularMarketPrice'] as num?)?.toDouble();
+      final prevClose =
+          (meta['chartPreviousClose'] as num?)?.toDouble() ??
+          (meta['previousClose'] as num?)?.toDouble();
+      final marketState = meta['marketState'] as String? ?? 'CLOSED';
+      final preMarket =
+          (meta['preMarketPrice'] as num?)?.toDouble();
+      final postMarket =
+          (meta['postMarketPrice'] as num?)?.toDouble();
+
+      if (price == null) return null;
+
+      final change = prevClose != null ? price - prevClose : null;
+      final changePct =
+          (change != null && prevClose != null && prevClose != 0)
+              ? (change / prevClose) * 100
+              : null;
+
+      return IntradayQuote(
+        symbol: ticker.toUpperCase(),
+        price: price,
+        prevClose: prevClose,
+        change: change,
+        changePct: changePct,
+        marketState: marketState,
+        preMarketPrice: preMarket,
+        postMarketPrice: postMarket,
+        fetchedAt: DateTime.now(),
+      );
+    } catch (e) {
+      _logger.d('$ticker: intraday quote fetch failed (non-critical): $e');
+      return null;
+    }
+  }
+
+  /// Fetches the next expected earnings date from Yahoo Finance quoteSummary.  ///
   /// Returns null if unavailable or on network error (non-critical).
   Future<DateTime?> fetchNextEarnings(String ticker) async {
     try {
