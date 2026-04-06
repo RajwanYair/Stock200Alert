@@ -698,6 +698,12 @@ class _ChartSectionState extends State<_ChartSection> {
                 ),
               ),
             ),
+            const SizedBox(height: 8),
+            // Volume bar chart
+            _VolumeChart(
+              chartCandles: widget.chartCandles,
+              cs: widget.cs,
+            ),
           ],
         ),
       ),
@@ -727,6 +733,105 @@ class _SmaToggleChip extends StatelessWidget {
       checkmarkColor: color,
       side: BorderSide(color: selected ? color : Colors.grey.shade300),
       onSelected: onChanged,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Volume mini-chart
+// ---------------------------------------------------------------------------
+
+class _VolumeChart extends StatelessWidget {
+  const _VolumeChart({required this.chartCandles, required this.cs});
+
+  final List<DailyCandle> chartCandles;
+  final ColorScheme cs;
+
+  @override
+  Widget build(BuildContext context) {
+    if (chartCandles.isEmpty) return const SizedBox();
+
+    final maxVolume = chartCandles
+        .map((c) => c.volume.toDouble())
+        .reduce((a, b) => a > b ? a : b);
+    if (maxVolume <= 0) return const SizedBox();
+
+    // Reduce to at most 120 bars for performance (sample evenly)
+    const maxBars = 120;
+    final step = (chartCandles.length / maxBars).ceil().clamp(1, 999);
+    final bars = <BarChartGroupData>[];
+    for (var i = 0; i < chartCandles.length; i += step) {
+      final c = chartCandles[i];
+      final isUp = i == 0 || c.close >= chartCandles[i - 1].close;
+      bars.add(
+        BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: c.volume.toDouble(),
+              width: step > 1 ? 3.0 : 2.0,
+              color: isUp
+                  ? Colors.green.withAlpha(160)
+                  : Colors.red.withAlpha(160),
+            ),
+          ],
+        ),
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          '📊 Volume',
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: Colors.grey.shade600,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+        const SizedBox(height: 4),
+        SizedBox(
+          height: 60,
+          child: BarChart(
+            BarChartData(
+              maxY: maxVolume * 1.1,
+              barGroups: bars,
+              gridData: const FlGridData(show: false),
+              borderData: FlBorderData(show: false),
+              titlesData: const FlTitlesData(
+                leftTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                topTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+                rightTitles: AxisTitles(
+                  sideTitles: SideTitles(showTitles: false),
+                ),
+              ),
+              barTouchData: BarTouchData(
+                touchTooltipData: BarTouchTooltipData(
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                    final vol = rod.toY;
+                    final display = vol >= 1e9
+                        ? '${(vol / 1e9).toStringAsFixed(1)}B'
+                        : vol >= 1e6
+                            ? '${(vol / 1e6).toStringAsFixed(1)}M'
+                            : vol.toStringAsFixed(0);
+                    return BarTooltipItem(
+                      display,
+                      const TextStyle(fontSize: 11, color: Colors.white),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
