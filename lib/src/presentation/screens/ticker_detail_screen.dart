@@ -499,6 +499,10 @@ class _ChartSectionState extends State<_ChartSection> {
   bool _showSma200 = true;
   bool _showSpy = false;
   bool _candlestickMode = false;
+  bool _showEma20 = false;
+  bool _showBollinger = false;
+  bool _showRsi = false;
+  bool _showMacd = false;
 
   /// Build SPY normalized spots: SPY close indexed to the first price value.
   List<FlSpot> _buildSpySpots(List<FlSpot> priceSpots) {
@@ -554,11 +558,38 @@ class _ChartSectionState extends State<_ChartSection> {
       }
     }
 
+    // EMA 20 spots
+    final ema20Spots = <FlSpot>[];
+    if (_showEma20) {
+      final emaSeries = const EmaCalculator().computeSeries(candles, period: 20);
+      for (var i = 0; i < emaSeries.length; i++) {
+        if (emaSeries[i].$2 != null) {
+          ema20Spots.add(FlSpot(i.toDouble(), emaSeries[i].$2!));
+        }
+      }
+    }
+
+    // Bollinger upper / lower spots
+    final bbUpperSpots = <FlSpot>[];
+    final bbLowerSpots = <FlSpot>[];
+    if (_showBollinger) {
+      final bbSeries = const BollingerCalculator().computeSeries(candles);
+      for (var i = 0; i < bbSeries.length; i++) {
+        if (bbSeries[i].upper != null) {
+          bbUpperSpots.add(FlSpot(i.toDouble(), bbSeries[i].upper!));
+          bbLowerSpots.add(FlSpot(i.toDouble(), bbSeries[i].lower!));
+        }
+      }
+    }
+
     final allValues = [
       ...priceSpots.map((s) => s.y),
       if (_showSma50) ...sma50Spots.map((s) => s.y),
       if (_showSma150) ...sma150Spots.map((s) => s.y),
       if (_showSma200) ...sma200Spots.map((s) => s.y),
+      if (_showEma20) ...ema20Spots.map((s) => s.y),
+      if (_showBollinger) ...bbUpperSpots.map((s) => s.y),
+      if (_showBollinger) ...bbLowerSpots.map((s) => s.y),
     ];
     if (allValues.isEmpty) return const SizedBox();
     final minY = allValues.reduce((a, b) => a < b ? a : b) * 0.98;
@@ -626,6 +657,33 @@ class _ChartSectionState extends State<_ChartSection> {
               );
             }() ??
             LineChartBarData(spots: const [], color: Colors.transparent),
+      if (_showEma20 && ema20Spots.isNotEmpty)
+        LineChartBarData(
+          spots: ema20Spots,
+          isCurved: true,
+          color: Colors.cyan.shade600,
+          barWidth: 1.8,
+          dashArray: [5, 3],
+          dotData: const FlDotData(show: false),
+        ),
+      if (_showBollinger && bbUpperSpots.isNotEmpty) ...[
+        LineChartBarData(
+          spots: bbUpperSpots,
+          isCurved: true,
+          color: Colors.pink.shade400,
+          barWidth: 1.5,
+          dashArray: [4, 4],
+          dotData: const FlDotData(show: false),
+        ),
+        LineChartBarData(
+          spots: bbLowerSpots,
+          isCurved: true,
+          color: Colors.pink.shade400,
+          barWidth: 1.5,
+          dashArray: [4, 4],
+          dotData: const FlDotData(show: false),
+        ),
+      ],
     ];
 
     return Card(
@@ -686,6 +744,30 @@ class _ChartSectionState extends State<_ChartSection> {
                   color: Colors.amber.shade700,
                   selected: _candlestickMode,
                   onChanged: (v) => setState(() => _candlestickMode = v),
+                ),
+                _SmaToggleChip(
+                  label: 'EMA 20',
+                  color: Colors.cyan.shade600,
+                  selected: _showEma20,
+                  onChanged: (v) => setState(() => _showEma20 = v),
+                ),
+                _SmaToggleChip(
+                  label: '🎸 Bollinger',
+                  color: Colors.pink.shade400,
+                  selected: _showBollinger,
+                  onChanged: (v) => setState(() => _showBollinger = v),
+                ),
+                _SmaToggleChip(
+                  label: 'RSI',
+                  color: Colors.lime.shade600,
+                  selected: _showRsi,
+                  onChanged: (v) => setState(() => _showRsi = v),
+                ),
+                _SmaToggleChip(
+                  label: 'MACD',
+                  color: Colors.blueGrey.shade400,
+                  selected: _showMacd,
+                  onChanged: (v) => setState(() => _showMacd = v),
                 ),
               ],
             ),
@@ -812,6 +894,12 @@ class _ChartSectionState extends State<_ChartSection> {
               chartCandles: widget.chartCandles,
               cs: widget.cs,
             ),
+            // RSI sub-panel
+            if (_showRsi)
+              _RsiPanel(candles: widget.chartCandles, cs: cs),
+            // MACD sub-panel
+            if (_showMacd)
+              _MacdPanel(candles: widget.chartCandles, cs: cs),
           ],
         ),
       ),
@@ -995,6 +1083,164 @@ class _SmaToggleChip extends StatelessWidget {
       checkmarkColor: color,
       side: BorderSide(color: selected ? color : Colors.grey.shade300),
       onSelected: onChanged,
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// RSI sub-panel
+// ---------------------------------------------------------------------------
+
+class _RsiPanel extends StatelessWidget {
+  const _RsiPanel({required this.candles, required this.cs});
+
+  final List<DailyCandle> candles;
+  final ColorScheme cs;
+
+  @override
+  Widget build(BuildContext context) {
+    final series = const RsiCalculator().computeSeries(candles, period: 14);
+    final spots = <FlSpot>[];
+    for (int i = 0; i < series.length; i++) {
+      if (series[i].$2 != null) spots.add(FlSpot(i.toDouble(), series[i].$2!));
+    }
+    if (spots.isEmpty) return const SizedBox();
+    return Card(
+      margin: const EdgeInsets.only(top: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'RSI (14)',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              height: 100,
+              child: LineChart(
+                LineChartData(
+                  minY: 0,
+                  maxY: 100,
+                  extraLinesData: ExtraLinesData(
+                    horizontalLines: [
+                      HorizontalLine(y: 70, color: Colors.red.withAlpha(120), strokeWidth: 1, dashArray: [4, 3]),
+                      HorizontalLine(y: 30, color: Colors.green.withAlpha(120), strokeWidth: 1, dashArray: [4, 3]),
+                    ],
+                  ),
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      color: Colors.lime.shade600,
+                      barWidth: 2,
+                      dotData: const FlDotData(show: false),
+                    ),
+                  ],
+                  gridData: const FlGridData(show: false),
+                  borderData: FlBorderData(show: false),
+                  titlesData: const FlTitlesData(show: false),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// MACD sub-panel
+// ---------------------------------------------------------------------------
+
+class _MacdPanel extends StatelessWidget {
+  const _MacdPanel({required this.candles, required this.cs});
+
+  final List<DailyCandle> candles;
+  final ColorScheme cs;
+
+  @override
+  Widget build(BuildContext context) {
+    final series = const MacdCalculator().computeSeries(candles);
+    final macdSpots = <FlSpot>[];
+    final signalSpots = <FlSpot>[];
+    final histBars = <BarChartGroupData>[];
+    for (int i = 0; i < series.length; i++) {
+      final r = series[i];
+      if (r.macd != null) {
+        macdSpots.add(FlSpot(i.toDouble(), r.macd!));
+      }
+      if (r.signal != null) {
+        signalSpots.add(FlSpot(i.toDouble(), r.signal!));
+      }
+      if (r.histogram != null) {
+        histBars.add(BarChartGroupData(
+          x: i,
+          barRods: [
+            BarChartRodData(
+              toY: r.histogram!,
+              color: r.histogram! >= 0 ? Colors.green.shade400 : Colors.red.shade400,
+              width: 2,
+            ),
+          ],
+        ));
+      }
+    }
+    if (macdSpots.isEmpty) return const SizedBox();
+    return Card(
+      margin: const EdgeInsets.only(top: 8),
+      child: Padding(
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'MACD (12, 26, 9)',
+              style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+            const SizedBox(height: 6),
+            SizedBox(
+              height: 100,
+              child: LineChart(
+                LineChartData(
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: macdSpots,
+                      isCurved: true,
+                      color: Colors.blueAccent,
+                      barWidth: 1.8,
+                      dotData: const FlDotData(show: false),
+                    ),
+                    if (signalSpots.isNotEmpty)
+                      LineChartBarData(
+                        spots: signalSpots,
+                        isCurved: true,
+                        color: Colors.orange,
+                        barWidth: 1.5,
+                        dashArray: [4, 3],
+                        dotData: const FlDotData(show: false),
+                      ),
+                  ],
+                  extraLinesData: ExtraLinesData(
+                    horizontalLines: [
+                      HorizontalLine(
+                        y: 0,
+                        color: Colors.grey.withAlpha(100),
+                        strokeWidth: 1,
+                      ),
+                    ],
+                  ),
+                  gridData: const FlGridData(show: false),
+                  borderData: FlBorderData(show: false),
+                  titlesData: const FlTitlesData(show: false),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
