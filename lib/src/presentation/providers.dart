@@ -240,6 +240,16 @@ final sp500CandlesProvider = FutureProvider<List<domain.DailyCandle>>((
   return repo.fetchAndCacheCandles('SPY');
 });
 
+/// Alert sensitivity stats for a single symbol.
+///
+/// Computes [AlertSensitivityStats] from all [AlertHistoryEntry] records for
+/// [symbol] stored in the local database.
+final alertSensitivityProvider = FutureProvider.family<
+    domain.AlertSensitivityStats, String>((ref, symbol) async {
+  final repo = await ref.watch(repositoryProvider.future);
+  return repo.getAlertSensitivityStats(symbol);
+});
+
 /// Persists and exposes the user's [ThemeMode] preference.
 ///
 /// Stored in secure storage under key `'theme_mode'`.

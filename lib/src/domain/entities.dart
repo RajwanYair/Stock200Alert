@@ -496,6 +496,93 @@ class AlertHistoryEntry extends Equatable {
   ];
 }
 
+// ---------------------------------------------------------------------------
+// AlertSensitivityStats — computed from AlertHistory
+// ---------------------------------------------------------------------------
+
+/// Summary statistics for a single ticker's alert history.
+///
+/// Computed on-the-fly from [AlertHistoryEntry] records stored in the DB.
+/// Not persisted — derived on read.
+class AlertSensitivityStats extends Equatable {
+  const AlertSensitivityStats({
+    required this.symbol,
+    required this.totalAlerts,
+    this.firstFiredAt,
+    this.lastFiredAt,
+    this.avgDaysBetweenAlerts,
+    required this.alertsByType,
+  });
+
+  final String symbol;
+
+  /// Total number of alerts ever fired for this symbol.
+  final int totalAlerts;
+
+  final DateTime? firstFiredAt;
+  final DateTime? lastFiredAt;
+
+  /// Mean days between consecutive alert events (null when < 2 events).
+  final double? avgDaysBetweenAlerts;
+
+  /// Per-[alertType] counts, e.g. `{'sma200CrossUp': 3, 'goldenCross': 1}`.
+  final Map<String, int> alertsByType;
+
+  /// Computes [AlertSensitivityStats] from a list of history entries.
+  static AlertSensitivityStats fromHistory(
+    String symbol,
+    List<AlertHistoryEntry> entries,
+  ) {
+    if (entries.isEmpty) {
+      return AlertSensitivityStats(
+        symbol: symbol,
+        totalAlerts: 0,
+        alertsByType: const {},
+      );
+    }
+
+    final sorted = [...entries]..sort((a, b) => a.firedAt.compareTo(b.firedAt));
+
+    double? avg;
+    if (sorted.length >= 2) {
+      final gaps = <double>[];
+      for (var i = 1; i < sorted.length; i++) {
+        gaps.add(
+          sorted[i].firedAt
+              .difference(sorted[i - 1].firedAt)
+              .inHours /
+              24.0,
+        );
+      }
+      avg = gaps.reduce((a, b) => a + b) / gaps.length;
+    }
+
+    final byType = <String, int>{};
+    for (final e in entries) {
+      byType[e.alertType] = (byType[e.alertType] ?? 0) + 1;
+    }
+
+    return AlertSensitivityStats(
+      symbol: symbol,
+      totalAlerts: entries.length,
+      firstFiredAt: sorted.first.firedAt,
+      lastFiredAt: sorted.last.firedAt,
+      avgDaysBetweenAlerts: avg,
+      alertsByType: Map.unmodifiable(byType),
+    );
+  }
+
+  @override
+  List<Object?> get props => [
+    symbol,
+    totalAlerts,
+    firstFiredAt,
+    lastFiredAt,
+    avgDaysBetweenAlerts,
+    alertsByType,
+  ];
+}
+
 /// Maps each [AlertProfile] to a ready-to-use [AppSettings] snapshot.
 /// The UI can apply a profile in one tap; the user may then fine-tune
 /// individual fields (which implicitly switches the profile to [custom]).

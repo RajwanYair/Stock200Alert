@@ -494,6 +494,19 @@ class StockRepository {
     return rows.map(_historyFromRow).toList();
   }
 
+  /// Computes [AlertSensitivityStats] for [symbol] from stored history.
+  Future<domain.AlertSensitivityStats> getAlertSensitivityStats(
+    String symbol,
+  ) async {
+    final upper = symbol.toUpperCase().trim();
+    final allRows = await db.getAlertHistory();
+    final forSymbol = allRows
+        .where((r) => r.symbol == upper)
+        .map(_historyFromRow)
+        .toList();
+    return domain.AlertSensitivityStats.fromHistory(upper, forSymbol);
+  }
+
   Future<void> acknowledgeAlertHistory(int id) =>
       db.acknowledgeAlertHistory(id);
 

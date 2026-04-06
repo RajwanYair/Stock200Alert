@@ -230,6 +230,10 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                       _PctMoveCard(
                         symbol: widget.symbol,
                       ).animate(delay: 360.ms).fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
+                      _SensitivityStatsCard(
+                        symbol: widget.symbol,
+                      ).animate(delay: 420.ms).fadeIn(duration: 300.ms),
                     ],
                   ),
                 ),
@@ -2220,6 +2224,125 @@ class _MarketStateBadge extends StatelessWidget {
           color: color,
           fontWeight: FontWeight.w700,
         ),
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Alert Sensitivity Stats Card
+// ---------------------------------------------------------------------------
+
+class _SensitivityStatsCard extends ConsumerWidget {
+  const _SensitivityStatsCard({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final statsAsync = ref.watch(alertSensitivityProvider(symbol));
+    final cs = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
+
+    return statsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (stats) {
+        if (stats.totalAlerts == 0) return const SizedBox.shrink();
+
+        final df = DateFormat('MMM d, yyyy');
+        final avgLabel = stats.avgDaysBetweenAlerts != null
+            ? '${stats.avgDaysBetweenAlerts!.toStringAsFixed(1)} days'
+            : '—';
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.insights_rounded,
+                      size: 18,
+                      color: cs.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Alert Sensitivity',
+                      style: textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                _StatRow(label: 'Total alerts fired', value: '${stats.totalAlerts}'),
+                if (stats.firstFiredAt != null)
+                  _StatRow(
+                    label: 'First alert',
+                    value: df.format(stats.firstFiredAt!.toLocal()),
+                  ),
+                if (stats.lastFiredAt != null)
+                  _StatRow(
+                    label: 'Last alert',
+                    value: df.format(stats.lastFiredAt!.toLocal()),
+                  ),
+                _StatRow(label: 'Avg days between alerts', value: avgLabel),
+                if (stats.alertsByType.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 6,
+                    children: stats.alertsByType.entries
+                        .map(
+                          (e) => Chip(
+                            label: Text(
+                              '${e.key}: ${e.value}',
+                              style: const TextStyle(fontSize: 11),
+                            ),
+                            backgroundColor: cs.primaryContainer,
+                            labelStyle: TextStyle(color: cs.onPrimaryContainer),
+                            padding: EdgeInsets.zero,
+                            visualDensity: VisualDensity.compact,
+                          ),
+                        )
+                        .toList(),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  const _StatRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 3),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontSize: 12, color: cs.onSurfaceVariant),
+          ),
+          Text(
+            value,
+            style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+        ],
       ),
     );
   }
