@@ -192,7 +192,7 @@ class AppSettings extends Equatable {
     this.quietHoursStart,
     this.quietHoursEnd,
     this.trendStrictnessDays = 1,
-    this.providerName = 'alpha_vantage',
+    this.providerName = 'yahoo_finance',
     this.cacheTtlMinutes = 30,
   });
 

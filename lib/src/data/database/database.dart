@@ -64,7 +64,7 @@ class AppSettingsTable extends Table {
   IntColumn get trendStrictnessDays =>
       integer().withDefault(const Constant(1))();
   TextColumn get providerName =>
-      text().withDefault(const Constant('alpha_vantage'))();
+      text().withDefault(const Constant('yahoo_finance'))();
   IntColumn get cacheTtlMinutes => integer().withDefault(const Constant(30))();
 
   @override

@@ -167,18 +167,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
               Text('${_settings.cacheTtlMinutes} minutes'),
               const Divider(height: 32),
 
-              // API Key
-              Text('API Key', style: Theme.of(context).textTheme.titleMedium),
+              // Data provider
+              Text(
+                'Data Provider',
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
               const SizedBox(height: 8),
-              TextField(
-                controller: _apiKeyController,
+              DropdownButtonFormField<String>(
+                initialValue: _settings.providerName,
                 decoration: const InputDecoration(
                   border: OutlineInputBorder(),
-                  labelText: 'New API Key',
-                  hintText: 'Leave blank to keep current',
                 ),
-                obscureText: true,
+                items: const [
+                  DropdownMenuItem(
+                    value: 'yahoo_finance',
+                    child: Text('Yahoo Finance (free, no key)'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'alpha_vantage',
+                    child: Text('Alpha Vantage (requires API key)'),
+                  ),
+                  DropdownMenuItem(
+                    value: 'mock',
+                    child: Text('Mock (offline / testing)'),
+                  ),
+                ],
+                onChanged: (v) => setState(() {
+                  _settings = _settings.copyWith(
+                    providerName: v ?? 'yahoo_finance',
+                  );
+                }),
               ),
+              const SizedBox(height: 16),
+
+              // API Key (only shown for Alpha Vantage)
+              if (_settings.providerName == 'alpha_vantage') ...[
+                Text(
+                  'API Key',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: _apiKeyController,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: 'Alpha Vantage API Key',
+                    hintText: 'Leave blank to keep current',
+                  ),
+                  obscureText: true,
+                ),
+              ],
               const SizedBox(height: 24),
 
               // Save button
