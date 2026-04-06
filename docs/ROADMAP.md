@@ -21,10 +21,21 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
   with preset `AppSettings` defaults and `displayName` / `description` helpers
 - **HealthCheckService** — startup diagnostics: network, database, data freshness
 - Clean Architecture (domain → data → application → presentation)
-- 100% domain test coverage (72 tests)
+- 147 passing unit tests (domain layer fully covered)
 - GitHub Actions CI/CD, bump-version workflow, release workflow (ZIP + MSIX + APK)
 - Pre-commit hooks (dart format, analyze, secret scan, YAML/JSON/Markdown lint)
 - VS Code tasks: quick release bumps via `gh workflow run`
+- **Multi-SMA detection** — SMA50/SMA150/SMA200 cross-up alerts + Golden/Death Cross
+- **Chart enhancements** — SMA overlay lines, S&P 500 benchmark, volume bars, time-range selector
+- **Price target alerts** — per-ticker price-target list, DB-backed, dismissable tiles
+- **Percentage-move alerts** — per-ticker % threshold list, ▲/▼ direction
+- **Volume spike alerts** — N× 20-day average daily volume; configurable multiplier
+- **Alert history timeline** — scrollable log of all past alerts, acknowledge + swipe-to-dismiss
+- **Export alert history** — CSV and JSON export to documents directory
+- **Upcoming earnings indicator** — `_EarningsBadge` in ticker detail AppBar, Yahoo Finance calendar events
+- **Dynamic accent color** — 10-color palette picker in settings; persisted, live theme update
+- **Deep-link support** — `crosstide://ticker/AAPL` scheme (Android intent-filter + GoRouter redirect)
+- **Crash log viewer** — in-app `/crash-logs` screen with copy + clear; accessible from Settings
 
 ---
 
