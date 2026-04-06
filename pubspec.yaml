@@ -27,7 +27,7 @@ dependencies:
 
   # Persistence – Drift (SQLite): type-safe, migration-friendly, in-memory for tests
   drift: ^2.24.0
-  sqlite3_flutter_libs: ^0.5.32
+  sqlite3_flutter_libs: ^0.6.0+eol
 
   # Secure storage for API keys
   flutter_secure_storage: ^9.2.4
