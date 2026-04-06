@@ -96,7 +96,14 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
 
           final chartStart = candles.length > 250 ? candles.length - 250 : 0;
           final chartCandles = candles.sublist(chartStart);
-          final chartSma = smaSeries.sublist(chartStart);
+          final chartSma200 = smaSeries.sublist(chartStart);
+          // Pre-compute SMA50 and SMA150 series for the chart overlays
+          final chartSma50 = smaCalc
+              .computeSeries(candles, period: 50)
+              .sublist(chartStart);
+          final chartSma150 = smaCalc
+              .computeSeries(candles, period: 150)
+              .sublist(chartStart);
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -116,7 +123,9 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                 _ChartSection(
                   cs: cs,
                   chartCandles: chartCandles,
-                  chartSma: chartSma,
+                  chartSma50: chartSma50,
+                  chartSma150: chartSma150,
+                  chartSma200: chartSma200,
                 ).animate(delay: 80.ms).fadeIn(duration: 300.ms),
                 const SizedBox(height: 16),
                 _AlertStateCard(
@@ -384,38 +393,114 @@ class _MetricBox extends StatelessWidget {
 }
 
 // ---------------------------------------------------------------------------
-// Chart Section
+// Chart Section  (SMA50 / SMA150 / SMA200 toggle overlays)
 // ---------------------------------------------------------------------------
 
-class _ChartSection extends StatelessWidget {
+class _ChartSection extends StatefulWidget {
   const _ChartSection({
     required this.cs,
     required this.chartCandles,
-    required this.chartSma,
+    required this.chartSma50,
+    required this.chartSma150,
+    required this.chartSma200,
   });
 
   final ColorScheme cs;
   final List<DailyCandle> chartCandles;
-  final List<(DateTime, double?)> chartSma;
+  final List<(DateTime, double?)> chartSma50;
+  final List<(DateTime, double?)> chartSma150;
+  final List<(DateTime, double?)> chartSma200;
+
+  @override
+  State<_ChartSection> createState() => _ChartSectionState();
+}
+
+class _ChartSectionState extends State<_ChartSection> {
+  bool _showSma50 = false;
+  bool _showSma150 = false;
+  bool _showSma200 = true;
 
   @override
   Widget build(BuildContext context) {
+    final cs = widget.cs;
     final priceSpots = <FlSpot>[];
-    final smaSpots = <FlSpot>[];
+    final sma50Spots = <FlSpot>[];
+    final sma150Spots = <FlSpot>[];
+    final sma200Spots = <FlSpot>[];
 
-    for (var i = 0; i < chartCandles.length; i++) {
-      priceSpots.add(FlSpot(i.toDouble(), chartCandles[i].close));
-      if (chartSma[i].$2 != null) {
-        smaSpots.add(FlSpot(i.toDouble(), chartSma[i].$2!));
+    final candles = widget.chartCandles;
+    for (var i = 0; i < candles.length; i++) {
+      priceSpots.add(FlSpot(i.toDouble(), candles[i].close));
+      if (widget.chartSma50[i].$2 != null) {
+        sma50Spots.add(FlSpot(i.toDouble(), widget.chartSma50[i].$2!));
+      }
+      if (widget.chartSma150[i].$2 != null) {
+        sma150Spots.add(FlSpot(i.toDouble(), widget.chartSma150[i].$2!));
+      }
+      if (widget.chartSma200[i].$2 != null) {
+        sma200Spots.add(FlSpot(i.toDouble(), widget.chartSma200[i].$2!));
       }
     }
 
     final allValues = [
       ...priceSpots.map((s) => s.y),
-      ...smaSpots.map((s) => s.y),
+      if (_showSma50) ...sma50Spots.map((s) => s.y),
+      if (_showSma150) ...sma150Spots.map((s) => s.y),
+      if (_showSma200) ...sma200Spots.map((s) => s.y),
     ];
+    if (allValues.isEmpty) return const SizedBox();
     final minY = allValues.reduce((a, b) => a < b ? a : b) * 0.98;
     final maxY = allValues.reduce((a, b) => a > b ? a : b) * 1.02;
+
+    final bars = <LineChartBarData>[
+      // Price line (always visible)
+      LineChartBarData(
+        spots: priceSpots,
+        isCurved: true,
+        curveSmoothness: 0.25,
+        color: Colors.blue.shade600,
+        barWidth: 2.5,
+        dotData: const FlDotData(show: false),
+        belowBarData: BarAreaData(
+          show: true,
+          gradient: LinearGradient(
+            colors: [
+              Colors.blue.withAlpha(50),
+              Colors.blue.withAlpha(5),
+            ],
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+          ),
+        ),
+      ),
+      if (_showSma50 && sma50Spots.isNotEmpty)
+        LineChartBarData(
+          spots: sma50Spots,
+          isCurved: true,
+          color: Colors.green.shade600,
+          barWidth: 1.8,
+          dashArray: [4, 3],
+          dotData: const FlDotData(show: false),
+        ),
+      if (_showSma150 && sma150Spots.isNotEmpty)
+        LineChartBarData(
+          spots: sma150Spots,
+          isCurved: true,
+          color: Colors.purple.shade500,
+          barWidth: 1.8,
+          dashArray: [4, 3],
+          dotData: const FlDotData(show: false),
+        ),
+      if (_showSma200 && sma200Spots.isNotEmpty)
+        LineChartBarData(
+          spots: sma200Spots,
+          isCurved: true,
+          color: Colors.deepOrange.shade400,
+          barWidth: 2,
+          dashArray: [6, 4],
+          dotData: const FlDotData(show: false),
+        ),
+    ];
 
     return Card(
       child: Padding(
@@ -423,28 +508,31 @@ class _ChartSection extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Chart header + legend
-            Row(
+            // SMA toggle chips
+            Wrap(
+              spacing: 6,
               children: [
-                const Icon(
-                  Icons.show_chart_rounded,
-                  size: 18,
-                  color: Color(0xFF1565C0),
+                _SmaToggleChip(
+                  label: 'SMA 50',
+                  color: Colors.green.shade600,
+                  selected: _showSma50,
+                  onChanged: (v) => setState(() => _showSma50 = v),
                 ),
-                const SizedBox(width: 6),
-                Text(
-                  '📊 Price vs SMA 200',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                _SmaToggleChip(
+                  label: 'SMA 150',
+                  color: Colors.purple.shade500,
+                  selected: _showSma150,
+                  onChanged: (v) => setState(() => _showSma150 = v),
                 ),
-                const Spacer(),
-                _LegendDot(color: Colors.blue.shade600, label: 'Price'),
-                const SizedBox(width: 12),
-                _LegendDash(color: Colors.deepOrange.shade400, label: 'SMA200'),
+                _SmaToggleChip(
+                  label: 'SMA 200',
+                  color: Colors.deepOrange.shade400,
+                  selected: _showSma200,
+                  onChanged: (v) => setState(() => _showSma200 = v),
+                ),
               ],
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             SizedBox(
               height: 260,
               child: LineChart(
@@ -493,14 +581,18 @@ class _ChartSection extends StatelessWidget {
                     bottomTitles: AxisTitles(
                       sideTitles: SideTitles(
                         showTitles: true,
-                        interval: (chartCandles.length / 5).ceilToDouble(),
+                        interval:
+                            (widget.chartCandles.length / 5).ceilToDouble(),
                         getTitlesWidget: (value, meta) {
                           final idx = value.toInt();
-                          if (idx < 0 || idx >= chartCandles.length) {
+                          if (idx < 0 ||
+                              idx >= widget.chartCandles.length) {
                             return const SizedBox();
                           }
                           return Text(
-                            DateFormat('M/d').format(chartCandles[idx].date),
+                            DateFormat('M/d').format(
+                              widget.chartCandles[idx].date,
+                            ),
                             style: const TextStyle(
                               fontSize: 10,
                               color: Colors.grey,
@@ -516,49 +608,29 @@ class _ChartSection extends StatelessWidget {
                       sideTitles: SideTitles(showTitles: false),
                     ),
                   ),
-                  lineBarsData: [
-                    // Price line
-                    LineChartBarData(
-                      spots: priceSpots,
-                      isCurved: true,
-                      curveSmoothness: 0.25,
-                      color: Colors.blue.shade600,
-                      barWidth: 2.5,
-                      dotData: const FlDotData(show: false),
-                      belowBarData: BarAreaData(
-                        show: true,
-                        gradient: LinearGradient(
-                          colors: [
-                            Colors.blue.withAlpha(50),
-                            Colors.blue.withAlpha(5),
-                          ],
-                          begin: Alignment.topCenter,
-                          end: Alignment.bottomCenter,
-                        ),
-                      ),
-                    ),
-                    // SMA200 dashed line
-                    if (smaSpots.isNotEmpty)
-                      LineChartBarData(
-                        spots: smaSpots,
-                        isCurved: true,
-                        color: Colors.deepOrange.shade400,
-                        barWidth: 2,
-                        dashArray: [6, 4],
-                        dotData: const FlDotData(show: false),
-                      ),
-                  ],
+                  lineBarsData: bars,
                   lineTouchData: LineTouchData(
                     touchTooltipData: LineTouchTooltipData(
                       getTooltipItems: (spots) => spots.map((spot) {
-                        final isPrice = spot.barIndex == 0;
-                        final color = isPrice
-                            ? Colors.blue.shade600
-                            : Colors.deepOrange.shade400;
-                        final icon = isPrice ? '💰' : '📉';
-                        final label = isPrice ? 'Price' : 'SMA200';
+                        final colors = [
+                          Colors.blue.shade600,
+                          Colors.green.shade600,
+                          Colors.purple.shade500,
+                          Colors.deepOrange.shade400,
+                        ];
+                        final labels = [
+                          'Price',
+                          if (_showSma50) 'SMA50',
+                          if (_showSma150) 'SMA150',
+                          if (_showSma200) 'SMA200',
+                        ];
+                        final idx = spot.barIndex;
+                        final color =
+                            idx < colors.length ? colors[idx] : Colors.grey;
+                        final label =
+                            idx < labels.length ? labels[idx] : 'SMA';
                         return LineTooltipItem(
-                          '$icon $label: \$${spot.y.toStringAsFixed(2)}',
+                          '$label: \$${spot.y.toStringAsFixed(2)}',
                           TextStyle(
                             color: color,
                             fontSize: 12,
@@ -578,54 +650,32 @@ class _ChartSection extends StatelessWidget {
   }
 }
 
-class _LegendDot extends StatelessWidget {
-  const _LegendDot({required this.color, required this.label});
+class _SmaToggleChip extends StatelessWidget {
+  const _SmaToggleChip({
+    required this.label,
+    required this.color,
+    required this.selected,
+    required this.onChanged,
+  });
 
-  final Color color;
   final String label;
+  final Color color;
+  final bool selected;
+  final ValueChanged<bool> onChanged;
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 10,
-          height: 10,
-          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-        ),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-      ],
+    return FilterChip(
+      label: Text(label, style: const TextStyle(fontSize: 11)),
+      selected: selected,
+      selectedColor: color.withAlpha(35),
+      checkmarkColor: color,
+      side: BorderSide(color: selected ? color : Colors.grey.shade300),
+      onSelected: onChanged,
     );
   }
 }
 
-class _LegendDash extends StatelessWidget {
-  const _LegendDash({required this.color, required this.label});
-
-  final Color color;
-  final String label;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Container(
-          width: 18,
-          height: 2,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(1),
-          ),
-        ),
-        const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 11, color: Colors.grey)),
-      ],
-    );
-  }
-}
 
 // ---------------------------------------------------------------------------
 // Alert State Card
