@@ -57,7 +57,13 @@ final marketDataProviderProvider = FutureProvider<IMarketDataProvider>((
 
   switch (providerName) {
     case 'yahoo_finance':
-      return YahooFinanceProvider(logger: logger);
+      return FallbackMarketDataProvider(
+        providers: [
+          YahooFinanceProvider(logger: logger),
+          MockMarketDataProvider(delayMs: 0),
+        ],
+        logger: logger,
+      );
     case 'alpha_vantage':
       final storage = ref.watch(secureStorageProvider);
       final apiKey = await storage.read(key: 'market_data_api_key') ?? '';
@@ -65,13 +71,32 @@ final marketDataProviderProvider = FutureProvider<IMarketDataProvider>((
         logger.w(
           'Alpha Vantage selected but no API key — falling back to Yahoo Finance',
         );
-        return YahooFinanceProvider(logger: logger);
+        return FallbackMarketDataProvider(
+          providers: [
+            YahooFinanceProvider(logger: logger),
+            MockMarketDataProvider(delayMs: 0),
+          ],
+          logger: logger,
+        );
       }
-      return AlphaVantageProvider(apiKey: apiKey, logger: logger);
+      return FallbackMarketDataProvider(
+        providers: [
+          AlphaVantageProvider(apiKey: apiKey, logger: logger),
+          YahooFinanceProvider(logger: logger),
+          MockMarketDataProvider(delayMs: 0),
+        ],
+        logger: logger,
+      );
     case 'mock':
       return MockMarketDataProvider();
     default:
-      return YahooFinanceProvider(logger: logger);
+      return FallbackMarketDataProvider(
+        providers: [
+          YahooFinanceProvider(logger: logger),
+          MockMarketDataProvider(delayMs: 0),
+        ],
+        logger: logger,
+      );
   }
 });
 
