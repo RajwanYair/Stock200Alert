@@ -91,6 +91,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: generated-code
+          path: lib
 
       - name: Build Windows release
         run: |
@@ -147,6 +148,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: generated-code
+          path: lib
 
       - name: Build release APK
         # android/app/build.gradle.kts uses the debug keystore for release builds.
