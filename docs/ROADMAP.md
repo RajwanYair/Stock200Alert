@@ -65,51 +65,50 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 
 ### Cross-Up Detection Expansion
 - [ ] Detect SMA50 and SMA150 cross-ups (not just SMA200)
-- [ ] **Golden Cross** alert: SMA50 crosses above SMA200
-- [ ] **Death Cross** alert: SMA50 crosses below SMA200
-- [ ] User-selectable alert types per ticker
+- [x] **Golden Cross** alert: SMA50 crosses above SMA200
+- [x] **Death Cross** alert: SMA50 crosses below SMA200
+- [x] User-selectable alert types per ticker
 
 ### Alert Profile UX (uses `AlertProfile` already implemented)
-- [ ] Profile picker chip-row on settings screen (Aggressive / Balanced / Conservative)
-- [ ] "Custom" chip lights up when user overrides any field
-- [ ] One-tap reset to profile defaults
+- [x] Profile picker chip-row on settings screen (Aggressive / Balanced / Conservative)
+- [x] "Custom" chip lights up when user overrides any field
+- [x] One-tap reset to profile defaults
 
 ---
 
 ## v1.2 — Watchlist & Portfolio UX
 
 ### Watchlist Improvements
-- [ ] **Watchlist groups** (e.g., "Tech", "Energy", "My Portfolio")
-- [ ] Drag-to-reorder tickers
-- [ ] **Bulk add** tickers — paste comma-separated list
-- [ ] Ticker search with auto-complete (fuzzy name + symbol)
-- [ ] Market sector tags and color-coded badges
-- [ ] **Multi-select + batch actions** (apply profile, enable/disable, delete)  
-  *Inspired by the batch-operations pattern from VSCode SSH Manager and FileProcessor*
+- [x] **Watchlist groups** (e.g., "Tech", "Energy", "My Portfolio")
+- [x] Drag-to-reorder tickers
+- [x] **Bulk add** tickers — paste comma-separated list
+- [x] Ticker search with auto-complete (fuzzy name + symbol)
+- [x] Market sector tags and color-coded badges
+- [x] **Multi-select + batch actions** (apply profile, enable/disable, delete)
 
 ### Dashboard / Home Screen
-- [ ] At-a-glance dashboard: tickers near SMA200, recent cross-ups, market status
-- [ ] **Heatmap** — all watchlist tickers colored by distance-from-SMA200
-- [ ] Sort/filter by: alphabetical, % above/below SMA, market cap, sector
-- [ ] **Data freshness banner** — "Updated 3 min ago" badge per ticker  
-  *Mirrored from the startup HealthCheckService data-freshness check*
+- [x] At-a-glance dashboard: tickers near SMA200, recent cross-ups, market status
+- [x] **Heatmap** — all watchlist tickers colored by distance-from-SMA200
+- [x] Sort/filter by: alphabetical, % above/below SMA, market cap, sector
+- [x] **Data freshness banner** — stale-data warning + last-updated time
 
 ### Progressive Disclosure UI
-- [ ] **Novice mode** — 3 settings visible: symbols, profile, notification toggle  
-  *Inspired by RegiLattice's tiered-complexity approach and OptimizeBrowsers profiles*
-- [ ] **Advanced mode** — all knobs visible (SMA period, TTL, quiet hours, etc.)
-- [ ] Smooth expand/collapse animation between modes
+- [x] **Novice mode** — 3 settings visible: symbols, profile, notification toggle
+- [x] **Advanced mode** — all knobs visible (SMA period, TTL, quiet hours, etc.)
+- [x] Smooth expand/collapse animation between modes
 
 ---
 
 ## v1.3 — Advanced Technical Indicators
 
-- [ ] **EMA (Exponential Moving Average)** — 12, 26, 50, 200 periods
-- [ ] **RSI (Relative Strength Index)** — 14-day with overbought/oversold zones
-- [ ] **MACD** — histogram + signal line
-- [ ] **Bollinger Bands** — 20-day SMA ± 2σ
-- [ ] Custom indicator builder — pick any SMA/EMA period
-- [ ] Indicator panel below the main chart (split-pane layout)
+- [x] **EMA (Exponential Moving Average)** — 12, 26, 50, 200 periods
+- [x] **RSI (Relative Strength Index)** — 14-day with overbought/oversold zones
+- [x] **MACD** — histogram + signal line
+- [x] **Bollinger Bands** — 20-day SMA ± 2σ
+- [ ] **ATR (Average True Range)** — 14-day volatility overlay (S64 target)
+- [ ] **VWAP** — intraday volume-weighted average price (S65 target)
+- [ ] Custom indicator period builder — pick any SMA/EMA period (S79 target)
+- [x] Indicator panel below the main chart (split-pane layout)
 
 ---
 
@@ -135,7 +134,7 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 - [x] Pre-market / after-hours price display — `_InlineMarketState` chip
 - [x] **Offline mode** — full SQLite cache, last-known data when offline + connectivity banner
 - [x] Background sync optimization — delta fetch (only new candles since last cached date)
-- [ ] **Data freshness indicator** ("Updated 3 min ago") per ticker
+- [ ] **Data freshness indicator** ("Updated 3 min ago") per ticker (S80 target)
 - [x] Rate-limit-aware request scheduler — `ThrottledMarketDataProvider`
 - [x] **Corporate / Intel proxy auto-detection** on Windows — `proxy_detector.dart`
 
@@ -144,19 +143,20 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 ## v1.6 — Platform & Distribution
 
 ### Android
-- [ ] Widget: home-screen ticker card with SMA status
+- [ ] Widget: home-screen ticker card with SMA status (S91 target)
 - [ ] Wear OS companion — wrist glance at cross-up alerts
 
 ### Windows
-- [ ] System tray with popup summary
-- [ ] Windows Task Scheduler integration for true background refresh
-- [ ] MSIX packaging for Microsoft Store *(pipeline already implemented)*
+- [x] System tray with popup summary — `SystemTrayService` (tray_manager)
+- [x] Windows Task Scheduler integration — `WindowsTaskSchedulerService`
+- [x] MSIX packaging for Microsoft Store — release CI builds `.msix`
+- [ ] Windows Task Scheduler settings UI picker (S76 target)
 
 ### Cross-Platform
 - [ ] **iOS** target (requires macOS build host)
 - [ ] **macOS** desktop target
 - [ ] **Web** target (Progressive Web App) — view-only dashboard
-- [ ] Deep-link / universal-link support
+- [x] Deep-link / universal-link support — `crosstide://` scheme, GoRouter redirect
 
 ---
 
@@ -168,9 +168,9 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 
 ### Alert Metrics Dashboard
 - [x] Per-ticker sensitivity stats: signal count, unique alert types, first/last fired (S49 `AlertSensitivityStats`)
-- [ ] "Mean time to alert" (data age at alert-fire time)
-- [ ] Export daily metrics summary as JSON
-- [ ] Optional Prometheus endpoint (`/metrics`) for power users with Grafana
+- [ ] "Mean time to alert" (data age at alert-fire time) (S62 target)
+- [ ] Export daily metrics summary as JSON (S85 target)
+- [ ] Optional Prometheus endpoint (`/metrics`) for power users with Grafana (S102 target)
 
 ### Snapshot & Drift Detection
 - [x] Daily JSON snapshot of all `TickerAlertState` values — `SnapshotService` (S51)
