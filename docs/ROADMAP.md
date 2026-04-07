@@ -52,6 +52,27 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 - **5 Method Detectors** — Stochastic, OBV, ADX, CCI, SAR method detectors wired into ConsensusEngine + RefreshService (S73–S79)
 - **20+ Domain Analytics** — Fibonacci, Volume Profile, Benchmark, Drawdown, Correlation, Sharpe/Sortino, Risk/Reward, Trend Strength, Signal Replay, Position Sizing, Win/Loss Streaks, Price Distance, Gap Detector, MA Ribbon, Signal Aggregator, Candlestick Patterns, Support/Resistance (S80–S107)
 - 808 passing unit tests, 0 analyze issues
+- **7 Data Providers** — Yahoo, AlphaVantage, Stooq, MarketWatch, Coinpaprika + Mock + Fallback chain (S108–S132)
+- **Backtesting Engine** — `BacktestEngine`, `BacktestConfig`, `BacktestTrade`, `BacktestStat` (S128–S132)
+
+### Domain Expansion (S133–S180)
+- **Sector Analysis** — `SectorRotationScorer`, `SectorCorrelationCalculator`, `SectorHeatmapBuilder`
+- **Portfolio Tracking** — `PortfolioSummarizer`, `PortfolioHolding`, `PortfolioRiskScorer` (HHI-based)
+- **Alert Rule DSL** — `AlertRuleEvaluator`, `AlertCondition`, `CompareOp`, `RuleContext` (declarative rules engine)
+- **Dividend Tracking** — `DividendCalculator`, `DividendPayment`, `DividendSummary`, `DividendProjection`
+- **Earnings Calendar** — `EarningsCalendarCalculator`, `EarningsProximity`, `EarningsTiming`
+- **Multi-Timeframe Analysis** — `MultiTimeframeAnalyzer`, `CandleAggregator`, `TimeframeBias`
+- **Report Builder** — `ReportBuilder`, `TickerReport`, `ReportSection`, `ReportMetadata`
+- **Cost Basis Calculator** — `CostBasisCalculator`, `TradeEntry`, `CostBasisResult`
+- **Options Heatmap** — `OptionsHeatmapBuilder`, `OptionsStrike`, `OptionsHeatmapSummary`
+- **Notification Channel Ranker** — `NotificationChannelRanker`, `ChannelStatus`, `RankedChannel`
+- **Forex Calculator** — `ForexCalculator`, `ForexPair`, `PipInfo`, `ForexSummary`
+- **News Relevance Scorer** — `NewsRelevanceScorer`, `NewsItem`, `ScoredNewsItem`, `NewsFeedSummary`
+- **Watchlist Share Codec** — `WatchlistShareCodec`, `WatchlistSharePayload` (deep-link encode/decode)
+- **Locale Resolver** — `LocaleResolver`, `AppLocale` (7 locales), `LocaleResolution`
+- **Accessibility Checker** — `AccessibilityChecker`, `ComponentDescriptor`, `A11yAuditResult`
+- **Performance Scorer** — `PerformanceScorer`, `PerformanceSample`, `OperationStats`, `PerformanceScore`
+- 1172 passing unit tests, 0 analyze issues
 
 ---
 
@@ -254,7 +275,7 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 ## v1.8 — Social & Community Features
 
 - [x] **Share watchlist** — export/import as JSON — `WatchlistExportImportService` (S53)
-- [ ] Shareable link (deep-link URL with encoded watchlist)
+- [x] Shareable link — `WatchlistShareCodec` deep-link encode/decode (S169–S171)
 - [ ] **Public leaderboard** — opt-in: "Most cross-ups caught this month"
 - [ ] Community-curated watchlists (e.g., "ARK Innovation Picks")
 - [ ] In-app news feed for watchlist tickers (RSS/Atom aggregation)
@@ -286,12 +307,12 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 - [ ] **Alert handler plugin interface** — users add custom notification sinks  
   (Slack, Discord, Webhook, email, SMS, custom REST endpoint) without app update
 - [ ] Plugin discovery: drop a Dart file into a plugins/ folder; app hot-loads it
-- [ ] **Declarative alert rule DSL**: `IF sma50 > sma200 AND rsi < 30 THEN alert`  
+- [x] **Declarative alert rule DSL**: `IF sma50 > sma200 AND rsi < 30 THEN alert` — `AlertRuleEvaluator` (S139–S141)  
   *Natural evolution of the `AlertStateMachine` to a data-driven rules engine*
 - [ ] User-defined indicators (custom SMA/EMA periods, formula builder)
 - [ ] Multi-device sync via Firebase/Supabase
 - [ ] Real-time streaming quotes (WebSocket)
-- [ ] PDF report generation — weekly technical summary per watchlist
+- [x] PDF report generation — domain model: `ReportBuilder` + `TickerReport` (S151–S153)
 - [ ] **Backtesting engine** — "How did SMA200 cross-ups perform over 10 years?"
 - [ ] Unlimited watchlist tickers (free tier: 10)
 
@@ -302,12 +323,12 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 | Idea | Source inspiration |
 |------|-------------------|
 | Crypto support (BTC, ETH via CoinGecko) | — |
-| Forex pairs | — |
-| Options chain viewer | — |
-| Earnings calendar integration | — |
-| Dividend tracker | — |
-| Multi-language localization (i18n) | localizely.flutter-intl already in extensions |
-| Accessibility audit (screen readers, high contrast) | — |
+| ~~Forex pairs~~ | ✅ domain: `ForexCalculator` (S163–S165) |
+| ~~Options chain viewer~~ | ✅ domain: `OptionsHeatmapBuilder` (S157–S159) |
+| ~~Earnings calendar integration~~ | ✅ domain: `EarningsCalendarCalculator` (S145–S147) |
+| ~~Dividend tracker~~ | ✅ domain: `DividendCalculator` (S142–S144) |
+| ~~Multi-language localization (i18n)~~ | ✅ domain: `LocaleResolver` (S172–S174) |
+| ~~Accessibility audit~~ | ✅ domain: `AccessibilityChecker` (S175–S177) |
 | GPU-accelerated chart rendering (DirectX/Vulkan on Windows) | ExplorerLens GPU pipeline |
 | Docker Compose dev stack (PostgreSQL history, Redis cache, exchange simulator) | FileProcessor docker-compose |
 | In-app REST API (`/api/alerts`, `/api/config`, `/api/metrics`) | FileNameManipulator FastAPI dashboard |
@@ -325,11 +346,11 @@ CrossTide is a cross-platform stock monitoring toolkit that detects **moving-ave
 | 100% domain test coverage enforced in CI | ✅ |
 | Declarative alert profiles (not imperative if/else) | ✅ `AlertProfile` enum + extension |
 | Startup health checks (network, DB, freshness) | ✅ `HealthCheckService` |
-| Snapshot/rollback architecture | Planned v1.7 |
+| Snapshot/rollback architecture | ✅ `SnapshotService` (v1.7) |
 | YAML-based user config (human-editable) | Planned v1.7 |
-| Graceful fallback chain (provider → mock) | Planned v1.5 |
-| Batch operations with multi-select | Planned v1.2 |
-| Corporate proxy auto-detection | Planned v1.5 |
+| Graceful fallback chain (provider → mock) | ✅ `FallbackMarketDataProvider` (v1.5) |
+| Batch operations with multi-select | ✅ (v1.2) |
+| Corporate proxy auto-detection | ✅ `proxy_detector.dart` (v1.5) |
 
 
 ### Chart Enhancements

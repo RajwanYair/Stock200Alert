@@ -43,6 +43,36 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 - 10 new `AlertType` enum values for 5 new method buy/sell pairs
 - Test count: 808 passing (was 413 at v1.4.0)
 
+### Added (S108–S132: Data Providers)
+- **MarketWatch provider** (CSV scraping, rate-limited)
+- **Coinpaprika provider** (crypto, no API key)
+- **7 providers total** in fallback chains: Yahoo → AlphaVantage → Stooq → MarketWatch → Coinpaprika → Mock
+- 14 provider tests
+
+### Added (S133–S180: Domain Expansion)
+- **SectorRotationScorer** — ranks sectors by normalized relative momentum (S133)
+- **SectorCorrelationCalculator** — Pearson pairwise correlation (S134)
+- **SectorHeatmapBuilder** — per-sector heatmap cells from ticker returns (S135)
+- **PortfolioSummarizer** — `PortfolioHolding` + `PortfolioSummary` (sector weights, top gainer/loser) (S136–S137)
+- **PortfolioRiskScorer** — composite 0–100 risk score (HHI concentration, volatility) (S138)
+- **AlertRuleEvaluator** — declarative rule DSL: `IF sma50 > sma200 AND rsi < 30 THEN BUY` (S139–S141)
+- **DividendCalculator** — trailing 12-month summary + portfolio income projection (S142–S144)
+- **EarningsCalendarCalculator** — next earnings proximity with alert window (S145–S147)
+- **MultiTimeframeAnalyzer** — daily/weekly/monthly candle aggregation + weighted confluence (S148–S150)
+- **ReportBuilder** — structured report domain model (sections, rows, metadata) (S151–S153)
+- **CostBasisCalculator** — FIFO-like average cost, sells reduce proportionally (S154–S156)
+- **OptionsHeatmapBuilder** — call/put OI grouping, max-pain strike, put/call ratio (S157–S159)
+- **NotificationChannelRanker** — priority × reliability scoring for 6 channel types (S160–S162)
+- **ForexCalculator** — pip size, average daily range, spread, summary (S163–S165)
+- **NewsRelevanceScorer** — ticker/title/recency/sentiment scoring + ranking (S166–S168)
+- **WatchlistShareCodec** — `crosstide://share` deep-link encode/decode (S169–S171)
+- **LocaleResolver** — 7 locales (en/he/es/de/fr/ja/zh) with fallback (S172–S174)
+- **AccessibilityChecker** — WCAG AA checks (semantic label, tap target, contrast, tooltip) (S175–S177)
+- **PerformanceScorer** — per-operation P95 scoring with EXCELLENT/GOOD/FAIR/POOR rating (S178–S180)
+- 16 new domain barrel exports in `domain.dart`
+- 150 new domain tests (16 test files)
+- Test count: 1172 passing (was 1022)
+
 ### Changed
 - `dart format` scope narrowed to `lib test` everywhere (CI, pre-commit, tasks) — avoids `PathNotFoundException` on stale `build/` paths
 - `flutter analyze` now always passes `--fatal-infos` in all CI and VS Code tasks

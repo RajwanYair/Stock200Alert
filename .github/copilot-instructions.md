@@ -68,7 +68,7 @@ Clean Architecture with strict layer boundaries. Dependencies flow inward only.
 - **Overall coverage target: ≥ 90%** — do not merge below this
 - Use `AppDatabase.forTesting()` for in-memory DB tests
 - `MockMarketDataProvider` provides deterministic synthetic data
-- Run: `flutter test --coverage --timeout 30s`\n\nCurrently: **808 passing tests**, 0 analyze issues.
+- Run: `flutter test --coverage --timeout 30s`\n\nCurrently: **1172 passing tests**, 0 analyze issues.
 
 ## Build & Run
 ```bash
@@ -93,7 +93,14 @@ dart format lib test            # Formatting (scope to lib/test only)
 - `lib/src/domain/adx_method_detector.dart` — ADX trend strength + DI crossover signals
 - `lib/src/domain/cci_method_detector.dart` — CCI oversold/overbought exit signals
 - `lib/src/domain/sar_method_detector.dart` — Parabolic SAR flip signals
-- `lib/src/domain/domain.dart` — Barrel export (70+ domain classes)
+- `lib/src/domain/domain.dart` — Barrel export (110+ domain classes)
+- `lib/src/domain/alert_rule_evaluator.dart` — Declarative alert rule DSL (S139–S141)
+- `lib/src/domain/dividend_calculator.dart` — Dividend tracking + income projection (S142–S144)
+- `lib/src/domain/earnings_calendar_calculator.dart` — Earnings proximity detection (S145–S147)
+- `lib/src/domain/multi_timeframe_analyzer.dart` — Daily/weekly/monthly candle aggregation (S148–S150)
+- `lib/src/domain/forex_calculator.dart` — Forex pip/spread/range analysis (S163–S165)
+- `lib/src/domain/watchlist_share_codec.dart` — Deep-link share URL encode/decode (S169–S171)
+- `lib/src/domain/locale_resolver.dart` — i18n locale resolution (S172–S174)
 - `lib/src/data/database/database.dart` — Drift schema v15 (regenerate after changes)
 - `lib/src/application/refresh_service.dart` — Orchestrates all 9 method evaluations + consensus
 - `lib/src/presentation/providers.dart` — All Riverpod providers
