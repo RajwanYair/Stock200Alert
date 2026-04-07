@@ -6,6 +6,7 @@ export 'audit_log_service.dart';
 export 'background_service.dart';
 export 'crash_log_service.dart';
 export 'health_check_service.dart';
+export 'notification_fallback_service.dart';
 export 'notification_service.dart';
 export 'refresh_service.dart';
 export 'snapshot_service.dart';
