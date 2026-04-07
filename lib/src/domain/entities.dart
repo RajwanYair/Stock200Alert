@@ -55,6 +55,13 @@ enum AlertType {
 
   /// Today's volume is ≥ N× the rolling 20-day average volume.
   volumeSpike,
+
+  /// Micho Method BUY: price crosses above MA150 while MA150 is flat/rising
+  /// and price is within ~5% of MA150.
+  michoMethodBuy,
+
+  /// Micho Method SELL: price crosses below MA150 from above.
+  michoMethodSell,
 }
 
 /// Extension helpers for [AlertType].
@@ -68,6 +75,8 @@ extension AlertTypeX on AlertType {
     AlertType.priceTarget => 'Price Target',
     AlertType.pctMove => '% Move Alert',
     AlertType.volumeSpike => 'Volume Spike',
+    AlertType.michoMethodBuy => 'Micho Method — BUY',
+    AlertType.michoMethodSell => 'Micho Method — SELL',
   };
 
   String get description => switch (this) {
@@ -82,6 +91,10 @@ extension AlertTypeX on AlertType {
     AlertType.pctMove => 'Price moves ≥ N% from the previous session close',
     AlertType.volumeSpike =>
       'Today\'s volume is ≥ N× the 20-day average volume',
+    AlertType.michoMethodBuy =>
+      'Price crosses above MA150 while MA150 is flat/rising (Micho Method)',
+    AlertType.michoMethodSell =>
+      'Price crosses below MA150 from above — exit signal (Micho Method)',
   };
 }
 
@@ -241,7 +254,11 @@ class TickerEntry extends Equatable {
     this.sma200,
     this.alertState,
     this.error,
-    this.enabledAlertTypes = const {AlertType.sma200CrossUp},
+    this.enabledAlertTypes = const {
+      AlertType.sma200CrossUp,
+      AlertType.michoMethodBuy,
+      AlertType.michoMethodSell,
+    },
     this.sortOrder = 0,
     this.groupId,
     this.nextEarningsAt,

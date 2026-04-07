@@ -9,6 +9,7 @@ export 'ema_calculator.dart';
 export 'entities.dart';
 export 'golden_cross_detector.dart';
 export 'macd_calculator.dart';
+export 'micho_method_detector.dart';
 export 'rsi_calculator.dart';
 export 'sma_calculator.dart';
 export 'volume_calculator.dart';

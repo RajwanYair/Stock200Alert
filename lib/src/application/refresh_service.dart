@@ -31,6 +31,7 @@ class RefreshService {
   final _smaCalculator = const SmaCalculator();
   final _crossUpDetector = const CrossUpDetector();
   final _goldenCrossDetector = const GoldenCrossDetector();
+  final _michoDetector = const MichoMethodDetector();
   final _alertStateMachine = const AlertStateMachine();
   final _volumeCalculator = const VolumeCalculator();
 
@@ -235,6 +236,51 @@ class RefreshService {
     if (enabledAlertTypes.contains(AlertType.volumeSpike)) {
       await checkVolumeSpike(upper, candles, settings: settings);
     }
+
+    // 9. Micho Method BUY / SELL evaluations
+    final wantMichoBuy = enabledAlertTypes.contains(AlertType.michoMethodBuy);
+    final wantMichoSell = enabledAlertTypes.contains(AlertType.michoMethodSell);
+    if (wantMichoBuy || wantMichoSell) {
+      final signals = _michoDetector.evaluateBoth(
+        ticker: upper,
+        candles: candles,
+      );
+      for (final signal in signals) {
+        if (signal.alertType == AlertType.michoMethodBuy && !wantMichoBuy) {
+          continue;
+        }
+        if (signal.alertType == AlertType.michoMethodSell && !wantMichoSell) {
+          continue;
+        }
+        if (inQuiet) {
+          _logger.i(
+            '$upper: ${signal.alertType.displayName} suppressed (quiet hours)',
+          );
+          continue;
+        }
+        _logger.i('$upper: ${signal.description}');
+        if (signal.alertType == AlertType.michoMethodBuy) {
+          await notificationService.showMichoBuyAlert(
+            ticker: upper,
+            close: signal.currentClose!,
+            sma150: signal.currentSma!,
+          );
+        } else {
+          await notificationService.showMichoSellAlert(
+            ticker: upper,
+            close: signal.currentClose!,
+            sma150: signal.currentSma!,
+          );
+        }
+        await _appendHistory(
+          symbol: upper,
+          alertType: signal.alertType.name,
+          message: signal.description!,
+        );
+        firedAny = true;
+      }
+    }
+
     if (wantGolden || wantDeath) {
       final crossEvents = _goldenCrossDetector.evaluateBoth(
         ticker: upper,

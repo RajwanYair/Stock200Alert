@@ -36,6 +36,20 @@ abstract class INotificationService {
     required double ratio,
   });
 
+  /// Fires a Micho Method BUY notification.
+  Future<void> showMichoBuyAlert({
+    required String ticker,
+    required double close,
+    required double sma150,
+  });
+
+  /// Fires a Micho Method SELL notification.
+  Future<void> showMichoSellAlert({
+    required String ticker,
+    required double close,
+    required double sma150,
+  });
+
   Future<void> cancelAll();
 }
 
@@ -233,6 +247,68 @@ class LocalNotificationService implements INotificationService {
       );
     } catch (e) {
       _logger.e('Failed to show volume spike notification: $e');
+    }
+  }
+
+  @override
+  Future<void> showMichoBuyAlert({
+    required String ticker,
+    required double close,
+    required double sma150,
+  }) async {
+    final id = (ticker.hashCode.abs() + 150) % 100000;
+    const androidDetails = AndroidNotificationDetails(
+      _androidChannelId,
+      _androidChannelName,
+      channelDescription: _androidChannelDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    const details = NotificationDetails(android: androidDetails);
+    try {
+      await _plugin.show(
+        id: id,
+        title: '$ticker — Micho Method BUY 📈',
+        body:
+            'Close: \$${close.toStringAsFixed(2)} crossed above '
+            'MA150: \$${sma150.toStringAsFixed(2)}',
+        notificationDetails: details,
+        payload: 'ticker:$ticker',
+      );
+      _logger.i('Micho BUY notification shown for $ticker');
+    } catch (e) {
+      _logger.e('Failed to show Micho BUY notification: $e');
+    }
+  }
+
+  @override
+  Future<void> showMichoSellAlert({
+    required String ticker,
+    required double close,
+    required double sma150,
+  }) async {
+    final id = (ticker.hashCode.abs() + 151) % 100000;
+    const androidDetails = AndroidNotificationDetails(
+      _androidChannelId,
+      _androidChannelName,
+      channelDescription: _androidChannelDesc,
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+    const details = NotificationDetails(android: androidDetails);
+    try {
+      await _plugin.show(
+        id: id,
+        title: '$ticker — Micho Method SELL 📉',
+        body:
+            'Close: \$${close.toStringAsFixed(2)} crossed below '
+            'MA150: \$${sma150.toStringAsFixed(2)}',
+        notificationDetails: details,
+        payload: 'ticker:$ticker',
+      );
+      _logger.i('Micho SELL notification shown for $ticker');
+    } catch (e) {
+      _logger.e('Failed to show Micho SELL notification: $e');
     }
   }
 
