@@ -83,6 +83,54 @@ final marketDataProviderProvider = FutureProvider<IMarketDataProvider>((
         inner: FallbackMarketDataProvider(
           providers: [
             YahooFinanceProvider(logger: logger),
+            StooqProvider(logger: logger),
+            MarketWatchProvider(logger: logger),
+            MockMarketDataProvider(delayMs: 0),
+          ],
+          logger: logger,
+        ),
+      );
+    case 'stooq':
+      return ThrottledMarketDataProvider(
+        inner: FallbackMarketDataProvider(
+          providers: [
+            StooqProvider(logger: logger),
+            YahooFinanceProvider(logger: logger),
+            MarketWatchProvider(logger: logger),
+            MockMarketDataProvider(delayMs: 0),
+          ],
+          logger: logger,
+        ),
+      );
+    case 'marketwatch':
+      return ThrottledMarketDataProvider(
+        inner: FallbackMarketDataProvider(
+          providers: [
+            MarketWatchProvider(logger: logger),
+            YahooFinanceProvider(logger: logger),
+            StooqProvider(logger: logger),
+            MockMarketDataProvider(delayMs: 0),
+          ],
+          logger: logger,
+        ),
+      );
+    case 'coingecko':
+      return ThrottledMarketDataProvider(
+        inner: FallbackMarketDataProvider(
+          providers: [
+            CoinGeckoProvider(logger: logger),
+            CoinpaprikaProvider(logger: logger),
+            MockMarketDataProvider(delayMs: 0),
+          ],
+          logger: logger,
+        ),
+      );
+    case 'coinpaprika':
+      return ThrottledMarketDataProvider(
+        inner: FallbackMarketDataProvider(
+          providers: [
+            CoinpaprikaProvider(logger: logger),
+            CoinGeckoProvider(logger: logger),
             MockMarketDataProvider(delayMs: 0),
           ],
           logger: logger,
@@ -99,6 +147,8 @@ final marketDataProviderProvider = FutureProvider<IMarketDataProvider>((
           inner: FallbackMarketDataProvider(
             providers: [
               YahooFinanceProvider(logger: logger),
+              StooqProvider(logger: logger),
+              MarketWatchProvider(logger: logger),
               MockMarketDataProvider(delayMs: 0),
             ],
             logger: logger,
@@ -110,6 +160,8 @@ final marketDataProviderProvider = FutureProvider<IMarketDataProvider>((
           providers: [
             AlphaVantageProvider(apiKey: apiKey, logger: logger),
             YahooFinanceProvider(logger: logger),
+            StooqProvider(logger: logger),
+            MarketWatchProvider(logger: logger),
             MockMarketDataProvider(delayMs: 0),
           ],
           logger: logger,
@@ -122,6 +174,8 @@ final marketDataProviderProvider = FutureProvider<IMarketDataProvider>((
         inner: FallbackMarketDataProvider(
           providers: [
             YahooFinanceProvider(logger: logger),
+            StooqProvider(logger: logger),
+            MarketWatchProvider(logger: logger),
             MockMarketDataProvider(delayMs: 0),
           ],
           logger: logger,

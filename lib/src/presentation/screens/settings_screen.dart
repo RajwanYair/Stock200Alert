@@ -1566,6 +1566,26 @@ class _ProviderPicker extends StatelessWidget {
       sub: 'Free · No key required',
     ),
     (
+      value: 'stooq',
+      label: '📊 Stooq',
+      sub: 'Free · No key · CSV · US & EU stocks',
+    ),
+    (
+      value: 'marketwatch',
+      label: '📰 MarketWatch',
+      sub: 'Free · No key · US stocks',
+    ),
+    (
+      value: 'coingecko',
+      label: '🪙 CoinGecko',
+      sub: 'Free · No key · Crypto only',
+    ),
+    (
+      value: 'coinpaprika',
+      label: '💎 Coinpaprika',
+      sub: 'Free · No key · Crypto OHLCV',
+    ),
+    (
       value: 'alpha_vantage',
       label: '🔑 Alpha Vantage',
       sub: 'Free tier · 25 req/day',
