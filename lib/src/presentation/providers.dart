@@ -21,6 +21,7 @@ import '../data/database/database.dart' as db show WatchlistGroup;
 import '../domain/alert_metrics_calculator.dart'
     as domain
     show AlertMetrics, AlertMetricsCalculator;
+import '../domain/atr_calculator.dart' as domain show AtrCalculator, AtrResult;
 import '../domain/cross_up_anomaly_detector.dart'
     as domain
     show CrossUpAnomaly, CrossUpAnomalyDetector;
@@ -276,6 +277,16 @@ final signalConfidenceProvider =
       final candles = await repo.fetchAndCacheCandles(symbol);
       return const domain.SignalConfidenceCalculator().compute(symbol, candles);
     });
+
+/// Current ATR (Average True Range, period 14) for a specific ticker.
+final atrProvider = FutureProvider.family<domain.AtrResult?, String>((
+  ref,
+  symbol,
+) async {
+  final repo = await ref.watch(repositoryProvider.future);
+  final candles = await repo.fetchAndCacheCandles(symbol);
+  return const domain.AtrCalculator().compute(candles);
+});
 
 /// [AuditLogService] singleton — records user settings changes.
 final auditLogServiceProvider = Provider<AuditLogService>((ref) {

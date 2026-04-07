@@ -224,6 +224,10 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                         symbol: widget.symbol,
                       ).animate(delay: 200.ms).fadeIn(duration: 300.ms),
                       const SizedBox(height: 16),
+                      _AtrCard(
+                        symbol: widget.symbol,
+                      ).animate(delay: 220.ms).fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
                       _AlertTypeSelectorCard(
                         symbol: widget.symbol,
                       ).animate(delay: 240.ms).fadeIn(duration: 300.ms),
@@ -2719,6 +2723,140 @@ class _FactorChip extends StatelessWidget {
               fontWeight: FontWeight.w600,
               color: color,
             ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// ATR (Average True Range) Card
+// ---------------------------------------------------------------------------
+
+class _AtrCard extends ConsumerWidget {
+  const _AtrCard({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final atrAsync = ref.watch(atrProvider(symbol));
+    final cs = Theme.of(context).colorScheme;
+
+    return atrAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (result) {
+        if (result == null) return const SizedBox.shrink();
+
+        // Volatility label: low < 2%, moderate 2–5%, high > 5%
+        final (volLabel, volColor) = switch (result.atrPercent) {
+          < 2.0 => ('Low Volatility', Colors.green.shade600),
+          < 5.0 => ('Moderate Volatility', Colors.orange.shade600),
+          _ => ('High Volatility', Colors.red.shade700),
+        };
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(Icons.waves_rounded, size: 18, color: cs.primary),
+                    const SizedBox(width: 8),
+                    Text(
+                      'ATR (14)',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: volColor.withAlpha(22),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: volColor.withAlpha(80)),
+                      ),
+                      child: Text(
+                        volLabel,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: volColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _AtrMetric(
+                        label: 'ATR Value',
+                        value:
+                            '\$${result.atr.toStringAsFixed(result.atr < 10 ? 3 : 2)}',
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _AtrMetric(
+                        label: 'ATR %',
+                        value: '${result.atrPercent.toStringAsFixed(2)}%',
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Average True Range measures expected daily price swing. '
+                  'Larger ATR = more volatile.',
+                  style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _AtrMetric extends StatelessWidget {
+  const _AtrMetric({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: cs.surfaceContainerHighest.withAlpha(80),
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            label,
+            style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
+          ),
+          const SizedBox(height: 2),
+          Text(
+            value,
+            style: Theme.of(
+              context,
+            ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
         ],
       ),
