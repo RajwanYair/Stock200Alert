@@ -33,6 +33,9 @@ import '../domain/rsi_calculator.dart' as domain show RsiCalculator;
 import '../domain/signal_confidence_calculator.dart'
     as domain
     show SignalConfidenceCalculator;
+import '../domain/trade_level_calculator.dart'
+    as domain
+    show TradeLevelCalculator, TradeLevels;
 import '../domain/vwap_calculator.dart'
     as domain
     show VwapCalculator, VwapResult;
@@ -293,6 +296,16 @@ final atrProvider = FutureProvider.family<domain.AtrResult?, String>((
   final repo = await ref.watch(repositoryProvider.future);
   final candles = await repo.fetchAndCacheCandles(symbol);
   return const domain.AtrCalculator().compute(candles);
+});
+
+/// Recommended buy price and stop-loss levels for a specific ticker.
+final tradeLevelsProvider = FutureProvider.family<domain.TradeLevels?, String>((
+  ref,
+  symbol,
+) async {
+  final repo = await ref.watch(repositoryProvider.future);
+  final candles = await repo.fetchAndCacheCandles(symbol);
+  return const domain.TradeLevelCalculator().compute(symbol, candles);
 });
 
 /// Current VWAP (Cumulative Volume-Weighted Average Price) for a specific ticker.

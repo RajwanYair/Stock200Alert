@@ -27,6 +27,11 @@ final _crashLog = CrashLogService.instance;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Prevent Google Fonts from blocking startup with network requests.
+  // The system font fallback (Roboto on Android, Segoe UI on Windows) is
+  // perfectly fine; custom fonts are a progressive enhancement.
+  GoogleFonts.config.allowRuntimeFetching = false;
+
   // Initialize crash logger FIRST — before anything else can fail.
   await _crashLog.initialize();
 

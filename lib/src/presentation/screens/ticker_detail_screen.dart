@@ -228,6 +228,10 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                         symbol: widget.symbol,
                       ).animate(delay: 220.ms).fadeIn(duration: 300.ms),
                       const SizedBox(height: 16),
+                      _TradeLevelsCard(
+                        symbol: widget.symbol,
+                      ).animate(delay: 222.ms).fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
                       _VwapCard(
                         symbol: widget.symbol,
                       ).animate(delay: 225.ms).fadeIn(duration: 300.ms),
@@ -2923,6 +2927,222 @@ class _AtrMetric extends StatelessWidget {
             ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Trade Levels Card — Recommended Buy Price & Stop-Loss
+// ---------------------------------------------------------------------------
+
+class _TradeLevelsCard extends ConsumerWidget {
+  const _TradeLevelsCard({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final levelsAsync = ref.watch(tradeLevelsProvider(symbol));
+    final cs = Theme.of(context).colorScheme;
+
+    return levelsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (TradeLevels? levels) {
+        if (levels == null) return const SizedBox.shrink();
+
+        final String rrLabel = levels.rewardToRisk != null
+            ? levels.rewardToRisk!.toStringAsFixed(2)
+            : '—';
+
+        final Color rrColor = switch (levels.rewardToRisk) {
+          null => Colors.grey,
+          >= 2.0 => Colors.green.shade700,
+          >= 1.0 => Colors.orange.shade700,
+          _ => Colors.red.shade700,
+        };
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header row
+                Row(
+                  children: [
+                    Icon(
+                      Icons.price_change_rounded,
+                      size: 18,
+                      color: cs.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Trade Levels',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: rrColor.withAlpha(22),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: rrColor.withAlpha(80)),
+                      ),
+                      child: Text(
+                        'R:R $rrLabel',
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: rrColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+
+                // Main metrics: Buy, Stop-Loss, Risk%
+                Row(
+                  children: [
+                    Expanded(
+                      child: _TradeLevelMetric(
+                        label: 'Buy Price',
+                        value: '\$${levels.recommendedBuy.toStringAsFixed(2)}',
+                        icon: Icons.arrow_circle_up_rounded,
+                        color: Colors.green.shade700,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _TradeLevelMetric(
+                        label: 'Stop-Loss',
+                        value: '\$${levels.stopLoss.toStringAsFixed(2)}',
+                        icon: Icons.arrow_circle_down_rounded,
+                        color: Colors.red.shade700,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: _TradeLevelMetric(
+                        label: 'Risk',
+                        value: '${levels.riskPercent.toStringAsFixed(1)}%',
+                        icon: Icons.shield_outlined,
+                        color: Colors.orange.shade700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 10),
+
+                // Support levels breakdown
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 4,
+                  children: [
+                    if (levels.supportSma150 != null)
+                      _SupportChip(
+                        label: 'SMA150',
+                        value: levels.supportSma150!,
+                      ),
+                    if (levels.supportSma200 != null)
+                      _SupportChip(
+                        label: 'SMA200',
+                        value: levels.supportSma200!,
+                      ),
+                    if (levels.supportBollingerLower != null)
+                      _SupportChip(
+                        label: 'BB Lower',
+                        value: levels.supportBollingerLower!,
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  'Buy near the strongest support level. Stop-loss = '
+                  'buy − ${levels.atrMultiplier.toStringAsFixed(1)}× ATR '
+                  '(\$${levels.atr.toStringAsFixed(2)}).',
+                  style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _TradeLevelMetric extends StatelessWidget {
+  const _TradeLevelMetric({
+    required this.label,
+    required this.value,
+    required this.icon,
+    required this.color,
+  });
+
+  final String label;
+  final String value;
+  final IconData icon;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: color.withAlpha(14),
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: color.withAlpha(40)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, size: 13, color: color),
+              const SizedBox(width: 4),
+              Text(
+                label,
+                style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: color,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SupportChip extends StatelessWidget {
+  const _SupportChip({required this.label, required this.value});
+
+  final String label;
+  final double value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Chip(
+      visualDensity: VisualDensity.compact,
+      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+      label: Text(
+        '$label: \$${value.toStringAsFixed(2)}',
+        style: const TextStyle(fontSize: 10),
       ),
     );
   }

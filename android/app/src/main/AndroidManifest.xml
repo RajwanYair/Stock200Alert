@@ -1,4 +1,11 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <!-- Network access for Yahoo Finance market data and Google Fonts -->
+  <uses-permission android:name="android.permission.INTERNET" />
+  <!-- WorkManager periodic refresh after device reboot -->
+  <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+  <!-- Android 13+ runtime notification permission (requested in Dart code) -->
+  <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
   <application
     android:label="CrossTide"
     android:name="${applicationName}"

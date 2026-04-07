@@ -814,6 +814,11 @@ class _TickerCard extends ConsumerWidget {
                             ],
                           ],
                         ),
+                      if (advancedMode)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: _TradeLevelBadge(symbol: ticker.symbol),
+                        ),
                       if (ticker.lastRefreshAt != null)
                         Padding(
                           padding: const EdgeInsets.only(top: 3),
@@ -1538,6 +1543,124 @@ class _GroupFilterRow extends ConsumerWidget {
 
 // ---------------------------------------------------------------------------
 // Add Tickers Dialog with S&P 500 autocomplete suggestions
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Trade Level Badge — compact buy/stop-loss indicator per ticker
+// ---------------------------------------------------------------------------
+
+class _TradeLevelBadge extends ConsumerWidget {
+  const _TradeLevelBadge({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final levelsAsync = ref.watch(tradeLevelsProvider(symbol));
+    return levelsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (levels) {
+        if (levels == null) return const SizedBox.shrink();
+        return Row(
+          children: [
+            Icon(
+              Icons.arrow_circle_up_rounded,
+              size: 11,
+              color: Colors.green.shade700,
+            ),
+            const SizedBox(width: 2),
+            Text(
+              'Buy \$${levels.recommendedBuy.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Colors.green.shade700,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              Icons.arrow_circle_down_rounded,
+              size: 11,
+              color: Colors.red.shade700,
+            ),
+            const SizedBox(width: 2),
+            Text(
+              'Stop \$${levels.stopLoss.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Colors.red.shade700,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Add Tickers Dialog
+// ---------------------------------------------------------------------------
+
+// ---------------------------------------------------------------------------
+// Trade Level Badge — compact buy/stop-loss indicator per ticker
+// ---------------------------------------------------------------------------
+
+class _TradeLevelBadge extends ConsumerWidget {
+  const _TradeLevelBadge({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final levelsAsync = ref.watch(tradeLevelsProvider(symbol));
+    return levelsAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (levels) {
+        if (levels == null) return const SizedBox.shrink();
+        return Row(
+          children: [
+            Icon(
+              Icons.arrow_circle_up_rounded,
+              size: 11,
+              color: Colors.green.shade700,
+            ),
+            const SizedBox(width: 2),
+            Text(
+              'Buy \$${levels.recommendedBuy.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Colors.green.shade700,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Icon(
+              Icons.arrow_circle_down_rounded,
+              size: 11,
+              color: Colors.red.shade700,
+            ),
+            const SizedBox(width: 2),
+            Text(
+              'Stop \$${levels.stopLoss.toStringAsFixed(2)}',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w600,
+                color: Colors.red.shade700,
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Add Tickers Dialog
 // ---------------------------------------------------------------------------
 
 class _AddTickersDialog extends StatefulWidget {
