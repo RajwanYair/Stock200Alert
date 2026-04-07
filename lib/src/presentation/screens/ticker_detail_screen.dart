@@ -228,6 +228,10 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                         symbol: widget.symbol,
                       ).animate(delay: 220.ms).fadeIn(duration: 300.ms),
                       const SizedBox(height: 16),
+                      _VwapCard(
+                        symbol: widget.symbol,
+                      ).animate(delay: 225.ms).fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
                       _AlertTypeSelectorCard(
                         symbol: widget.symbol,
                       ).animate(delay: 240.ms).fadeIn(duration: 300.ms),
@@ -2860,6 +2864,123 @@ class _AtrMetric extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// VWAP Card
+// ---------------------------------------------------------------------------
+
+class _VwapCard extends ConsumerWidget {
+  const _VwapCard({required this.symbol});
+
+  final String symbol;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final vwapAsync = ref.watch(vwapProvider(symbol));
+    final priceAsync = ref.watch(tickerCandlesProvider(symbol));
+    final cs = Theme.of(context).colorScheme;
+
+    return vwapAsync.when(
+      loading: () => const SizedBox.shrink(),
+      error: (_, _) => const SizedBox.shrink(),
+      data: (result) {
+        if (result == null) return const SizedBox.shrink();
+
+        final lastClose = switch (priceAsync) {
+          AsyncData(:final value) when value.isNotEmpty => value.last.close,
+          _ => null,
+        };
+
+        final bool? aboveVwap = lastClose != null
+            ? lastClose > result.vwap
+            : null;
+        final (signalLabel, signalColor) = switch (aboveVwap) {
+          true => ('Price > VWAP  (Bullish)', Colors.green.shade600),
+          false => ('Price < VWAP  (Bearish)', Colors.red.shade700),
+          null => ('—', Colors.grey.shade500),
+        };
+
+        return Card(
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.waterfall_chart_rounded,
+                      size: 18,
+                      color: cs.primary,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'VWAP',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
+                      decoration: BoxDecoration(
+                        color: signalColor.withAlpha(22),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: signalColor.withAlpha(80)),
+                      ),
+                      child: Text(
+                        signalLabel,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w700,
+                          color: signalColor,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                Row(
+                  children: [
+                    Expanded(
+                      child: _AtrMetric(
+                        label: 'VWAP',
+                        value:
+                            '\$${result.vwap.toStringAsFixed(result.vwap < 10 ? 3 : 2)}',
+                      ),
+                    ),
+                    if (lastClose != null) ...[
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: _AtrMetric(
+                          label: 'vs VWAP',
+                          value: () {
+                            final diff =
+                                (lastClose - result.vwap) / result.vwap * 100;
+                            final sign = diff >= 0 ? '+' : '';
+                            return '$sign${diff.toStringAsFixed(2)}%';
+                          }(),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Cumulative VWAP calculated over all available daily candles.',
+                  style: TextStyle(fontSize: 11, color: cs.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }
