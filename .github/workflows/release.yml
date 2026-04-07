@@ -45,14 +45,6 @@ jobs:
       # No --coverage here; full coverage is enforced in ci.yml on every PR.
       - run: flutter test
 
-      - name: Upload generated code
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-code
-          path: lib/**/*.g.dart
-          retention-days: 1
-          if-no-files-found: error
-
   # ── 1. Windows build → ZIP only ───────────────────────────────────────────
   # MSIX requires Windows Developer Mode to install (sideload) and has proven
   # brittle (manifest XML restrictions). The portable ZIP works for all users.
@@ -86,12 +78,7 @@ jobs:
         run: flutter config --enable-windows-desktop
 
       - run: flutter pub get
-
-      - name: Restore generated code
-        uses: actions/download-artifact@v4
-        with:
-          name: generated-code
-          path: lib
+      - run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build Windows release
         run: |
@@ -143,12 +130,7 @@ jobs:
           echo "sem=${TAG#v}" >> "$GITHUB_OUTPUT"
 
       - run: flutter pub get
-
-      - name: Restore generated code
-        uses: actions/download-artifact@v4
-        with:
-          name: generated-code
-          path: lib
+      - run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build release APK
         # android/app/build.gradle.kts uses the debug keystore for release builds.

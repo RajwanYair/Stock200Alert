@@ -48,14 +48,6 @@ jobs:
       - name: Generate code (Drift, Freezed, etc.)
         run: dart run build_runner build --delete-conflicting-outputs
 
-      - name: Upload generated code
-        uses: actions/upload-artifact@v4
-        with:
-          name: generated-code
-          path: lib/**/*.g.dart
-          retention-days: 1
-          if-no-files-found: error
-
       - name: Analyze
         run: flutter analyze --fatal-infos
 
