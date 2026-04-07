@@ -406,21 +406,26 @@ final tickerNotesProvider =
       symbol,
     ) async* {
       final db = ref.watch(databaseProvider);
-      yield* db
-          .watchNotes(symbol)
-          .map(
-            (List<TickerNotesTableData> rows) => rows
-                .map(
-                  (TickerNotesTableData r) => domain.TickerNote(
-                    id: r.id,
-                    symbol: r.symbol,
-                    content: r.content,
-                    createdAt: r.createdAt,
-                    updatedAt: r.updatedAt,
-                  ),
-                )
-                .toList(),
-          );
+      yield* db.watchNotes(symbol).map((List<TickerNotesTableData> rows) {
+        final notes = rows
+            .map(
+              (TickerNotesTableData r) => domain.TickerNote(
+                id: r.id,
+                symbol: r.symbol,
+                content: r.content,
+                createdAt: r.createdAt,
+                updatedAt: r.updatedAt,
+              ),
+            )
+            .toList();
+        // Sort by most-recently modified (updatedAt ?? createdAt), newest first.
+        notes.sort((a, b) {
+          final aDate = a.updatedAt ?? a.createdAt;
+          final bDate = b.updatedAt ?? b.createdAt;
+          return bDate.compareTo(aDate);
+        });
+        return notes;
+      });
     });
 
 /// Active group filter. Null = show all tickers.

@@ -2451,6 +2451,8 @@ class _NotesCardState extends ConsumerState<_NotesCard> {
     );
   }
 
+  static const _noteMaxLength = 500;
+
   Future<void> _showAddDialog(BuildContext context) async {
     final controller = TextEditingController();
     await showDialog<void>(
@@ -2461,6 +2463,7 @@ class _NotesCardState extends ConsumerState<_NotesCard> {
           controller: controller,
           autofocus: true,
           maxLines: 5,
+          maxLength: _noteMaxLength,
           decoration: const InputDecoration(
             hintText: 'Your research note…',
             border: OutlineInputBorder(),
@@ -2496,6 +2499,7 @@ class _NotesCardState extends ConsumerState<_NotesCard> {
           controller: controller,
           autofocus: true,
           maxLines: 5,
+          maxLength: _noteMaxLength,
           decoration: const InputDecoration(border: OutlineInputBorder()),
         ),
         actions: [
@@ -2552,9 +2556,14 @@ class _NoteTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final df = DateFormat('MMM d, yyyy HH:mm');
-    final displayDate = note.isEdited
-        ? 'Edited ${df.format(note.updatedAt!.toLocal())}'
-        : df.format(note.createdAt.toLocal());
+    final charCount = note.content.length;
+
+    // Show created date; append edited timestamp when note has been modified.
+    final createdLine = 'Created ${df.format(note.createdAt.toLocal())}';
+    final editedLine = note.isEdited
+        ? '  ·  Edited ${df.format(note.updatedAt!.toLocal())}'
+        : '';
+    final displayDate = '$createdLine$editedLine';
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -2569,9 +2578,25 @@ class _NoteTile extends StatelessWidget {
               children: [
                 Text(note.content, style: const TextStyle(fontSize: 13)),
                 const SizedBox(height: 3),
-                Text(
-                  displayDate,
-                  style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        displayDate,
+                        style: TextStyle(
+                          fontSize: 10,
+                          color: cs.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                    Text(
+                      '$charCount chars',
+                      style: TextStyle(
+                        fontSize: 10,
+                        color: cs.onSurfaceVariant.withAlpha(140),
+                      ),
+                    ),
+                  ],
                 ),
               ],
             ),
