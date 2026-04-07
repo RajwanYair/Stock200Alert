@@ -635,6 +635,53 @@ class AuditLogEntry extends Equatable {
   List<Object?> get props => [id, timestamp, field, oldValue, newValue, screen];
 }
 
+// ---------------------------------------------------------------------------
+// TickerNote — free-form per-ticker research notes
+// ---------------------------------------------------------------------------
+
+/// A short free-form note attached to a ticker symbol.
+///
+/// Notes are stored locally in the SQLite database. Each note belongs to
+/// exactly one ticker and is identified by an auto-increment [id].
+class TickerNote extends Equatable {
+  const TickerNote({
+    this.id,
+    required this.symbol,
+    required this.content,
+    required this.createdAt,
+    this.updatedAt,
+  });
+
+  /// Database row ID; null when not yet persisted.
+  final int? id;
+
+  final String symbol;
+
+  /// Free-form note body (up to ~4 000 chars; no hard limit in DB).
+  final String content;
+
+  final DateTime createdAt;
+
+  /// Set when the note is edited after initial creation; null otherwise.
+  final DateTime? updatedAt;
+
+  /// Returns true when the note has been modified at least once.
+  bool get isEdited => updatedAt != null;
+
+  TickerNote copyWith({String? content, DateTime? updatedAt}) {
+    return TickerNote(
+      id: id,
+      symbol: symbol,
+      content: content ?? this.content,
+      createdAt: createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+    );
+  }
+
+  @override
+  List<Object?> get props => [id, symbol, content, createdAt, updatedAt];
+}
+
 /// Maps each [AlertProfile] to a ready-to-use [AppSettings] snapshot.
 /// The UI can apply a profile in one tap; the user may then fine-tune
 /// individual fields (which implicitly switches the profile to [custom]).

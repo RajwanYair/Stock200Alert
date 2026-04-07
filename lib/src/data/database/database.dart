@@ -155,6 +155,18 @@ class AuditLogTable extends Table {
   TextColumn get screen => text().withDefault(const Constant(''))();
 }
 
+/// Free-form per-ticker research notes.
+class TickerNotesTable extends Table {
+  @override
+  String get tableName => 'ticker_notes';
+
+  IntColumn get id => integer().autoIncrement()();
+  TextColumn get symbol => text().withLength(min: 1, max: 10)();
+  TextColumn get content => text()();
+  DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
+  DateTimeColumn get updatedAt => dateTime().nullable()();
+}
+
 class AppSettingsTable extends Table {
   IntColumn get id => integer().withDefault(const Constant(1))();
   IntColumn get refreshIntervalMinutes =>
@@ -197,16 +209,16 @@ class AppSettingsTable extends Table {
     PctMoveThresholdsTable,
     AlertHistoryTable,
     AuditLogTable,
+    TickerNotesTable,
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  AppDatabase([QueryExecutor? e]) : super(e ?? _openConnection());
 
-  /// Named constructor for testing with an in-memory database.
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 12;
+  int get schemaVersion => 13;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -258,8 +270,12 @@ class AppDatabase extends _$AppDatabase {
       if (from < 12) {
         await migrator.createTable(auditLogTable);
       }
+      if (from < 13) {
+        await migrator.createTable(tickerNotesTable);
+      }
     },
   );
+
   // ---- Tickers ----
 
   Future<List<Ticker>> getAllTickers() =>
@@ -421,6 +437,29 @@ class AppDatabase extends _$AppDatabase {
           .get();
 
   Future<void> clearAuditLog() => delete(auditLogTable).go();
+
+  // ---- Ticker Notes ----
+
+  Stream<List<TickerNotesTableData>> watchNotes(String symbol) =>
+      (select(tickerNotesTable)
+            ..where((n) => n.symbol.equals(symbol))
+            ..orderBy([(n) => OrderingTerm.desc(n.createdAt)]))
+          .watch();
+
+  Future<int> insertNote(TickerNotesTableCompanion entry) =>
+      into(tickerNotesTable).insert(entry);
+
+  Future<void> updateNote(int id, String content) async {
+    await (update(tickerNotesTable)..where((n) => n.id.equals(id))).write(
+      TickerNotesTableCompanion(
+        content: Value(content),
+        updatedAt: Value(DateTime.now()),
+      ),
+    );
+  }
+
+  Future<int> deleteNote(int id) =>
+      (delete(tickerNotesTable)..where((n) => n.id.equals(id))).go();
 }
 
 LazyDatabase _openConnection() {

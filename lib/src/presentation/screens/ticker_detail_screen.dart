@@ -10,6 +10,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:intl/intl.dart';
 
+import '../../data/database/database.dart' show TickerNotesTableCompanion;
 import '../../domain/domain.dart';
 import '../providers.dart';
 import '../sector_map_provider.dart';
@@ -234,6 +235,10 @@ class _TickerDetailScreenState extends ConsumerState<TickerDetailScreen> {
                       _SensitivityStatsCard(
                         symbol: widget.symbol,
                       ).animate(delay: 420.ms).fadeIn(duration: 300.ms),
+                      const SizedBox(height: 16),
+                      _NotesCard(
+                        symbol: widget.symbol,
+                      ).animate(delay: 480.ms).fadeIn(duration: 300.ms),
                     ],
                   ),
                 ),
@@ -2352,6 +2357,224 @@ class _StatRow extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Per-ticker Research Notes Card
+// ---------------------------------------------------------------------------
+
+class _NotesCard extends ConsumerStatefulWidget {
+  const _NotesCard({required this.symbol});
+
+  final String symbol;
+
+  @override
+  ConsumerState<_NotesCard> createState() => _NotesCardState();
+}
+
+class _NotesCardState extends ConsumerState<_NotesCard> {
+  @override
+  Widget build(BuildContext context) {
+    final notesAsync = ref.watch(tickerNotesProvider(widget.symbol));
+    final cs = Theme.of(context).colorScheme;
+
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.notes_rounded, size: 18, color: cs.primary),
+                const SizedBox(width: 8),
+                Text(
+                  'Research Notes',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+                ),
+                const Spacer(),
+                FilledButton.tonal(
+                  onPressed: () => _showAddDialog(context),
+                  child: const Text('+ Note'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            switch (notesAsync) {
+              AsyncLoading() => const LinearProgressIndicator(),
+              AsyncError(:final error) => Text(
+                '⚠️ $error',
+                style: TextStyle(color: cs.error, fontSize: 12),
+              ),
+              AsyncData(:final value) when value.isEmpty => Text(
+                'No notes yet. Tap + Note to add one.',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: cs.onSurfaceVariant,
+                  fontStyle: FontStyle.italic,
+                ),
+              ),
+              AsyncData(:final value) => ListView.separated(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: value.length,
+                separatorBuilder: (_, _) => const Divider(height: 1),
+                itemBuilder: (ctx, i) => _NoteTile(
+                  note: value[i],
+                  onEdit: () => _showEditDialog(context, value[i]),
+                  onDelete: () => _deleteNote(value[i]),
+                ),
+              ),
+            },
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showAddDialog(BuildContext context) async {
+    final controller = TextEditingController();
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Add Note'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 5,
+          decoration: const InputDecoration(
+            hintText: 'Your research note…',
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final text = controller.text.trim();
+              if (text.isEmpty) return;
+              Navigator.of(ctx).pop();
+              await _insertNote(text);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+  }
+
+  Future<void> _showEditDialog(BuildContext context, TickerNote note) async {
+    final controller = TextEditingController(text: note.content);
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Edit Note'),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLines: 5,
+          decoration: const InputDecoration(border: OutlineInputBorder()),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Cancel'),
+          ),
+          FilledButton(
+            onPressed: () async {
+              final text = controller.text.trim();
+              if (text.isEmpty) return;
+              Navigator.of(ctx).pop();
+              await _updateNote(note.id!, text);
+            },
+            child: const Text('Update'),
+          ),
+        ],
+      ),
+    );
+    controller.dispose();
+  }
+
+  Future<void> _insertNote(String text) async {
+    final db = ref.read(databaseProvider);
+    await db.insertNote(
+      TickerNotesTableCompanion.insert(symbol: widget.symbol, content: text),
+    );
+  }
+
+  Future<void> _updateNote(int id, String text) async {
+    final db = ref.read(databaseProvider);
+    await db.updateNote(id, text);
+  }
+
+  Future<void> _deleteNote(TickerNote note) async {
+    if (note.id == null) return;
+    final db = ref.read(databaseProvider);
+    await db.deleteNote(note.id!);
+  }
+}
+
+class _NoteTile extends StatelessWidget {
+  const _NoteTile({
+    required this.note,
+    required this.onEdit,
+    required this.onDelete,
+  });
+
+  final TickerNote note;
+  final VoidCallback onEdit;
+  final VoidCallback onDelete;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final df = DateFormat('MMM d, yyyy HH:mm');
+    final displayDate = note.isEdited
+        ? 'Edited ${df.format(note.updatedAt!.toLocal())}'
+        : df.format(note.createdAt.toLocal());
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(Icons.sticky_note_2_outlined, size: 16, color: cs.primary),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(note.content, style: const TextStyle(fontSize: 13)),
+                const SizedBox(height: 3),
+                Text(
+                  displayDate,
+                  style: TextStyle(fontSize: 10, color: cs.onSurfaceVariant),
+                ),
+              ],
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.edit_outlined, size: 16),
+            splashRadius: 16,
+            tooltip: 'Edit',
+            onPressed: onEdit,
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded, size: 16),
+            splashRadius: 16,
+            tooltip: 'Delete',
+            onPressed: onDelete,
           ),
         ],
       ),

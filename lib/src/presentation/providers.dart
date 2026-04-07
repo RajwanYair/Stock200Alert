@@ -358,6 +358,30 @@ final pctMoveThresholdsProvider =
       yield* repo.watchPctMoveThresholds(symbol);
     });
 
+/// Per-ticker research notes (live stream, newest-first).
+final tickerNotesProvider =
+    StreamProvider.family<List<domain.TickerNote>, String>((
+      ref,
+      symbol,
+    ) async* {
+      final db = ref.watch(databaseProvider);
+      yield* db
+          .watchNotes(symbol)
+          .map(
+            (List<TickerNotesTableData> rows) => rows
+                .map(
+                  (TickerNotesTableData r) => domain.TickerNote(
+                    id: r.id,
+                    symbol: r.symbol,
+                    content: r.content,
+                    createdAt: r.createdAt,
+                    updatedAt: r.updatedAt,
+                  ),
+                )
+                .toList(),
+          );
+    });
+
 /// Active group filter. Null = show all tickers.
 final activeGroupFilterProvider = NotifierProvider<ActiveGroupFilter, String?>(
   ActiveGroupFilter.new,
