@@ -8,6 +8,26 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.9.0] — 2026-04-12
+
+### Added (S276–S290)
+- **MarketHolidayCalendar** — exchange trading-holiday database: `TradingExchange` (NYSE/NASDAQ/LSE/TSX/ASX/EURONEXT/HKEX), `MarketHoliday`, `MarketHolidayCalendar.isHoliday()`, `holidaysFor()`, `holidayCountInRange()` (S276)
+- **PriceTriggerRule** — declarative price-level triggers: `PriceTriggerCondition` (crossesAbove/crossesBelow/percentChangeUp/percentChangeDown), `PriceTriggerStatus`, `PriceTriggerRule.isActive`, `isExpiredAt()`, `withStatus()` (S277)
+- **OnboardingState** — first-run checklist tracker: `OnboardingStep`, `OnboardingState.fresh()`, `completionPct`, `isFullyComplete`, `nextStep`, `completeStep()`, `skipStep()` (S278)
+- **AppDiagnosticReport** — runtime app health snapshot: `DiagnosticSeverity`, `DiagnosticEntry.isHealthy`, `AppDiagnosticReport.isHealthy`, `criticalEntries`, `overallSeverity` (S279)
+- **TickerCorrelationCluster** — pairwise ticker clustering: `ClusteringMethod` (kMeans/hierarchical/dbscan), `CorrelationCluster.isHighlyCorrelated`, `TickerCorrelationCluster.clusterFor()`, `peersOf()` (S280)
+- **SmartAlertSchedule** — engagement-driven delivery timing: `EngagementTimeWindow.containsHour()`, `SmartAlertSchedule.bestWindowForHour()`, `isWithinPeakWindow()` (S281)
+- **PortfolioBacktestResult** — multi-ticker portfolio backtest: `PortfolioBacktestTrade.pnl`, `returnPct`, `isWin`; `PortfolioBacktestResult.totalReturn`, `winRate`, `peakEquity`, `maxDrawdown` (S282)
+- **ScreenerPreset** — named screener preset management: `ScreenerConditionField`, `ScreenerCompareOp`, `ScreenerCondition`, `ScreenerPreset.hasConditions`, `withCondition()` (S283)
+- **DigestContentBlock** — typed digest content layout: `DigestBlockType`, `DigestContentBlock.hasTickerRef`, `hasNumericValue`; `DigestTemplate.sorted`, `isEmpty` (S284)
+- **ReportSchedule** — scheduled report delivery: `ReportFrequency`, `ReportDeliveryChannel`, `ReportSchedule.isDueAt()`, `withNextRun()` (S285)
+- **WatchlistSnapshot** — point-in-time watchlist capture: `WatchlistTickerSnapshot.pctFromSma200`, `isAboveSma200`; `WatchlistSnapshot.aboveSma200`, `pctAboveSma200`, `tickerSnapshot()` (S286)
+- **SyncConflictResolver** — device-sync conflict resolution: `ConflictResolutionPolicy` (lastWriteWins/remoteWins/localWins/mergeByField/requireManual), `ConflictOutcome`, `SyncConflict.localIsNewer`, `ConflictResolution.isResolved`, `SyncConflictResolver.resolve()` (S287)
+- **IndicatorAlertConfig** — per-indicator alert thresholds: `IndicatorAlertMode`, `IndicatorAlertThreshold.contains()`, `isBelow()`, `isAbove()`; `IndicatorAlertConfig.shouldAlert()` (S288)
+- **UserAnnotation** — arbitrary entity annotations: `AnnotationTarget`, `AnnotationColor`, `UserAnnotation.hasBeenEdited`, `hasTags`, `withText()`, `hide()` (S289)
+- **FeedbackSubmission** — in-app user feedback: `FeedbackCategory`, `FeedbackStatus`, `FeedbackSubmission.isPending`, `isResolved`, `hasContactInfo`, `withStatus()` (S290)
+- Updated architecture.svg: v1.9, 1688 tests, 190+ domain classes
+
 ## [1.8.0] — 2026-04-11
 
 ### Added (S261–S275)
