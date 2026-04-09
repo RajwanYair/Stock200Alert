@@ -8,6 +8,26 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [1.8.0] — 2026-04-11
+
+### Added (S261–S275)
+- **PrometheusAlertCollector** — alert rate metrics per ticker/window: `AlertRateWindow`, `AlertMetricPoint.alertsPerHour`, `PrometheusAlertCollector.totalAlertsForWindow()` (S261)
+- **AlertDeliveryTrace** — per-alert sink delivery results: `DeliveryStatus` (delivered/retrying/failed/skipped), `DeliverySinkResult.wasSuccessful`, `AlertDeliveryTrace.allDelivered`, `pendingRetries` (S262)
+- **NewsFeedAggregator** — aggregated news feed with filters: `FeedCategory`, `FeedFilter`, `NewsFeedAggregator.latestArticle`, `highRelevanceArticles` (S263)
+- **LeaderboardOptIn** — opt-in consent management: `LeaderboardPrivacyLevel`, `LeaderboardConsent`, `LeaderboardOptIn.optIn()`, `optOut()`, `latestConsent` (S264)
+- **CommunityWatchlistSubscription** — community watchlist follow state: `SubscriptionState`, `CommunityWatchlistSubscription.isActive`, `pause()`, `markSynced()` (S265)
+- **PatternSignalLibrary** — curated setup library: `SetupTrendContext`, `SetupOutcome.expectedValue`, `SetupOutcome.isHighConfidence`, `SignalSetup`, `PatternSignalLibrary.setupsForContext()`, `highConfidenceSetups` (S266)
+- **SignalExplanation** — human-readable signal rationale: `ExplanationConfidenceLevel`, `ExplanationFactor` (weight-validated), `SignalExplanation.supportingFactors`, `conflictingFactors`, `isHighConfidence` (S267)
+- **PluginRegistry** — runtime plugin catalogue: `PluginLifecycleState`, `RegistrationEntry.isOperational`, `withError()`, `activate()`, `PluginRegistry.empty()`, `withEntry()`, `activePlugins`, `entryFor()` (S268)
+- **AlertRuleTemplate** — reusable alert rule templates: `RuleTemplateCategory`, `TemplateParameter.hasRange`, `AlertRuleTemplate.defaultParameters`, `isBuiltIn` (S269)
+- **UserDefinedIndicator** — user-authored indicator metadata: `IndicatorDisplayStyle`, `UserDefinedIndicator.toggleVisibility()` (S270)
+- **TierFeatureGate** — subscription-tier feature access control: `UpgradeReason`, `GateDecision.allowed()`, `GateDecision.denied()`, `TierFeatureGate.evaluate()` (S271)
+- **RestApiRequestLog** — REST API request audit log: `ApiHttpMethod`, `ApiRequestEntry.isSuccess`, `RestApiRequestLog.successRate`, `avgDurationMs`, `withEntry()` (S272)
+- **DataExportManifest** — data export configuration: `ExportFormat`, `ExportField`, `DataExportManifest.dateRange`, `estimatedRowCount` (S273)
+- **TechnicalSummarySnapshot** — multi-indicator snapshot: `IndicatorReadings.hasSufficientData`, `TechnicalSummarySnapshot.pctFromSma200`, `isAboveSma200` (S274)
+- **UserEngagementEvent** — user interaction event log: `EngagementEventType`, `UserEngagementEvent`, `EngagementSession.duration`, `alertActionCount` (S275)
+- Updated architecture.svg: v1.8, 1604 tests, 175+ domain classes
+
 ## [1.7.0] — 2026-04-10
 
 ### Added (S246–S260)

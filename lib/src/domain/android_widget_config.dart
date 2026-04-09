@@ -41,9 +41,10 @@ class AndroidWidgetConfig extends Equatable {
     this.showLastUpdated = true,
     this.refreshIntervalMinutes = 15,
   }) : assert(
-            refreshIntervalMinutes >= 15,
-            'Android widget refresh interval must be at least 15 minutes '
-            '(OS minimum for WorkManager periodic tasks)');
+         refreshIntervalMinutes >= 15,
+         'Android widget refresh interval must be at least 15 minutes '
+         '(OS minimum for WorkManager periodic tasks)',
+       );
 
   /// Android app-widget instance ID.
   final int widgetId;
@@ -68,12 +69,12 @@ class AndroidWidgetConfig extends Equatable {
 
   @override
   List<Object?> get props => [
-        widgetId,
-        ticker,
-        layoutStyle,
-        signalBadge,
-        showSma200Distance,
-        showLastUpdated,
-        refreshIntervalMinutes,
-      ];
+    widgetId,
+    ticker,
+    layoutStyle,
+    signalBadge,
+    showSma200Distance,
+    showLastUpdated,
+    refreshIntervalMinutes,
+  ];
 }

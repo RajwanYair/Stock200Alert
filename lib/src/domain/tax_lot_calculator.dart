@@ -38,8 +38,13 @@ class TaxLot extends Equatable {
   double get totalCostBasis => shares * costBasisPerShare;
 
   @override
-  List<Object?> get props =>
-      [lotId, ticker, acquiredAt, shares, costBasisPerShare];
+  List<Object?> get props => [
+    lotId,
+    ticker,
+    acquiredAt,
+    shares,
+    costBasisPerShare,
+  ];
 }
 
 /// Result of closing (selling) shares using a specified accounting method.
@@ -76,15 +81,15 @@ class TaxLotSaleResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        ticker,
-        method,
-        sharesSold,
-        proceeds,
-        costBasis,
-        realizedGain,
-        lotsConsumed,
-        isLongTerm,
-      ];
+    ticker,
+    method,
+    sharesSold,
+    proceeds,
+    costBasis,
+    realizedGain,
+    lotsConsumed,
+    isLongTerm,
+  ];
 }
 
 /// Computes tax lot results for sale transactions.
@@ -104,8 +109,7 @@ class TaxLotCalculator {
     final lots = openLots.where((l) => l.ticker == ticker).toList();
     if (lots.isEmpty || sharesSold <= 0) return null;
 
-    final totalAvailable =
-        lots.fold<double>(0, (a, l) => a + l.shares);
+    final totalAvailable = lots.fold<double>(0, (a, l) => a + l.shares);
     if (sharesSold > totalAvailable) return null;
 
     final sorted = _sortedLots(lots, method);

@@ -50,8 +50,14 @@ class CryptoAsset extends Equatable {
   final bool isStablecoin;
 
   @override
-  List<Object?> get props =>
-      [symbol, name, coinId, exchange, pricePrecision, isStablecoin];
+  List<Object?> get props => [
+    symbol,
+    name,
+    coinId,
+    exchange,
+    pricePrecision,
+    isStablecoin,
+  ];
 }
 
 /// A price snapshot for a [CryptoAsset].
@@ -86,11 +92,11 @@ class CryptoPrice extends Equatable {
 
   @override
   List<Object?> get props => [
-        asset,
-        priceUsd,
-        volume24hUsd,
-        marketCapUsd,
-        change24hPct,
-        timestamp,
-      ];
+    asset,
+    priceUsd,
+    volume24hUsd,
+    marketCapUsd,
+    change24hPct,
+    timestamp,
+  ];
 }

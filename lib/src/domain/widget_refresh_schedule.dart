@@ -17,7 +17,7 @@ enum RefreshTrigger {
   /// App returned to the foreground.
   onForeground,
 
-  /// Device was rebooted (Android AlarmManager / Windows Task Scheduler). 
+  /// Device was rebooted (Android AlarmManager / Windows Task Scheduler).
   onBoot,
 }
 

@@ -29,8 +29,9 @@ class ParameterRange extends Equatable {
     required this.max,
     required this.step,
   }) : assert(
-            min <= max && step > 0,
-            'ParameterRange: min must be ≤ max and step must be > 0');
+         min <= max && step > 0,
+         'ParameterRange: min must be ≤ max and step must be > 0',
+       );
 
   final String name;
   final double min;
@@ -90,10 +91,8 @@ class BacktestOptimizer extends Equatable {
   final OptimizationMetric optimizeFor;
 
   /// Total number of parameter combinations in the grid.
-  int get totalCombinations => parameterRanges.fold(
-        1,
-        (int acc, ParameterRange r) => acc * r.stepCount,
-      );
+  int get totalCombinations =>
+      parameterRanges.fold(1, (int acc, ParameterRange r) => acc * r.stepCount);
 
   /// Returns the best [SweepResult] from [results] according to [optimizeFor].
   /// Returns null if [results] is empty.
@@ -102,8 +101,8 @@ class BacktestOptimizer extends Equatable {
     return results.reduce(
       (SweepResult a, SweepResult b) =>
           optimizeFor == OptimizationMetric.maxDrawdown
-              ? (a.value < b.value ? a : b)
-              : (a.value > b.value ? a : b),
+          ? (a.value < b.value ? a : b)
+          : (a.value > b.value ? a : b),
     );
   }
 

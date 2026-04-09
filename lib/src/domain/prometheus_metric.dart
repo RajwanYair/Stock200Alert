@@ -81,8 +81,7 @@ class PrometheusMetricsSnapshot extends Equatable {
       final labelStr = m.labels.isEmpty
           ? ''
           : '{${m.labels.entries.map((e) => '${e.key}="${e.value}"').join(',')}}';
-      final ts =
-          m.timestamp != null ? ' ${m.timestamp}' : '';
+      final ts = m.timestamp != null ? ' ${m.timestamp}' : '';
       buf.writeln('${m.name}$labelStr ${m.value}$ts');
     }
     return buf.toString();

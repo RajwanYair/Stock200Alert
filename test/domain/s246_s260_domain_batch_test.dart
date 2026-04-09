@@ -3,10 +3,10 @@ import 'package:cross_tide/src/domain/alert_event_filter.dart';
 import 'package:cross_tide/src/domain/alert_handler_config.dart';
 import 'package:cross_tide/src/domain/alert_handler_plugin.dart';
 import 'package:cross_tide/src/domain/backtest_optimizer.dart';
-import 'package:cross_tide/src/domain/indicator_formula.dart';
 import 'package:cross_tide/src/domain/container_service_config.dart';
 import 'package:cross_tide/src/domain/copilot_query_result.dart';
 import 'package:cross_tide/src/domain/custom_indicator_formula.dart';
+import 'package:cross_tide/src/domain/indicator_formula.dart';
 import 'package:cross_tide/src/domain/natural_language_query.dart';
 import 'package:cross_tide/src/domain/news_article.dart';
 import 'package:cross_tide/src/domain/notification_timing_profile.dart';
@@ -594,16 +594,12 @@ void main() {
     });
 
     test('isActiveAt true before expiry', () {
-      final t = SubscriptionTier.pro(
-        expiresAt: DateTime(2030),
-      );
+      final t = SubscriptionTier.pro(expiresAt: DateTime(2030));
       expect(t.isActiveAt(DateTime(2026)), isTrue);
     });
 
     test('isActiveAt false after expiry', () {
-      final t = SubscriptionTier.pro(
-        expiresAt: DateTime(2025),
-      );
+      final t = SubscriptionTier.pro(expiresAt: DateTime(2025));
       expect(t.isActiveAt(DateTime(2026)), isFalse);
     });
   });

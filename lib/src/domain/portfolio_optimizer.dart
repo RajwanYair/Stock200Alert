@@ -22,10 +22,8 @@ enum OptimizationObjective {
 
 /// Optimal weight for one asset.
 class AssetWeight extends Equatable {
-  const AssetWeight({
-    required this.ticker,
-    required this.weight,
-  }) : assert(weight >= 0.0 && weight <= 1.0, 'weight must be 0–1');
+  const AssetWeight({required this.ticker, required this.weight})
+    : assert(weight >= 0.0 && weight <= 1.0, 'weight must be 0–1');
 
   final String ticker;
 
@@ -60,12 +58,12 @@ class OptimizationResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        objective,
-        weights,
-        expectedReturn,
-        expectedVolatility,
-        sharpeRatio,
-      ];
+    objective,
+    weights,
+    expectedReturn,
+    expectedVolatility,
+    sharpeRatio,
+  ];
 }
 
 /// Computes optimal portfolio weights from historical returns.
@@ -100,7 +98,9 @@ class PortfolioOptimizer {
     final n = tickers.length;
     if (n < 2 || returns.length != n) return null;
     final minDays = returns.fold<int>(
-        9999, (prev, r) => r.length < prev ? r.length : prev);
+      9999,
+      (prev, r) => r.length < prev ? r.length : prev,
+    );
     if (minDays < 2) return null;
 
     switch (objective) {
@@ -108,7 +108,10 @@ class PortfolioOptimizer {
         return _equalWeight(tickers, returns);
       case OptimizationObjective.minVolatility:
         return _monteCarlo(
-            tickers, returns, OptimizationObjective.minVolatility);
+          tickers,
+          returns,
+          OptimizationObjective.minVolatility,
+        );
       case OptimizationObjective.maxSharpe:
         return _monteCarlo(tickers, returns, OptimizationObjective.maxSharpe);
       case OptimizationObjective.riskParity:
@@ -124,7 +127,12 @@ class PortfolioOptimizer {
     final w = List<double>.filled(n, 1.0 / n);
     final (ret, vol) = _portfolioStats(w, returns);
     return _buildResult(
-        OptimizationObjective.equalWeight, tickers, w, ret, vol);
+      OptimizationObjective.equalWeight,
+      tickers,
+      w,
+      ret,
+      vol,
+    );
   }
 
   OptimizationResult _monteCarlo(
@@ -178,8 +186,7 @@ class PortfolioOptimizer {
     List<List<double>> returns,
   ) {
     final n = weights.length;
-    final days =
-        returns.fold<int>(9999, (p, r) => r.length < p ? r.length : p);
+    final days = returns.fold<int>(9999, (p, r) => r.length < p ? r.length : p);
 
     // Portfolio daily returns
     final portReturns = List<double>.generate(days, (d) {
@@ -192,7 +199,8 @@ class PortfolioOptimizer {
 
     final mean = portReturns.fold<double>(0, (a, v) => a + v) / days;
     final annRet = mean * annualizationFactor;
-    final annVol = _sampleStdDev(portReturns) * sqrt(annualizationFactor.toDouble());
+    final annVol =
+        _sampleStdDev(portReturns) * sqrt(annualizationFactor.toDouble());
     return (annRet, annVol);
   }
 
@@ -201,7 +209,7 @@ class PortfolioOptimizer {
     final mean = vals.fold<double>(0, (a, v) => a + v) / vals.length;
     final variance =
         vals.fold<double>(0, (a, v) => a + (v - mean) * (v - mean)) /
-            (vals.length - 1);
+        (vals.length - 1);
     return sqrt(variance);
   }
 

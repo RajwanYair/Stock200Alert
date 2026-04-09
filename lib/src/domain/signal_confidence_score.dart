@@ -27,14 +27,8 @@ class ConfidenceFactor extends Equatable {
     required this.type,
     required this.value,
     required this.weight,
-  }) : assert(
-         value >= 0.0 && value <= 1.0,
-         'value must be in [0.0, 1.0]',
-       ),
-       assert(
-         weight > 0.0 && weight <= 1.0,
-         'weight must be in (0.0, 1.0]',
-       );
+  }) : assert(value >= 0.0 && value <= 1.0, 'value must be in [0.0, 1.0]'),
+       assert(weight > 0.0 && weight <= 1.0, 'weight must be in (0.0, 1.0]');
 
   final ConfidenceFactorType type;
 
@@ -79,7 +73,10 @@ class AlertConfidenceScore extends Equatable {
   /// Computes the weighted-average score from [factors].
   static double computeScore(List<ConfidenceFactor> factors) {
     if (factors.isEmpty) return 0.0;
-    final totalWeight = factors.fold(0.0, (double s, ConfidenceFactor f) => s + f.weight);
+    final totalWeight = factors.fold(
+      0.0,
+      (double s, ConfidenceFactor f) => s + f.weight,
+    );
     if (totalWeight == 0.0) return 0.0;
     final weightedSum = factors.fold(
       0.0,

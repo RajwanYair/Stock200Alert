@@ -73,21 +73,22 @@ class SubscriptionTier extends Equatable {
   );
 
   /// Enterprise-tier defaults: unlimited tickers, all features.
-  factory SubscriptionTier.enterprise({DateTime? expiresAt}) => SubscriptionTier(
-    tier: AppTier.enterprise,
-    features: const {
-      TierFeature.unlimitedTickers,
-      TierFeature.customIndicators,
-      TierFeature.exportHistory,
-      TierFeature.prometheusEndpoint,
-      TierFeature.webhooks,
-      TierFeature.aiSignals,
-      TierFeature.pluginSystem,
-      TierFeature.prioritySupport,
-    },
-    maxTickers: -1,
-    expiresAt: expiresAt,
-  );
+  factory SubscriptionTier.enterprise({DateTime? expiresAt}) =>
+      SubscriptionTier(
+        tier: AppTier.enterprise,
+        features: const {
+          TierFeature.unlimitedTickers,
+          TierFeature.customIndicators,
+          TierFeature.exportHistory,
+          TierFeature.prometheusEndpoint,
+          TierFeature.webhooks,
+          TierFeature.aiSignals,
+          TierFeature.pluginSystem,
+          TierFeature.prioritySupport,
+        },
+        maxTickers: -1,
+        expiresAt: expiresAt,
+      );
 
   final AppTier tier;
 
@@ -104,8 +105,7 @@ class SubscriptionTier extends Equatable {
   bool hasFeature(TierFeature feature) => features.contains(feature);
 
   /// Returns true at [now] if the tier is not yet expired.
-  bool isActiveAt(DateTime now) =>
-      expiresAt == null || expiresAt!.isAfter(now);
+  bool isActiveAt(DateTime now) => expiresAt == null || expiresAt!.isAfter(now);
 
   @override
   List<Object?> get props => [tier, features, maxTickers, expiresAt];

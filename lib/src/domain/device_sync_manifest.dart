@@ -63,8 +63,13 @@ class DeviceSyncEntry extends Equatable {
   bool get needsSync => status != SyncStatus.synced;
 
   @override
-  List<Object?> get props =>
-      [category, status, localVersion, remoteVersion, lastSyncedAt];
+  List<Object?> get props => [
+    category,
+    status,
+    localVersion,
+    remoteVersion,
+    lastSyncedAt,
+  ];
 }
 
 /// Complete sync manifest for one device — lists the sync state of every
@@ -85,10 +90,8 @@ class DeviceSyncManifest extends Equatable {
   final DateTime generatedAt;
 
   /// Categories that need a push or pull operation.
-  List<SyncCategory> get pendingCategories => entries
-      .where((e) => e.needsSync)
-      .map((e) => e.category)
-      .toList();
+  List<SyncCategory> get pendingCategories =>
+      entries.where((e) => e.needsSync).map((e) => e.category).toList();
 
   /// True when no sync is needed.
   bool get isFullySynced => pendingCategories.isEmpty;

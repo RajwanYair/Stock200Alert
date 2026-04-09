@@ -144,10 +144,5 @@ class ContainerComposeConfig extends Equatable {
       services.where((ContainerService s) => s.role == targetRole).toList();
 
   @override
-  List<Object?> get props => [
-    projectName,
-    services,
-    runtime,
-    composeVersion,
-  ];
+  List<Object?> get props => [projectName, services, runtime, composeVersion];
 }

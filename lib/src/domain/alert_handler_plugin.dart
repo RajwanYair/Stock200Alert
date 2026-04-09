@@ -33,10 +33,7 @@ enum PluginSinkType {
 /// A key/value credential holder — the value is a secure-storage key reference,
 /// NOT the raw secret.
 class PluginCredential extends Equatable {
-  const PluginCredential({
-    required this.key,
-    required this.storageKeyRef,
-  });
+  const PluginCredential({required this.key, required this.storageKeyRef});
 
   final String key;
 
@@ -83,27 +80,34 @@ class AlertHandlerPlugin extends Equatable {
 
   /// Returns a copy with [enabled] set to true.
   AlertHandlerPlugin enable() => AlertHandlerPlugin(
-        id: id,
-        name: name,
-        sinkType: sinkType,
-        enabled: true,
-        credentials: credentials,
-        webhookUrl: webhookUrl,
-        payloadTemplate: payloadTemplate,
-      );
+    id: id,
+    name: name,
+    sinkType: sinkType,
+    enabled: true,
+    credentials: credentials,
+    webhookUrl: webhookUrl,
+    payloadTemplate: payloadTemplate,
+  );
 
   /// Returns a copy with [enabled] set to false.
   AlertHandlerPlugin disable() => AlertHandlerPlugin(
-        id: id,
-        name: name,
-        sinkType: sinkType,
-        enabled: false,
-        credentials: credentials,
-        webhookUrl: webhookUrl,
-        payloadTemplate: payloadTemplate,
-      );
+    id: id,
+    name: name,
+    sinkType: sinkType,
+    enabled: false,
+    credentials: credentials,
+    webhookUrl: webhookUrl,
+    payloadTemplate: payloadTemplate,
+  );
 
   @override
-  List<Object?> get props =>
-      [id, name, sinkType, enabled, credentials, webhookUrl, payloadTemplate];
+  List<Object?> get props => [
+    id,
+    name,
+    sinkType,
+    enabled,
+    credentials,
+    webhookUrl,
+    payloadTemplate,
+  ];
 }

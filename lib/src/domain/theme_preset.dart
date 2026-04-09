@@ -46,15 +46,15 @@ class ThemePreset extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        name,
-        primaryArgb,
-        accentArgb,
-        backgroundArgb,
-        surfaceArgb,
-        backgroundStyle,
-        isDark,
-      ];
+    id,
+    name,
+    primaryArgb,
+    accentArgb,
+    backgroundArgb,
+    surfaceArgb,
+    backgroundStyle,
+    isDark,
+  ];
 }
 
 /// Registry of all 11 built-in theme presets.

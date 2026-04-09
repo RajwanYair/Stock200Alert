@@ -17,11 +17,11 @@ class AlertEventFilter extends Equatable {
 
   /// No filters — show all events.
   const AlertEventFilter.all()
-      : ticker = null,
-        fromDate = null,
-        toDate = null,
-        alertTypes = const [],
-        onlyTriggered = false;
+    : ticker = null,
+      fromDate = null,
+      toDate = null,
+      alertTypes = const [],
+      onlyTriggered = false;
 
   /// Restrict to a specific ticker symbol (null = all tickers).
   final String? ticker;
@@ -53,16 +53,20 @@ class AlertEventFilter extends Equatable {
     DateTime? toDate,
     List<AlertType>? alertTypes,
     bool? onlyTriggered,
-  }) =>
-      AlertEventFilter(
-        ticker: ticker ?? this.ticker,
-        fromDate: fromDate ?? this.fromDate,
-        toDate: toDate ?? this.toDate,
-        alertTypes: alertTypes ?? this.alertTypes,
-        onlyTriggered: onlyTriggered ?? this.onlyTriggered,
-      );
+  }) => AlertEventFilter(
+    ticker: ticker ?? this.ticker,
+    fromDate: fromDate ?? this.fromDate,
+    toDate: toDate ?? this.toDate,
+    alertTypes: alertTypes ?? this.alertTypes,
+    onlyTriggered: onlyTriggered ?? this.onlyTriggered,
+  );
 
   @override
-  List<Object?> get props =>
-      [ticker, fromDate, toDate, alertTypes, onlyTriggered];
+  List<Object?> get props => [
+    ticker,
+    fromDate,
+    toDate,
+    alertTypes,
+    onlyTriggered,
+  ];
 }

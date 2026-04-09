@@ -41,8 +41,9 @@ class SentimentDataPoint extends Equatable {
     required this.capturedAt,
     this.headline,
   }) : assert(
-            score >= -1.0 && score <= 1.0,
-            'score must be −1.0 (very bearish) to 1.0 (very bullish)');
+         score >= -1.0 && score <= 1.0,
+         'score must be −1.0 (very bearish) to 1.0 (very bullish)',
+       );
 
   final SentimentSource source;
 
@@ -68,8 +69,9 @@ class SentimentScore extends Equatable {
     required this.windowHours,
     required this.evaluatedAt,
   }) : assert(
-            compositeScore >= -1.0 && compositeScore <= 1.0,
-            'compositeScore must be −1.0 to 1.0');
+         compositeScore >= -1.0 && compositeScore <= 1.0,
+         'compositeScore must be −1.0 to 1.0',
+       );
 
   final String ticker;
 
@@ -98,13 +100,13 @@ class SentimentScore extends Equatable {
 
   @override
   List<Object?> get props => [
-        ticker,
-        direction,
-        compositeScore,
-        dataPoints,
-        windowHours,
-        evaluatedAt,
-      ];
+    ticker,
+    direction,
+    compositeScore,
+    dataPoints,
+    windowHours,
+    evaluatedAt,
+  ];
 }
 
 /// Aggregates sentiment data points into a [SentimentScore].
@@ -121,8 +123,9 @@ class SentimentAggregator {
   }) {
     final ts = now ?? DateTime.now();
     final cutoff = ts.subtract(Duration(hours: windowHours));
-    final filtered =
-        dataPoints.where((d) => d.capturedAt.isAfter(cutoff)).toList();
+    final filtered = dataPoints
+        .where((d) => d.capturedAt.isAfter(cutoff))
+        .toList();
 
     if (filtered.isEmpty) {
       return SentimentScore(
@@ -141,8 +144,8 @@ class SentimentAggregator {
     final direction = composite > 0.2
         ? SentimentDirection.bullish
         : composite < -0.2
-            ? SentimentDirection.bearish
-            : SentimentDirection.neutral;
+        ? SentimentDirection.bearish
+        : SentimentDirection.neutral;
 
     return SentimentScore(
       ticker: ticker,

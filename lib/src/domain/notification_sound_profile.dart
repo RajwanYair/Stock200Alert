@@ -43,8 +43,7 @@ class NotificationSoundProfile extends Equatable {
     required this.soundType,
     required this.priority,
     this.repeatCount = 1,
-  }) : assert(repeatCount >= 1 && repeatCount <= 5,
-            'repeatCount must be 1–5');
+  }) : assert(repeatCount >= 1 && repeatCount <= 5, 'repeatCount must be 1–5');
 
   /// Creates a silent profile for [ticker].
   factory NotificationSoundProfile.silent(String ticker) =>

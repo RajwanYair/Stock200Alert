@@ -197,8 +197,9 @@ void main() {
             ticker: 'AAPL',
             alertType: 'michoMethodBuy',
             firedAt: now.subtract(Duration(days: i)),
-            acknowledgedAt:
-                now.subtract(Duration(days: i)).add(Duration(minutes: avgResponseMins)),
+            acknowledgedAt: now
+                .subtract(Duration(days: i))
+                .add(Duration(minutes: avgResponseMins)),
             actedWithinMinutes: avgResponseMins < 60 ? avgResponseMins : null,
           ),
         );
@@ -242,13 +243,15 @@ void main() {
     test('positive scores produce bullish direction', () {
       final points = [
         SentimentDataPoint(
-            source: SentimentSource.newsArticle,
-            score: 0.8,
-            capturedAt: now.subtract(const Duration(hours: 1))),
+          source: SentimentSource.newsArticle,
+          score: 0.8,
+          capturedAt: now.subtract(const Duration(hours: 1)),
+        ),
         SentimentDataPoint(
-            source: SentimentSource.socialMedia,
-            score: 0.6,
-            capturedAt: now.subtract(const Duration(hours: 2))),
+          source: SentimentSource.socialMedia,
+          score: 0.6,
+          capturedAt: now.subtract(const Duration(hours: 2)),
+        ),
       ];
       final score = agg.aggregate('AAPL', points, now: now);
       expect(score.direction, SentimentDirection.bullish);
@@ -259,9 +262,10 @@ void main() {
     test('negative scores produce bearish direction', () {
       final points = [
         SentimentDataPoint(
-            source: SentimentSource.analystReport,
-            score: -0.9,
-            capturedAt: now.subtract(const Duration(hours: 3))),
+          source: SentimentSource.analystReport,
+          score: -0.9,
+          capturedAt: now.subtract(const Duration(hours: 3)),
+        ),
       ];
       final score = agg.aggregate('AAPL', points, now: now);
       expect(score.isBearish, isTrue);
@@ -270,9 +274,10 @@ void main() {
     test('older-than-window data points are excluded', () {
       final points = [
         SentimentDataPoint(
-            source: SentimentSource.newsArticle,
-            score: 0.9,
-            capturedAt: now.subtract(const Duration(hours: 30))),
+          source: SentimentSource.newsArticle,
+          score: 0.9,
+          capturedAt: now.subtract(const Duration(hours: 30)),
+        ),
       ];
       final score = agg.aggregate('AAPL', points, now: now);
       expect(score.count, 0);
@@ -287,7 +292,10 @@ void main() {
       title: 'Tech Momentum',
       description: 'High-momentum tech stocks',
       tickers: const ['AAPL', 'MSFT', 'NVDA'],
-      tags: const [CommunityWatchlistTag.techGrowth, CommunityWatchlistTag.momentum],
+      tags: const [
+        CommunityWatchlistTag.techGrowth,
+        CommunityWatchlistTag.momentum,
+      ],
       votes: [
         CommunityWatchlistVote(userId: 'u1', isUpvote: true, votedAt: now),
         CommunityWatchlistVote(userId: 'u2', isUpvote: true, votedAt: now),
@@ -310,7 +318,10 @@ void main() {
         title: 'Tech Momentum',
         description: 'High-momentum tech stocks',
         tickers: const ['AAPL', 'MSFT', 'NVDA'],
-        tags: const [CommunityWatchlistTag.techGrowth, CommunityWatchlistTag.momentum],
+        tags: const [
+          CommunityWatchlistTag.techGrowth,
+          CommunityWatchlistTag.momentum,
+        ],
         votes: list.votes,
         createdBy: 'trader123',
         createdAt: now,
@@ -326,14 +337,14 @@ void main() {
     final now = DateTime(2026, 4, 9);
 
     LeaderboardEntry makeEntry(String name, double score) => LeaderboardEntry(
-          pseudonym: name,
-          metric: LeaderboardMetric.signalAccuracy,
-          period: LeaderboardPeriod.monthly,
-          rank: 1,
-          score: score,
-          signalCount: 10,
-          updatedAt: now,
-        );
+      pseudonym: name,
+      metric: LeaderboardMetric.signalAccuracy,
+      period: LeaderboardPeriod.monthly,
+      rank: 1,
+      score: score,
+      signalCount: 10,
+      updatedAt: now,
+    );
 
     test('ranks by descending score', () {
       final ranked = ranker.rank([
@@ -360,7 +371,10 @@ void main() {
     });
 
     test('isTopRanked', () {
-      final ranked = ranker.rank([makeEntry('Alice', 100), makeEntry('Bob', 50)]);
+      final ranked = ranker.rank([
+        makeEntry('Alice', 100),
+        makeEntry('Bob', 50),
+      ]);
       expect(ranked[0].isTopRanked, isTrue);
       expect(ranked[1].isTopRanked, isFalse);
     });
@@ -680,9 +694,24 @@ void main() {
 
     test('builds sorted annotations', () {
       final annotations = builder.build([
-        (ticker: 'AAPL', date: d2, kind: AnnotationKind.consensusBuy, method: null),
-        (ticker: 'AAPL', date: d3, kind: AnnotationKind.earningsDate, method: null),
-        (ticker: 'AAPL', date: d1, kind: AnnotationKind.methodBuy, method: 'RSI'),
+        (
+          ticker: 'AAPL',
+          date: d2,
+          kind: AnnotationKind.consensusBuy,
+          method: null,
+        ),
+        (
+          ticker: 'AAPL',
+          date: d3,
+          kind: AnnotationKind.earningsDate,
+          method: null,
+        ),
+        (
+          ticker: 'AAPL',
+          date: d1,
+          kind: AnnotationKind.methodBuy,
+          method: 'RSI',
+        ),
       ]);
       expect(annotations.length, 3);
       expect(annotations[0].candleDate, d3);
@@ -692,7 +721,12 @@ void main() {
 
     test('consensus BUY has triangleUp shape and isBuy=true', () {
       final annotations = builder.build([
-        (ticker: 'AAPL', date: d1, kind: AnnotationKind.consensusBuy, method: null),
+        (
+          ticker: 'AAPL',
+          date: d1,
+          kind: AnnotationKind.consensusBuy,
+          method: null,
+        ),
       ]);
       expect(annotations[0].shape, AnnotationShape.triangleUp);
       expect(annotations[0].isBuy, isTrue);
@@ -700,7 +734,12 @@ void main() {
 
     test('consensus SELL has triangleDown and isBuy=false', () {
       final annotations = builder.build([
-        (ticker: 'AAPL', date: d1, kind: AnnotationKind.consensusSell, method: null),
+        (
+          ticker: 'AAPL',
+          date: d1,
+          kind: AnnotationKind.consensusSell,
+          method: null,
+        ),
       ]);
       expect(annotations[0].shape, AnnotationShape.triangleDown);
       expect(annotations[0].isBuy, isFalse);
@@ -708,7 +747,12 @@ void main() {
 
     test('method signals include method name in label', () {
       final annotations = builder.build([
-        (ticker: 'AAPL', date: d1, kind: AnnotationKind.methodBuy, method: 'MACD'),
+        (
+          ticker: 'AAPL',
+          date: d1,
+          kind: AnnotationKind.methodBuy,
+          method: 'MACD',
+        ),
       ]);
       expect(annotations[0].label, 'MACD BUY');
     });

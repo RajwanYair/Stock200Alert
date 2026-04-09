@@ -66,8 +66,15 @@ class LeaderboardEntry extends Equatable {
   bool get isTopRanked => rank == 1;
 
   @override
-  List<Object?> get props =>
-      [pseudonym, metric, period, rank, score, signalCount, updatedAt];
+  List<Object?> get props => [
+    pseudonym,
+    metric,
+    period,
+    rank,
+    score,
+    signalCount,
+    updatedAt,
+  ];
 }
 
 /// Computes a sorted leaderboard from a list of raw entries.
@@ -79,8 +86,7 @@ class LeaderboardRanker {
   /// Ties receive the same rank; the next entry gets the non-consecutive rank.
   List<LeaderboardEntry> rank(List<LeaderboardEntry> entries) {
     if (entries.isEmpty) return const [];
-    final sorted = [...entries]
-      ..sort((a, b) => b.score.compareTo(a.score));
+    final sorted = [...entries]..sort((a, b) => b.score.compareTo(a.score));
 
     final ranked = <LeaderboardEntry>[];
     int currentRank = 1;
@@ -88,15 +94,17 @@ class LeaderboardRanker {
       if (i > 0 && sorted[i].score < sorted[i - 1].score) {
         currentRank = i + 1;
       }
-      ranked.add(LeaderboardEntry(
-        pseudonym: sorted[i].pseudonym,
-        metric: sorted[i].metric,
-        period: sorted[i].period,
-        rank: currentRank,
-        score: sorted[i].score,
-        signalCount: sorted[i].signalCount,
-        updatedAt: sorted[i].updatedAt,
-      ));
+      ranked.add(
+        LeaderboardEntry(
+          pseudonym: sorted[i].pseudonym,
+          metric: sorted[i].metric,
+          period: sorted[i].period,
+          rank: currentRank,
+          score: sorted[i].score,
+          signalCount: sorted[i].signalCount,
+          updatedAt: sorted[i].updatedAt,
+        ),
+      );
     }
     return ranked;
   }

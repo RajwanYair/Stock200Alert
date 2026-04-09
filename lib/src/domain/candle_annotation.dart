@@ -82,19 +82,18 @@ class CandleAnnotation extends Equatable {
 
   /// True when the annotation represents a BUY direction.
   bool get isBuy =>
-      kind == AnnotationKind.consensusBuy ||
-      kind == AnnotationKind.methodBuy;
+      kind == AnnotationKind.consensusBuy || kind == AnnotationKind.methodBuy;
 
   @override
   List<Object?> get props => [
-        ticker,
-        candleDate,
-        kind,
-        shape,
-        label,
-        methodName,
-        priceLevel,
-      ];
+    ticker,
+    candleDate,
+    kind,
+    shape,
+    label,
+    methodName,
+    priceLevel,
+  ];
 }
 
 /// Builds a sorted list of [CandleAnnotation]s for a chart from a set of signals.
@@ -104,22 +103,24 @@ class CandleAnnotationBuilder {
   /// Create annotations for a list of fired signal maps.
   ///
   /// [signals] is a list of records:
-  ///   - `ticker`: String  
-  ///   - `date`: DateTime  
-  ///   - `kind`: AnnotationKind  
-  ///   - `method`: String? (method name, for method signals)  
+  ///   - `ticker`: String
+  ///   - `date`: DateTime
+  ///   - `kind`: AnnotationKind
+  ///   - `method`: String? (method name, for method signals)
   List<CandleAnnotation> build(
     List<({String ticker, DateTime date, AnnotationKind kind, String? method})>
-        signals,
+    signals,
   ) {
-    final result = signals.map((s) => CandleAnnotation(
-          ticker: s.ticker,
-          candleDate: s.date,
-          kind: s.kind,
-          shape: _shapeFor(s.kind),
-          label: _labelFor(s.kind, s.method),
-          methodName: s.method,
-        ));
+    final result = signals.map(
+      (s) => CandleAnnotation(
+        ticker: s.ticker,
+        candleDate: s.date,
+        kind: s.kind,
+        shape: _shapeFor(s.kind),
+        label: _labelFor(s.kind, s.method),
+        methodName: s.method,
+      ),
+    );
 
     final list = result.toList()
       ..sort((a, b) => a.candleDate.compareTo(b.candleDate));

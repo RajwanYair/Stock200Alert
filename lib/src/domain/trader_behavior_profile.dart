@@ -62,17 +62,16 @@ class TraderBehaviorRecord extends Equatable {
   final int? actedWithinMinutes;
 
   /// Response latency in minutes.
-  int get responseMinutes =>
-      acknowledgedAt.difference(firedAt).inMinutes;
+  int get responseMinutes => acknowledgedAt.difference(firedAt).inMinutes;
 
   @override
   List<Object?> get props => [
-        ticker,
-        alertType,
-        firedAt,
-        acknowledgedAt,
-        actedWithinMinutes,
-      ];
+    ticker,
+    alertType,
+    firedAt,
+    acknowledgedAt,
+    actedWithinMinutes,
+  ];
 }
 
 /// Aggregated trader behavioral profile derived from [TraderBehaviorRecord]s.
@@ -85,8 +84,9 @@ class TraderBehaviorProfile extends Equatable {
     required this.totalObservations,
     required this.profileConfidence,
   }) : assert(
-            profileConfidence >= 0.0 && profileConfidence <= 1.0,
-            'profileConfidence must be 0.0–1.0');
+         profileConfidence >= 0.0 && profileConfidence <= 1.0,
+         'profileConfidence must be 0.0–1.0',
+       );
 
   final TraderStyle style;
   final RiskAppetite riskAppetite;
@@ -104,18 +104,17 @@ class TraderBehaviorProfile extends Equatable {
   final double profileConfidence;
 
   /// Returns true when confidence is above 70% and at least 10 observations.
-  bool get isReliable =>
-      profileConfidence >= 0.7 && totalObservations >= 10;
+  bool get isReliable => profileConfidence >= 0.7 && totalObservations >= 10;
 
   @override
   List<Object?> get props => [
-        style,
-        riskAppetite,
-        avgResponseMinutes,
-        mostUsedMethod,
-        totalObservations,
-        profileConfidence,
-      ];
+    style,
+    riskAppetite,
+    avgResponseMinutes,
+    mostUsedMethod,
+    totalObservations,
+    profileConfidence,
+  ];
 }
 
 /// Classifies trader behavior from a list of records.
@@ -140,7 +139,7 @@ class TraderBehaviorClassifier {
 
     final avgResponse =
         records.fold<double>(0, (a, r) => a + r.responseMinutes) /
-            records.length;
+        records.length;
 
     // Classify style by average response time
     final style = _inferStyle(avgResponse);
@@ -167,8 +166,7 @@ class TraderBehaviorClassifier {
   }
 
   RiskAppetite _inferRisk(List<TraderBehaviorRecord> records) {
-    final acted =
-        records.where((r) => r.actedWithinMinutes != null).length;
+    final acted = records.where((r) => r.actedWithinMinutes != null).length;
     final ratio = acted / records.length;
     if (ratio < 0.25) return RiskAppetite.conservative;
     if (ratio > 0.65) return RiskAppetite.aggressive;

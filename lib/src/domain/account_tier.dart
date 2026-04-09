@@ -32,45 +32,45 @@ class AccountTier extends Equatable {
 
   /// Free plan: 10 tickers, 5 alert rules, no premium features.
   factory AccountTier.free() => const AccountTier(
-        plan: TierPlan.free,
-        maxWatchlistTickers: 10,
-        maxAlertRules: 5,
-        hasStreamingQuotes: false,
-        hasMultiDeviceSync: false,
-        hasCustomIndicators: false,
-        hasCsvExport: true,
-        hasPdfReports: false,
-        hasEmailDigest: false,
-        hasPrioritySupport: false,
-      );
+    plan: TierPlan.free,
+    maxWatchlistTickers: 10,
+    maxAlertRules: 5,
+    hasStreamingQuotes: false,
+    hasMultiDeviceSync: false,
+    hasCustomIndicators: false,
+    hasCsvExport: true,
+    hasPdfReports: false,
+    hasEmailDigest: false,
+    hasPrioritySupport: false,
+  );
 
   /// Pro plan: 100 tickers, 50 rules, streaming + sync + custom indicators.
   factory AccountTier.pro() => const AccountTier(
-        plan: TierPlan.pro,
-        maxWatchlistTickers: 100,
-        maxAlertRules: 50,
-        hasStreamingQuotes: true,
-        hasMultiDeviceSync: true,
-        hasCustomIndicators: true,
-        hasCsvExport: true,
-        hasPdfReports: true,
-        hasEmailDigest: true,
-        hasPrioritySupport: false,
-      );
+    plan: TierPlan.pro,
+    maxWatchlistTickers: 100,
+    maxAlertRules: 50,
+    hasStreamingQuotes: true,
+    hasMultiDeviceSync: true,
+    hasCustomIndicators: true,
+    hasCsvExport: true,
+    hasPdfReports: true,
+    hasEmailDigest: true,
+    hasPrioritySupport: false,
+  );
 
   /// Enterprise plan: unlimited tickers and rules, all features.
   factory AccountTier.enterprise() => const AccountTier(
-        plan: TierPlan.enterprise,
-        maxWatchlistTickers: -1,
-        maxAlertRules: -1,
-        hasStreamingQuotes: true,
-        hasMultiDeviceSync: true,
-        hasCustomIndicators: true,
-        hasCsvExport: true,
-        hasPdfReports: true,
-        hasEmailDigest: true,
-        hasPrioritySupport: true,
-      );
+    plan: TierPlan.enterprise,
+    maxWatchlistTickers: -1,
+    maxAlertRules: -1,
+    hasStreamingQuotes: true,
+    hasMultiDeviceSync: true,
+    hasCustomIndicators: true,
+    hasCsvExport: true,
+    hasPdfReports: true,
+    hasEmailDigest: true,
+    hasPrioritySupport: true,
+  );
 
   final TierPlan plan;
 
@@ -97,15 +97,15 @@ class AccountTier extends Equatable {
 
   @override
   List<Object?> get props => [
-        plan,
-        maxWatchlistTickers,
-        maxAlertRules,
-        hasStreamingQuotes,
-        hasMultiDeviceSync,
-        hasCustomIndicators,
-        hasCsvExport,
-        hasPdfReports,
-        hasEmailDigest,
-        hasPrioritySupport,
-      ];
+    plan,
+    maxWatchlistTickers,
+    maxAlertRules,
+    hasStreamingQuotes,
+    hasMultiDeviceSync,
+    hasCustomIndicators,
+    hasCsvExport,
+    hasPdfReports,
+    hasEmailDigest,
+    hasPrioritySupport,
+  ];
 }

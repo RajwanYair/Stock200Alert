@@ -70,14 +70,14 @@ class StreamingQuoteConfig extends Equatable {
 
   @override
   List<Object?> get props => [
-        endpoint,
-        protocol,
-        tickers,
-        heartbeatMs,
-        maxReconnectAttempts,
-        reconnectBackoffMs,
-        authToken,
-      ];
+    endpoint,
+    protocol,
+    tickers,
+    heartbeatMs,
+    maxReconnectAttempts,
+    reconnectBackoffMs,
+    authToken,
+  ];
 }
 
 /// Snapshot of the current state of a streaming session.
@@ -107,11 +107,11 @@ class StreamingQuoteSession extends Equatable {
 
   @override
   List<Object?> get props => [
-        config,
-        state,
-        reconnectAttempts,
-        connectedAt,
-        lastMessageAt,
-        errorMessage,
-      ];
+    config,
+    state,
+    reconnectAttempts,
+    connectedAt,
+    lastMessageAt,
+    errorMessage,
+  ];
 }

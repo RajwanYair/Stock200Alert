@@ -41,9 +41,7 @@ class EmailDigestConfig extends Equatable {
     required this.sections,
     this.sendAtHour = 18,
     this.enabled = true,
-  }) : assert(
-            sendAtHour >= 0 && sendAtHour <= 23,
-            'sendAtHour must be 0–23');
+  }) : assert(sendAtHour >= 0 && sendAtHour <= 23, 'sendAtHour must be 0–23');
 
   /// Recipient email address.
   final String recipientEmail;
@@ -61,18 +59,22 @@ class EmailDigestConfig extends Equatable {
   final bool enabled;
 
   /// Returns a copy with [enabled] flipped.
-  EmailDigestConfig toggleEnabled() =>
-      _copyWith(enabled: !enabled);
+  EmailDigestConfig toggleEnabled() => _copyWith(enabled: !enabled);
 
   EmailDigestConfig _copyWith({bool? enabled}) => EmailDigestConfig(
-        recipientEmail: recipientEmail,
-        frequency: frequency,
-        sections: sections,
-        sendAtHour: sendAtHour,
-        enabled: enabled ?? this.enabled,
-      );
+    recipientEmail: recipientEmail,
+    frequency: frequency,
+    sections: sections,
+    sendAtHour: sendAtHour,
+    enabled: enabled ?? this.enabled,
+  );
 
   @override
-  List<Object?> get props =>
-      [recipientEmail, frequency, sections, sendAtHour, enabled];
+  List<Object?> get props => [
+    recipientEmail,
+    frequency,
+    sections,
+    sendAtHour,
+    enabled,
+  ];
 }

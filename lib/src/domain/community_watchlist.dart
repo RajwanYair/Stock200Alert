@@ -87,8 +87,7 @@ class CommunityWatchlist extends Equatable {
   final int followerCount;
 
   /// Net score (upvotes − downvotes).
-  int get netScore =>
-      votes.fold(0, (a, v) => a + (v.isUpvote ? 1 : -1));
+  int get netScore => votes.fold(0, (a, v) => a + (v.isUpvote ? 1 : -1));
 
   /// Upvote percentage (0.0–1.0), or 0.0 when no votes.
   double get approvalRate {
@@ -99,14 +98,14 @@ class CommunityWatchlist extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        title,
-        description,
-        tickers,
-        tags,
-        votes,
-        createdBy,
-        createdAt,
-        followerCount,
-      ];
+    id,
+    title,
+    description,
+    tickers,
+    tags,
+    votes,
+    createdBy,
+    createdAt,
+    followerCount,
+  ];
 }
