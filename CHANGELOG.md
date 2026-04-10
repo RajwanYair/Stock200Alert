@@ -8,6 +8,25 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.1.0] — 2026-04-10
+
+### Added (S306–S320)
+- **BenchmarkIndexConfig** — configurable benchmark index (symbol, displayName, `isDefault`, `color`); predefined `sp500`, `nasdaq100`, `dow` constants; `withDefault()` (S306)
+- **SignalCalibrationRecord** — per-method signal accuracy tracking (`totalSignals`, `correctSignals`, `accuracy`, `accuracyPercent`, `isReliable`, `isHighlyReliable`); rolling `periodDays` window (S307)
+- **PortfolioRebalanceTarget** — target allocation engine (`AllocationTarget` with `targetWeight`, `driftTolerancePct`, `lowerBound`, `upperBound`, `isWithinTolerance()`); container `PortfolioRebalanceTarget` with `totalWeight`, `isFullyAllocated`, `targetFor()` (S308)
+- **PaperTradeOrder** — paper trading simulation (`PaperTradeSide`, `PaperTradeStatus`); `fill()`, `slippage`, `notionalValue`; full buy/sell lifecycle (S309)
+- **GlobalMarketSnapshot** — major index snapshot (`GlobalIndexLevel` with `isRising`/`isFalling`); container with `risingCount`, `fallingCount`, `isBroadlyUp`, `indexFor()` (S310)
+- **MarketSentimentIndex** — composite fear/greed index 0–100 (`SentimentLabel`: extremeFear→extremeGreed, `SentimentComponent` with weight); `isGreedy`, `isFearful`, `isNeutral` (S311)
+- **TickerFundamentals** — per-ticker fundamental snapshot (`peRatio`, `eps`, `revenueUsd`, `marketCapUsd`, `beta`, `dividendYieldPct`); `isExpensive`, `isCheap`, `isHighBeta`, `hasLargeCapSize` (S312)
+- **RiskBudgetConfig** — strategy risk budget (`StrategyRiskAllocation` with `maxRiskPct`, `isUnallocated`); `usedBudgetPct`, `remainingBudgetPct`, `isOverallocated`, `isFullyAllocated`, `allocationFor()` (S313)
+- **AlertNotificationLog** — per-notification delivery log (`NotificationChannel` enum: push/email/sms/webhook/inApp); `isRead`, `isDelivered`, `isFailed`, `markRead()` (S314)
+- **HoldingCostAnalysis** — holding period cost analysis (`avgCostBasis`, `currentPrice`, `quantity`, `holdingDays`); `unrealizedPnl`, `unrealizedPnlPct`, `isProfit`, `isLoss`, `isLongTerm` (S315)
+- **StrategyRuleSet** — named rule set for strategy activation (rules: `List<String>`, `isActive`, `activatedAt`); `activate()`, `deactivate()`, `ruleCount`, `hasDescription` (S316)
+- **TradingJournalEntry** — trade journal with psychology (`TraderEmotion` enum, `TradeOutcome` enum); `isWin`, `isLoss`, `isOpen`, `isEmotional`, `hasPnl` (S317)
+- **DataQualityFlag** — per-candle data quality annotation (`DataQualityFlagType`: missing/gap/spike/stale/split/zeroVolume; `DataQualitySeverity`); `isCritical`, `requiresAction` (S318)
+- **WatchlistPerformanceSummary** — group-level performance aggregation (`avgReturnPct`, `bestPerformerSymbol`, `worstPerformerSymbol`, `returnSpread`, `isGroupPositive`, `hasHighDispersion`) (S319)
+- **OrderFlowImbalance** — buy/sell volume ratio analysis (`ImbalanceDirection`: buyDominated/sellDominated/balanced; `imbalanceRatio`, `isBuyDominated`, `isSellDominated`) (S320)
+
 ## [2.0.0] — 2026-04-10
 
 ### Added (S291–S305)
