@@ -10,6 +10,27 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.8.0] — 2026-04-10
+
+### Added — Domain Entities (S391–S400)
+- **AlertDeduplicationLog** — audit record for alert dedup checks: `DeduplicationOutcome`, `isSuppressed`, `isAccepted` (S391)
+- **DividendReinvestmentPlan** — DRIP config with `DripFrequency` (4 values): `hasFractionalShares`, `minimumCashThreshold` (S392)
+- **MarketCapBucket** — market-cap tier classification: `MarketCapTier` (micro/small/mid/large/mega), `tier`, `isLargeOrAbove` (S393)
+- **MarketScanResult** — per-ticker scan outcome: `ScanMatchStatus` (4 values), `isMatch`, `passCount` (S394)
+- **PortfolioAllocationTarget** — target vs current weight with drift: `needsRebalance`, `isOverweight`, `drift` (S395)
+- **PortfolioRebalanceAlert** — drift alert with severity: `RebalanceAlertSeverity`, `isCritical`, `isOverweight` (S396)
+- **SymbolMappingEntry** — canonical-to-provider symbol map: `symbolFor()`, `hasMappings` (S397)
+- **TradingSessionSummary** — OHLCV session summary: `range`, `changePct`, `isBullishSession` (S398)
+- **TrailingStopConfig** — trailing stop with `TrailingStopUnit` (pct/absolute/ATR): `stopPrice`, `isTriggered()` (S399)
+- **WatchlistChangeLog** — watchlist audit log: `WatchlistAuditChangeType` (5 values), `isTickerChange` (S400)
+
+### Quality
+- 66 new unit tests; 0 failures
+- `flutter analyze --fatal-infos`: 0 issues
+- `dart format`: clean
+
+---
+
 ## [2.7.0] — 2026-04-10
 
 ### Added — Domain Entities (S386–S390)
