@@ -8,7 +8,26 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
-## [2.1.0] — 2026-04-10
+## [2.2.0] — 2026-04-10
+
+### Added (S321–S335)
+- **CorporateActionEvent** — stock splits, reverse splits, dividends, delistings, mergers; `CorporateActionType` (8 values); `isSplit`, `isReverseSplit`, `isDelisting`, `hasNotes` helpers (S321)
+- **SystemHealthAlert** — infrastructure health monitoring; `HealthAlertSeverity` (4 levels), `HealthAlertCategory` (7 categories); `requiresAttention`, `resolutionTime`, `resolve()` (S322)
+- **PriceMomentumSnapshot** — momentum direction tagging; `MomentumDirection` enum; `isPositive`, `isStrong`, `isAccelerating`, `hasRelativeStrength` (S323)
+- **WatchlistGroupMembership** — multi-group membership registry; `GroupMembershipEntry`; `groupIds`, `symbolsInGroup()`, `groupsForSymbol()`, `isMember()` (S324)
+- **TickerImportSession** — bulk import tracking; `ImportSessionType` (4 types), `ImportSessionStatus` (5 states); `successRate`, `duration`, `isComplete` (S325)
+- **PerformanceMetricSnapshot** — latency/metric regression tracking; `deviationPct`, `isRegression`, `isImprovement`, `tags: Map<String, String>` (S326)
+- **InsiderTradeRecord** — SEC Form 4 insider trading data; `InsiderTradeType` (5 values); `totalValue`, `isBuy`, `isSell`, `isSignificant` (>= \$1M) (S327)
+- **GeographicExposureMap** — regional portfolio exposure; `MarketRegion` (7 regions), `RegionalExposureEntry`; `dominantRegion`, `isFullyMapped`, `exposureFor()` (S328)
+- **FeatureFlagEntry** + **FeatureFlagRegistry** — runtime feature flags; `FeatureFlagStatus` (enabled/disabled/rollout); `enable()`, `disable()`, `isRollout`, `isEnabled()`, `flagFor()` (S329)
+- **UserAchievement** + **AchievementTier** — gamification achievement system; `currentTier`, `nextTier`, `isMaxTier`, `progressToNextTier` (0.0–1.0 fraction) (S330)
+- **AlertRateLimitRecord** — per-symbol/method rate limiting; `AlertRateLimitInterval` (perMinute/perHour/perDay); `isExhausted`, `remaining`, `increment()`, `reset()` (S331)
+- **ChartThemeProfile** — chart color theming; predefined `darkClassic`, `lightClean`; `withDefault()`, `hasGridColor`, `hasVolumeColor` (S332)
+- **VolatilitySurface** + **VolatilityDataPoint** — multi-point HV/IV surface; `avgHistoricalVolatility`, `isCurrentlyElevated`, `volSpread`, `latest`, `isEmpty` (S333)
+- **TickerSearchResponse** + **TickerSearchResult** — search result model; `topResult`, `hasPagination`, `isEmpty`, `returnedCount`, `hasSector` (S334)
+- **SystemAuditEntry** — comprehensive audit trail (actions, actors, targets, metadata); `hasTarget`, `hasMetadata`, `isSystemAction` (S335)
+
+
 
 ### Added (S306–S320)
 - **BenchmarkIndexConfig** — configurable benchmark index (symbol, displayName, `isDefault`, `color`); predefined `sp500`, `nasdaq100`, `dow` constants; `withDefault()` (S306)
