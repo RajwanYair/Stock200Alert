@@ -10,6 +10,22 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.7.0] — 2026-04-10
+
+### Added — Domain Entities (S386–S390)
+- **AppConfigSnapshot** — serialisable app-configuration snapshot: `hasSettings`, `settingCount` (S386)
+- **CryptoNetworkMetrics** — on-chain blockchain metrics (active addresses, hash rate, tx count): `isHighActivity`, `isLargeNetwork` (S387)
+- **MultiCurrencyPosition** — multi-currency equity position with live FX conversion: `baseMarketValue`, `unrealisedPnlBase`, `isProfitable` (S388)
+- **NotificationTemplateConfig** — parameterised notification template with `{{placeholder}}` resolution: `resolveTitle()`, `resolveBody()`, `isStatic` (S389)
+- **SocialSentimentSignal** — social-media sentiment signal (Reddit/Twitter/StockTwits): `SentimentPlatform`, `SocialSentimentDirection`, `isBullish`, `isBearish`, `isHighActivity` (S390)
+
+### Quality
+- 36 new unit tests; 0 failures
+- `flutter analyze --fatal-infos`: 0 issues
+- `dart format`: clean
+
+---
+
 ## [2.6.0] — 2026-04-10
 
 ### Added — Domain Entities (S371–S385)
