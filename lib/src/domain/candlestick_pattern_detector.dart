@@ -13,10 +13,17 @@ enum CandlestickPatternType {
   doji,
   hammer,
   invertedHammer,
+  shootingStar,
   bullishEngulfing,
   bearishEngulfing,
   morningStar,
   eveningStar,
+  piercingLine,
+  darkCloudCover,
+  threeWhiteSoldiers,
+  threeBlackCrows,
+  spinningTop,
+  marubozu,
 }
 
 /// A detected candlestick pattern.

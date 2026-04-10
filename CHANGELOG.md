@@ -10,6 +10,35 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.5.0] — 2026-04-10
+
+### Added — Domain Entities (S356–S370)
+- **StrategyPerformanceRecord** — backtested strategy results: return %, drawdown, win-rate, Sharpe, `qualityLabel` (S356)
+- **AlertPriorityEntry** — user-assigned alert priority with urgency check and sort rank (S357)
+- **SectorExposureEntry** + **SectorExposureMap** — sector weight breakdown with `topSector` + dominant count (S358)
+- **MarketBreadthSnapshot** — A/D ratio, net advancers, 52-week highs/lows, `isBullish` (S359)
+- **KellyCriterionResult** — Kelly Criterion position sizing with `compute()` factory and `isPositiveEV` (S360)
+- **DataNormalizationConfig** — field-level normalisation config: minMax/zScore/tanh/none methods with clamping + rolling window (S361)
+- **TickerEventTimeline** + **TickerTimelineEvent** — ordered event history with `ofType()` filter and `latestEvent` (S362)
+- **RiskMetricsBundle** — Beta, annualised volatility, VaR 95%, Calmar ratio, max drawdown (S363)
+- **AlertEscalationPolicy** — unacknowledged-alert escalation: channel, delay, repeat interval, max escalations (S364)
+- **CandlestickPatternMatch** — pattern detection result with confidence score and `isHighConfidence`; extended `CandlestickPatternType` with 7 new patterns (S365)
+- **DataRetentionPolicy** — per-category data retention rules with archive tier support (S366)
+- **MarketImpactEstimate** — order market-impact: participation rate, slippage %, `isMaterial` (S367)
+- **SyntheticTickerConfig** — virtual composite ticker weighting with `isNormalised` guard (S368)
+- **AlertGroupingRule** — by-ticker/method/type grouping with real-time window flag (S369)
+- **WatchlistCuratorProfile** — auto-curation profile with add/prune/full/manual styles and `isActive` guard (S370)
+
+### Changed
+- `CandlestickPatternType` extended with `shootingStar`, `piercingLine`, `darkCloudCover`, `threeWhiteSoldiers`, `threeBlackCrows`, `spinningTop`, `marubozu`
+
+### Quality
+- 100 new unit tests; 0 failures
+- `flutter analyze --fatal-infos`: 0 issues
+- `dart format`: clean
+
+---
+
 ## [2.4.0] — 2026-04-10
 
 ### Added — Domain Entities (S341–S355)
