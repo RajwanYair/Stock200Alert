@@ -54,6 +54,8 @@ proposed name. Two domain files exporting the same name through `domain.dart` ca
 | `AuditLogEntry` | `entities.dart` | `SystemAuditEntry` (`audit_log_entry.dart`) |
 | `EconomicImpactLevel` | `economic_calendar_event.dart` | Add `import 'economic_calendar_event.dart'` |
 | `NewsSentiment` | `news_relevance_scorer.dart` | Use `TickerNewsSentiment` (different values) |
+| `MarketRegimeType` | `market_regime_signal.dart` | `RegimeClassificationType` (new file) |
+| `ProviderHealthStatus` | `provider_sync_state.dart` | `DataProviderHealthStatus` (new file) |
 
 ## Barrel Ordering
 
@@ -62,6 +64,16 @@ Verify surrounding barrel entries via `grep_search` before inserting.
 Tricky cases: `smart_` sorts before `sma_`; `ticker_correlation` before `ticker_screener`;
 `chart_annotation_preset` before `chart_annotation_set`; `screener_preset` before `search_history_entry`
 (scr < sea); check 3rd/4th character when entries share a common prefix.
+
+Additional ordering lessons (S451-S500):
+- `conditional_` (con_d) < `consensus_` (con_s): d < s — `conditional_order_entry` before `consensus_engine`.
+- `signal_expiry` (expi) < `signal_explanation` (expl): i < l.
+- `feature_` (fea) < `feed_` (fee) < `feedback_` (feedb): underscore < b in ASCII.
+- `cache_eviction` (cac) < `calmar_ratio` (cal): c < l.
+- `contextual_` (con-t-e) < `copilot_` (cop) < `corporate_` (cor): n < p < r at 3rd char after `co`.
+- `database_` (d-a-t-a-b) > `data_` (d-a-t-a-_): underscore (95) < 'b' (98) so `data_*` files sort before `database_*`.
+- `scheduled_` (sc) < `screener_` (scr): h < r.
+- `strategy_comparison` < `strategy_performance` < `strategy_rule_set`: c < p < r.
 
 ## Null Safety Patterns
 
