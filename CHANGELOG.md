@@ -10,6 +10,27 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.14.0] — 2026-04-12
+
+### Added — Domain Entities (S466–S480)
+- **SignalExpiryConfig** — method signal TTL and invalidation rules: `isAggressiveExpiry`, `requiresCandelAlignment` (S466)
+- **MethodOverrideConfig** — per-ticker method enable/disable/threshold override: `MethodOverrideMode` (3 modes); `isDisabled`, `hasThresholdAdjustment`, `hasReason` (S467)
+- **AlertEscalationChain** — multi-channel escalation with delay: `channelCount`, `isMultiChannel`, `isAggressiveEscalation` (<300s) (S468)
+- **ConsensusOverrideRecord** — manual consensus signal override audit: `isEscalated` (neutral→buy/sell), `isDemoted` (buy/sell→neutral), `hasReason` (S469)
+- **SignalReplayCursor** — historical replay session position: `progressPercent`, `isComplete`, `isRunning` (S470)
+- **FeedSubscriptionConfig** — market data feed subscription: `FeedProtocol` (4 protocols); `isStreaming`, `isPolling`, `symbolCount` (S471)
+- **QuoteCacheEntry** — bid/ask/last quote with TTL: `midPrice`, `isStale(nowMs)`, `hasSpread` (S472)
+- **DataSyncCheckpoint** — data source sync progress: `hasPendingChanges`, `isUpToDate` (S473)
+- **DataSchemaVersion** — DB schema migration metadata: `requiresMigration`, `hasDescription` (S474)
+- **DataProviderHealthStatus** — provider health level + latency: `DataProviderHealthLevel` (3 levels); `isHealthy`, `isUnavailable`, `hasError`, `isHighLatency` (>2000ms) (S475)
+- **AlphaDecayEstimate** — method alpha half-life estimate: `decayPercent`, `isDecayed` (<20% residual), `isViable` (residual>20bps) (S476)
+- **InformationRatioResult** — active return vs tracking error: `isPositiveAlpha`, `isGood` (≥0.5), `isExcellent` (≥1.0) (S477)
+- **CalmarRatioResult** — return over max drawdown: `isAcceptable` (≥0.5), `isStrong` (≥1.0), `isNegativeReturn` (S478)
+- **OmegaRatioResult** — probability-weighted gain/loss ratio: `isFavorable` (>1.0), `isStrong` (≥2.0) (S479)
+- **TrackingErrorResult** — portfolio vs benchmark deviation: `isLowTracking` (<2%), `isHighlyCorrelated` (≥0.95), `isActivelyManaged` (≥5%) (S480)
+
+---
+
 ## [2.13.0] — 2026-04-12
 
 ### Added — Domain Entities (S451–S465)
