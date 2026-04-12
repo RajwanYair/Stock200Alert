@@ -10,6 +10,27 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [2.15.0] — 2026-04-12
+
+### Added — Domain Entities (S481–S495)
+- **StrategyComparisonResult** — side-by-side strategy return/Sharpe comparison: `compareOutperforms`, `returnDeltaPercent`, `compareHasBetterSharpe` (S481)
+- **WalkForwardSegment** — single in/out-of-sample walk-forward segment: `trainDays`, `testDays`, `isProfitable`, `isGoodFit` (S482)
+- **MonteCarloPercentile** — percentile result from Monte Carlo simulation: `isProfitable`, `isTopDecile` (≥90), `isBottomDecile` (≤10) (S483)
+- **BacktestEquityPoint** — equity-curve data point with drawdown: `isDrawdown`, `isDeepDrawdown` (≥20%), `isProfitable` (S484)
+- **ExitRuleConfig** — declarative trade exit rule: `ExitTriggerType` (5 types); `isStopBased`, `isTimeBased`, `hasDescription` (S485)
+- **TutorialStepState** — in-app tutorial step completion: `isFirstStep`, `wasEngaged`, `isDismissed` (S486)
+- **FeatureTourConfig** — multi-step in-app feature walkthrough: `isSingleStep`, `isMultiStep`, `repeatOnVersionUpgrade` (S487)
+- **AppNotificationBadge** — app section badge counts: `hasItems`, `isHighCount` (≥10), `shouldDisplay` (S488)
+- **UserOnboardingProgress** — first-run onboarding checklist: `progressPercent`, `isStarted`, `isComplete` (S489)
+- **ContextualHelpEntry** — contextual help/tooltip entry: `hasLearnMoreLink`, `isShortBody` (≤140 chars) (S490)
+- **DefiPoolSnapshot** — DeFi liquidity pool TVL/APY snapshot: `isHighYield` (≥20%), `isHighLiquidity` (≥1M USD), `isActivePool` (S491)
+- **NftFloorPriceEntry** — NFT collection floor price data: `isBlueChip` (≥1 ETH), `isHighVolume` (≥100 ETH/24h), `hasLargeHolder` (S492)
+- **StakingRewardRecord** — validator staking reward record: `isHighApr` (≥10%), `isPending`, `hasSignificantReward` (S493)
+- **CacheEvictionPolicy** — cache TTL and eviction strategy config: `EvictionStrategy` (4 types); `isAggressiveEviction`, `isLruOrLfu` (S494)
+- **DatabaseMigrationLog** — DB schema migration audit log: `MigrationStatus` (5 states); `isSuccess`, `isFailed`, `hasError`, `isSlowMigration` (>5s) (S495)
+
+---
+
 ## [2.14.0] — 2026-04-12
 
 ### Added — Domain Entities (S466–S480)
