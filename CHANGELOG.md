@@ -10,7 +10,30 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [2.12.0] — 2026-04-13
+## [2.13.0] — 2026-04-12
+
+### Added — Domain Entities (S451–S465)
+- **TaxYearSummary** — capital gains/losses summary: `netShortTerm`, `netLongTerm`, `totalNetGain`, `hasNetLoss` (S451)
+- **PriceLevelCluster** — volume-concentration price cluster: `isStrongLevel` (≥3 touches), `isHighConcentration` (≥15%) (S452)
+- **MarketRegimeClassification** — regime classifier result: `RegimeClassificationType` (5 types); `isTrending`, `isRangebound`, `isHighConfidence` (S453)
+- **PortfolioMarginCall** — leverage margin call event: `marginDeficit`, `isUrgent` (≥10% deficit), `isActive` (S454)
+- **VolatilityForecast** — volatility forecast: `VolatilityForecastMethod` (4 methods); `isHighVol` (≥40%), `isVolIncreasing` (S455)
+- **BetaCalculationResult** — regression beta result: `isHighBeta` (>1.5), `isNegativeBeta`, `isStatisticallySignificant` (R²≥0.7) (S456)
+- **ConditionalOrderEntry** — trigger-activated order: `ConditionalOrderTrigger` (5 types); `isPriceTrigger`, `isSellOrder` (S457)
+- **OrderExecutionSummary** — order execution result: `OrderExecutionStatus` (5 statuses); `isFullyFilled`, `fillRate`, `totalCost` (S458)
+- **BracketOrderConfig** — entry/target/stop bracket config: `riskRewardRatio`, `isFavorableRiskReward` (≥2:1) (S459)
+- **SectorValuationSnapshot** — sector PE/PB valuation: `isExpensive` (PE>25), `isCheap` (PE<12), `isGrowthSector`, `isHighYield` (S460)
+- **MarketBreadthAlert** — breadth threshold trigger: `BreadthAlertType` (5 types); `isBullish`, `deviationFromThreshold` (S461)
+- **MacroSurpriseIndex** — macro consensus surprise composite: `MacroSurpriseDirection`; `isSignificant` (|score|≥25) (S462)
+- **TickChartConfig** — non-time chart config: `TickChartType` (4 types); `isRenko`, `isVolumeBased` (S463)
+- **RangeExpansionSignal** — ATR range expansion signal: `isSignificant` (≥2×), `isExtreme` (≥3×) (S464)
+- **UserWatchlistPreference** — per-watchlist display + notification prefs: `hasCustomDisplay`, `isFullyEnabled` (S465)
+
+### Tests
+- Added `test/domain/s451_s465_domain_batch_test.dart` — 45 tests covering all 15 new domain entities.
+
+---
+
 
 ### Added — Domain Entities (S441–S450)
 - **UserInsightCard** — personalised dashboard card: `InsightCardType` (5 types); `isWarning`, `isHighPriority` (≥0.7), `isActionable` (visible + high-prio) (S441)
