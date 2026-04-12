@@ -8,6 +8,14 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.20.0] - 2026-01-20
+### Added — Platform & Infrastructure (S546–S550)
+- `AppUpdateManifest` (S546): OTA update metadata with `isUpdateAvailable`, `isMandatory`, and platform download URLs.
+- `RemoteConfigSnapshot` (S547): Runtime remote feature config snapshot with key-value pairs, version tracking, and fallback awareness.
+- `CrashReportSummary` (S548): Aggregated crash analytics with `isStable` (≥99.5% crash-free), `hasCriticalInstability` (<95%), and `hasHighVolume` (≥100 crashes).
+- `AbTestAssignment` (S549): A/B experiment variant assignment with `isControl`/`isTreatment` helpers.
+- `UserCohortDefinition` (S550): User segmentation cohort with `isLargeCohort` (≥1000 members) and declarative `filterExpression`.
+
 ## [2.19.0] - 2026-04-12
 ### Added — S531–S545 Analytics, Factor Models & Valuation Domain Entities
 - S531 `ReturnAttributionResult` — Brinson allocation/selection/interaction attribution
