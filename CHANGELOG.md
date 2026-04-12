@@ -10,7 +10,30 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [2.9.0] — 2026-04-12
+## [2.10.0] — 2026-04-13
+
+### Added — Domain Entities (S416–S430)
+- **PositionRiskEntry** — per-position risk assessment: `PositionRiskCategory` (low/moderate/high/extreme); `isHighRisk`, `isExtreme`, `adjustedExposure` (positionValue × betaAdjustedRisk) (S416)
+- **TradeExecutionRecord** — post-trade execution audit: `totalValue`, `hasSlippage`, `hasPositiveSlippage` (unfavorable buy-side slippage) (S417)
+- **PortfolioHeatmapConfig** — heatmap display configuration: `HeatmapColorScheme` (redGreen/blueOrange/grayScale); `HeatmapMetric` (priceChange/volumeChange/smaDistance/rsi); `isColorBlindFriendly` (S418)
+- **MultiBrokerPosition** — aggregated multi-broker position: `BrokerPositionEntry` sub-object with `totalCost`; `totalQuantity`, `totalCost`, `brokerCount`, `isSpread` (>1 broker) (S419)
+- **RebalanceEventLog** — portfolio rebalance lifecycle audit: `RebalanceEventType` (triggered/approved/executed/skipped/cancelled); `isTerminal`, `hasTriggerReason` (S420)
+- **AllocationDriftReport** — per-position target-weight drift: `AllocationDriftEntry` with `drift`, `isOverweight`; report-level `maxDrift`, `hasMaterialDrift` (>5 pp), `entryCount` (S421)
+- **PortfolioRiskReport** — aggregated portfolio risk metrics: `valueAtRisk95`, `expectedShortfall`, `betaToMarket`, `concentrationScore`; `isHighRisk`, `isDiversified`, `isHighBeta` (S422)
+- **MarginUsageSnapshot** — brokerage margin utilisation snapshot: `marginUtilizationRate`, `isOverMargin`, `isHighUtilization` (>80%) (S423)
+- **TaxHarvestOpportunity** — tax-loss harvest candidate: `lossPercent`, `isSignificant` (abs loss >\$500), `washSaleWindowDays` (30) (S424)
+- **PortfolioCorrelationEntry** — pairwise ticker correlation: `isHighlyCorrelated` (abs>0.7), `isNegativelyCorrelated` (<−0.3), `isDiversifying` (S425)
+- **TradeSignalAttribution** — post-trade method attribution: `isConsensus` (≥2 contributing methods), `methodCount`, `isPrimaryOnly` (S426)
+- **InvestmentThesis** — structured investment thesis: `hasCatalysts`, `hasRisks`, `isBalanced` (both documented) (S427)
+- **PortfolioStressScenario** — What-If stress test definition: `isSevere` (>20% drop), `isRateStress` (≥100 bps), `isBearish` (S428)
+- **PositionConcentrationRisk** — concentration threshold breach: `isAboveThreshold`, `excessPercent`, `isMaterial` (excess>5 pp) (S429)
+- **VarEstimate** — Value at Risk estimate: `VarConfidenceLevel` (p90/p95/p99); `isConservative`, `isOneDay`, `annualizedLoss` (S430)
+
+### Tests
+- Added `test/domain/s416_s430_domain_batch_test.dart` — 65 tests covering all 15 new domain entities.
+
+---
+
 
 ### Added — Domain Entities (S401–S415)
 - **AlertChannelStatus** — delivery channel health tracking: `AlertChannelType` (push/inApp/email/sms/webhook); `isHealthy`, `isDegraded` (>3 consecutive failures) (S401)
