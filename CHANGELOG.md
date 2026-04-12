@@ -8,6 +8,24 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.17.0] - 2026-04-12
+### Added — S501–S515 Market Microstructure & Trading Operations Domain Entities
+- S501 `OrderRoutingPreference` — smart/direct/DMA/algo order routing config with slip tolerance
+- S502 `SlippageEstimate` — market impact + spread-cost slippage model per order
+- S503 `ExecutionVenueConfig` — exchange/ECN/dark-pool venue config with fee schedule
+- S504 `DarkPoolIndicator` — dark pool volume %, block trades, notional, flow direction
+- S505 `TickSizeRule` — exchange tick-size rules with price-range applicability
+- S506 `OrderBookImbalance` — bid/ask volume imbalance ratio from order book levels
+- S507 `LatencyArbitrageFlag` — inter-venue price discrepancy latency arb detection
+- S508 `FillQualityReport` — fill rate, realised slippage, reference mid-price analysis
+- S509 `CircuitBreakerStatus` — exchange circuit-breaker level/halt-duration/resume state
+- S510 `CrossListingEntry` — primary/foreign ticker cross-listing with ADS conversion ratio
+- S511 `CustodyAccountSummary` — custodian account cash/securities/margin snapshot
+- S512 `SettlementCycleConfig` — T+N settlement config with DvP flag
+- S513 `ClearingHouseMargin` — initial/maintenance/stress margin with concentration surcharge
+- S514 `TradeConfirmationRecord` — immutable trade confirmation with gross/net value
+- S515 `MarketMicrostructureSnapshot` — live bid/ask/mid/spread with tight-spread detection
+
 ---
 
 ## [2.16.0] — 2026-04-12
