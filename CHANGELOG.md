@@ -8,6 +8,24 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+## [2.19.0] - 2026-04-12
+### Added — S531–S545 Analytics, Factor Models & Valuation Domain Entities
+- S531 `ReturnAttributionResult` — Brinson allocation/selection/interaction attribution
+- S532 `FactorLoadingSnapshot` — Fama-French/Barra multi-factor beta loadings
+- S533 `YieldCurveSnapshot` — 1m–30y term structure with inversion/flat detection
+- S534 `CreditSpreadSnapshot` — IG/HY/EM OAS credit spreads with widening detection
+- S535 `MacroRegimeIndicator` — Goldilocks/stagflation/reflationary regime classification
+- S536 `CarryTradeSignal` — FX interest-rate carry trade signal with differential bps
+- S537 `MomentumFactorSignal` — Cross-sectional 12m-1m momentum percentile rank
+- S538 `ValueFactorSignal` — Book-to-market + earnings yield value factor signal
+- S539 `QualityFactorSignal` — ROE/debt/margin quality factor with universe rank
+- S540 `SizeFactorSignal` — SMB size factor with micro/small-cap classification
+- S541 `VolatilityFactorSignal` — Low-vol factor with beta defensiveness rating
+- S542 `DividendGrowthEstimate` — 3y/5y dividend CAGR with payout sustainability
+- S543 `FreeCashFlowYield` — FCF yield + EV/FCF multiple analysis
+- S544 `EnterpriseValueEstimate` — EV computation with EV/EBITDA multiple
+- S545 `IntrinsicValueEstimate` — DCF intrinsic value with margin of safety
+
 ## [2.18.0] - 2026-04-12
 ### Added — S516–S530 Risk, Compliance & ESG Domain Entities
 - S516 `ComplianceRuleViolation` — detected rule breach with severity 1–10 + resolution state
