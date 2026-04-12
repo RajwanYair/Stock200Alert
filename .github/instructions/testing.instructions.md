@@ -44,6 +44,10 @@ const snap = WatchlistTickerSnapshot(ticker: 'AAPL', closePrice: 200.0, sma200: 
 final entry = MarketHoliday(exchange: TradingExchange.nyse, date: DateTime(2026, 1, 1), name: 'NYD');
 ```
 
+**DateTime-containing entities (always use `final`):**  
+AppRuntimeContext, UserSessionMetric, FeatureUsageRecord, SearchHistoryEntry, SpreadSnapshot,
+and any other entity with a `DateTime` field — `const` is impossible for these.
+
 ## Coverage targets
 - **Domain layer: 100%** — strictly enforced in CI. A PR that drops domain coverage below 100% fails.
 - **Overall project: ≥ 90%** — enforced as a quality expectation; avoid merging code that drops total coverage below this threshold.

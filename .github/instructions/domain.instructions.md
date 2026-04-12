@@ -53,12 +53,15 @@ proposed name. Two domain files exporting the same name through `domain.dart` ca
 | `TickerSearchResult` | `ticker_search_index.dart` | `TickerQueryResult` |
 | `AuditLogEntry` | `entities.dart` | `SystemAuditEntry` (`audit_log_entry.dart`) |
 | `EconomicImpactLevel` | `economic_calendar_event.dart` | Add `import 'economic_calendar_event.dart'` |
+| `NewsSentiment` | `news_relevance_scorer.dart` | Use `TickerNewsSentiment` (different values) |
 
 ## Barrel Ordering
 
 `domain.dart` enforces `directives_ordering` — exports must be **strictly alphabetical**.
 Verify surrounding barrel entries via `grep_search` before inserting.
-Tricky cases: `smart_` sorts before `sma_`; `ticker_correlation` before `ticker_screener`.
+Tricky cases: `smart_` sorts before `sma_`; `ticker_correlation` before `ticker_screener`;
+`chart_annotation_preset` before `chart_annotation_set`; `screener_preset` before `search_history_entry`
+(scr < sea); check 3rd/4th character when entries share a common prefix.
 
 ## Null Safety Patterns
 
