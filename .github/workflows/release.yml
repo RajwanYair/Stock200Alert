@@ -14,6 +14,12 @@ on:
   push:
     tags:
       - 'v[0-9]*.[0-9]*.[0-9]*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to release (e.g. v3.0.0) — leave blank to use the current ref'
+        required: false
+        type: string
 
 concurrency:
   group: release-${{ github.ref }}
