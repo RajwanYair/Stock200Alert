@@ -65,6 +65,6 @@ export interface WatchlistEntry {
 
 /** User-facing config. */
 export interface AppConfig {
-  readonly theme: "dark" | "light";
+  readonly theme: "dark" | "light" | "high-contrast";
   readonly watchlist: readonly WatchlistEntry[];
 }

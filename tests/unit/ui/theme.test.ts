@@ -2,7 +2,13 @@
  * Theme tests.
  */
 import { describe, it, expect, beforeEach } from "vitest";
-import { applyTheme, initTheme } from "../../../src/ui/theme";
+import {
+  applyTheme,
+  initTheme,
+  detectHighContrast,
+  detectPreferredTheme,
+} from "../../../src/ui/theme";
+import type { Theme } from "../../../src/ui/theme";
 
 describe("applyTheme", () => {
   it("sets data-theme attribute on documentElement", () => {
@@ -11,6 +17,11 @@ describe("applyTheme", () => {
 
     applyTheme("light");
     expect(document.documentElement.dataset["theme"]).toBe("light");
+  });
+
+  it("supports high-contrast theme", () => {
+    applyTheme("high-contrast");
+    expect(document.documentElement.dataset["theme"]).toBe("high-contrast");
   });
 });
 
@@ -23,15 +34,17 @@ describe("initTheme", () => {
     document.body.innerHTML =
       '<select id="theme-select"><option value="dark">Dark</option><option value="light">Light</option></select>';
 
-    initTheme("dark");
+    const result = initTheme("dark");
 
+    expect(result).toBe("dark");
     expect(document.documentElement.dataset["theme"]).toBe("dark");
     const select = document.getElementById("theme-select") as HTMLSelectElement;
     expect(select.value).toBe("dark");
   });
 
   it("works without a select element", () => {
-    initTheme("light");
+    const result = initTheme("light");
+    expect(result).toBe("light");
     expect(document.documentElement.dataset["theme"]).toBe("light");
   });
 
@@ -46,5 +59,18 @@ describe("initTheme", () => {
     select.dispatchEvent(new Event("change"));
 
     expect(document.documentElement.dataset["theme"]).toBe("light");
+  });
+});
+
+describe("detectHighContrast", () => {
+  it("returns a boolean", () => {
+    expect(typeof detectHighContrast()).toBe("boolean");
+  });
+});
+
+describe("detectPreferredTheme", () => {
+  it("returns a valid theme", () => {
+    const valid: Theme[] = ["dark", "light", "high-contrast"];
+    expect(valid).toContain(detectPreferredTheme());
   });
 });
