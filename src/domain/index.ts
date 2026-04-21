@@ -47,3 +47,7 @@ export { evaluate as evaluateSuperTrend } from "./supertrend-method";
 export { aggregateSignals, aggregateConsensus } from "./signal-aggregator";
 export { createAlertState, evaluateAlerts, DEFAULT_ENABLED_ALERTS } from "./alert-state-machine";
 export type { AlertType, FiredAlert, TickerAlertState } from "./alert-state-machine";
+export { runBacktest } from "./backtest-engine";
+export type { BacktestConfig, BacktestTrade, BacktestResult } from "./backtest-engine";
+export { dailyReturns, sharpeRatio, sortinoRatio, maxDrawdown, fibonacciRetracement } from "./analytics";
+export type { FibonacciLevels } from "./analytics";
