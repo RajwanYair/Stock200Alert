@@ -4,18 +4,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { computeRsi, computeRsiSeries } from "../../../src/domain/rsi-calculator";
-import type { DailyCandle } from "../../../src/types/domain";
-
-function makeCandles(closes: number[]): DailyCandle[] {
-  return closes.map((close, i) => ({
-    date: `2024-01-${String(i + 1).padStart(2, "0")}`,
-    open: close,
-    high: close + 1,
-    low: close - 1,
-    close,
-    volume: 1000,
-  }));
-}
+import { makeCandles } from "../../helpers/candle-factory";
 
 describe("computeRsiSeries", () => {
   it("returns all nulls when candles <= period", () => {
