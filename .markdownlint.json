@@ -1,10 +1,10 @@
 {
-  "line-length": false,
+  "extends": "../tooling/markdownlint.base.json",
   "no-inline-html": {
     "allowed_elements": ["details", "summary", "br", "img", "picture", "source"]
   },
-  "no-duplicate-heading": { "siblings_only": true },
   "no-emphasis-as-heading": false,
   "blanks-around-lists": false,
-  "first-line-heading": false
+  "first-line-heading": false,
+  "table-column-style": false
 }

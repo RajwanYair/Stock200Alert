@@ -16,15 +16,14 @@
   "[json]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
   },
-  "typescript.tsdk": "node_modules/typescript/lib",
+  "typescript.tsdk": "../node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "eslint.useFlatConfig": true,
   "files.exclude": {
     "**/node_modules": true,
     "**/dist": true,
     "**/coverage": true,
-    "**/build": true,
-    "**/windows": true
+    "**/build": true
   },
   "search.exclude": {
     "**/node_modules": true,

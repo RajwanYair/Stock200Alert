@@ -73,7 +73,7 @@ export function computeMacdSeries(
   let signalIdx = 0;
   for (let i = 0; i < candles.length; i++) {
     const mv = macdValues[i];
-    if (!mv || mv.value === null || mv.value === undefined || i < macdNullCount) {
+    if (mv?.value == null || i < macdNullCount) {
       const candle = candles[i];
       if (candle) {
         result.push({ date: candle.date, macd: null, signal: null, histogram: null });

@@ -95,17 +95,17 @@
   }
 
   .badge-buy {
-    background: color-mix(in srgb, var(--signal-buy) 20%, transparent);
+    background: color-mix(in sRGB, var(--signal-buy) 20%, transparent);
     color: var(--signal-buy);
   }
 
   .badge-sell {
-    background: color-mix(in srgb, var(--signal-sell) 20%, transparent);
+    background: color-mix(in sRGB, var(--signal-sell) 20%, transparent);
     color: var(--signal-sell);
   }
 
   .badge-neutral {
-    background: color-mix(in srgb, var(--signal-neutral) 20%, transparent);
+    background: color-mix(in sRGB, var(--signal-neutral) 20%, transparent);
     color: var(--signal-neutral);
   }
 

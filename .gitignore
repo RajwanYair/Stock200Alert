@@ -32,12 +32,3 @@ npm-debug.log*
 
 # VS Code local secrets
 .vscode/mcp.local.json
-
-# Legacy Flutter artifacts (safe to delete)
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-android/
-windows/

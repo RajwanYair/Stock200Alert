@@ -1,47 +1,14 @@
-import eslint from "@eslint/js";
-import tseslint from "typescript-eslint";
-import globals from "globals";
+import { createWebTsAppEslintConfig } from "../tooling/eslint/web-ts-app.mjs";
 
-export default tseslint.config(
-  eslint.configs.recommended,
-  ...tseslint.configs.strict,
-  ...tseslint.configs.stylistic,
-  {
-    languageOptions: {
-      globals: {
-        ...globals.browser,
-      },
-      parserOptions: {
-        projectService: true,
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-    rules: {
-      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
-      "@typescript-eslint/explicit-function-return-type": "error",
-      "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/strict-boolean-expressions": "off",
-      "no-console": ["error", { allow: ["warn", "error"] }],
-      eqeqeq: ["error", "always"],
-      "no-var": "error",
-      "prefer-const": "error",
-    },
+export default createWebTsAppEslintConfig({
+  ignores: ["node_modules/**", "dist/**", "coverage/**", "scripts/**"],
+  sourceFiles: ["src/**/*.ts"],
+  sourceProject: "./tsconfig.json",
+  tsconfigRootDir: import.meta.dirname,
+  testFiles: ["tests/**/*.ts"],
+  swFiles: [],
+  sourceRules: {
+    "@typescript-eslint/explicit-function-return-type": "error",
+    "no-console": ["error", { allow: ["warn", "error"] }],
   },
-  {
-    files: ["tests/**/*.ts"],
-    rules: {
-      "@typescript-eslint/no-non-null-assertion": "off",
-      "@typescript-eslint/explicit-function-return-type": "off",
-    },
-  },
-  {
-    ignores: [
-      "dist/**",
-      "coverage/**",
-      "node_modules/**",
-      "*.config.*",
-      "scripts/**",
-      "vite-env.d.ts",
-    ],
-  },
-);
+});

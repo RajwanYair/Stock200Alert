@@ -6,6 +6,46 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [6.0.0] - 2025-07-21
+
+### Changed — Web-Only Migration & Shared Toolchain
+
+- **Full web-only migration** — removed `windows/` directory and all Flutter artifacts
+- **Shared MyScripts toolchain** — all configs now extend `../tooling/` bases:
+  - `tsconfig.json` extends `../tooling/tsconfig/base-typescript.json`
+  - `eslint.config.mjs` imports `createWebTsAppEslintConfig` from shared
+  - `vitest.config.ts` uses `happyDomVitestConfig` from shared
+  - `vite.config.ts` spreads `baseConfig` from shared
+  - `.stylelintrc.json` extends `../tooling/stylelint/base.json`
+  - `.prettierrc` extends `../tooling/prettier.base.json`
+  - `.markdownlint.json` extends `../tooling/markdownlint.base.json`
+- **Removed local devDependencies** (16 packages) — uses shared `MyScripts/node_modules`
+- **Removed local `package-lock.json`** and `node_modules/`
+- **Tool version upgrades** via shared workspace:
+  TypeScript 5.8→6.0, Vite 6.3→8.0, Vitest 3.1→4.1, ESLint 9→10.2,
+  Stylelint 16→17.7, happy-dom 17→20.9, markdownlint-cli2 0.18→0.22
+- Cleaned `.gitignore` — removed legacy Flutter entries
+- Cleaned `.vscode/settings.json` — removed `**/windows` exclude, updated tsdk path
+- Updated engine requirements to `^20.19.0 || ^22.13.0 || >=24.0.0`
+
+### Added
+
+- Comprehensive `docs/ROADMAP.md` with competitive analysis, architecture, and phased plan
+  - Comparison table: CrossTide vs TradingView, FinViz, StockAnalysis, thinkorswim, Webull, GhostFolio
+  - Harvested insights from competitors (heatmap, sparklines, keyboard shortcuts, etc.)
+  - 4-phase implementation plan (v6→v8+)
+  - Technology decisions matrix, scope boundaries, Flutter archive appendix
+
+### Removed
+
+- `windows/` directory (Flutter ephemeral build artifacts)
+- Legacy `.gitignore` entries (`.dart_tool/`, `.flutter-plugins`, `android/`, `windows/`)
+- 16 local `devDependencies` from `package.json`
+- Local `package-lock.json`
+- Local `node_modules/`
+
+---
+
 ## [5.0.0] - 2025-07-16
 
 ### Added — Production Hardening

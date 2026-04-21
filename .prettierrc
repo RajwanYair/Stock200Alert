@@ -1,18 +1,5 @@
 {
-  "semi": true,
-  "singleQuote": false,
-  "trailingComma": "all",
-  "printWidth": 100,
-  "tabWidth": 2,
-  "arrowParens": "always",
-  "endOfLine": "lf",
-  "overrides": [
-    {
-      "files": "*.md",
-      "options": {
-        "printWidth": 120,
-        "proseWrap": "preserve"
-      }
-    }
-  ]
+  "$schema": "https://json.schemastore.org/prettierrc",
+  "extends": "../tooling/prettier.base.json",
+  "singleQuote": false
 }
