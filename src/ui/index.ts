@@ -1,5 +1,14 @@
-export { initRouter } from "./router";
-export type { RouteName } from "./router";
+export { initRouter, navigateTo, getCurrentRoute, onRouteChange } from "./router";
+export type { RouteName, RouteChangeHandler } from "./router";
 export { initTheme, applyTheme } from "./theme";
 export type { Theme } from "./theme";
 export { renderWatchlist } from "./watchlist";
+export { showToast, clearAllToasts, toastCount } from "./toast";
+export type { ToastType, ToastOptions } from "./toast";
+export { renderSparkline } from "./sparkline";
+export type { SparklineOptions } from "./sparkline";
+export { openModal, closeModal, isModalOpen } from "./modal";
+export type { ModalOptions } from "./modal";
+export { sortRows, toggleSort } from "./sortable";
+export type { SortConfig, SortDirection } from "./sortable";
+export { announce, trapFocus, prefersReducedMotion } from "./a11y";
