@@ -2,9 +2,30 @@
  * Hash-based router for single-page navigation.
  */
 
-export type RouteName = "watchlist" | "consensus" | "settings";
+export type RouteName = "watchlist" | "consensus" | "chart" | "alerts" | "settings";
 
-const VALID_ROUTES = new Set<RouteName>(["watchlist", "consensus", "settings"]);
+const VALID_ROUTES = new Set<RouteName>(["watchlist", "consensus", "chart", "alerts", "settings"]);
+
+export type RouteChangeHandler = (route: RouteName) => void;
+
+const listeners: RouteChangeHandler[] = [];
+
+export function onRouteChange(handler: RouteChangeHandler): () => void {
+  listeners.push(handler);
+  return () => {
+    const idx = listeners.indexOf(handler);
+    if (idx !== -1) listeners.splice(idx, 1);
+  };
+}
+
+export function navigateTo(route: RouteName): void {
+  window.location.hash = route;
+}
+
+export function getCurrentRoute(): RouteName {
+  const hash = window.location.hash.slice(1) || "watchlist";
+  return VALID_ROUTES.has(hash as RouteName) ? (hash as RouteName) : "watchlist";
+}
 
 export function initRouter(): void {
   window.addEventListener("hashchange", handleRoute);
@@ -12,9 +33,9 @@ export function initRouter(): void {
 }
 
 function handleRoute(): void {
-  const hash = window.location.hash.slice(1) || "watchlist";
-  const route = VALID_ROUTES.has(hash as RouteName) ? (hash as RouteName) : "watchlist";
+  const route = getCurrentRoute();
   activateView(route);
+  for (const fn of listeners) fn(route);
 }
 
 function activateView(route: RouteName): void {
