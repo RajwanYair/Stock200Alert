@@ -54,6 +54,30 @@ src/
 
 See [ARCHITECTURE.md](ARCHITECTURE.md) for details.
 
+## Local Verification
+
+```bash
+npm run dev        # Start dev server → http://localhost:5173
+```
+
+**Verification checklist:**
+
+1. App loads with dark theme, header shows "CrossTide" + version in footer
+2. Navigation links (Watchlist / Consensus / Settings) switch views
+3. Type a ticker symbol (e.g. `AAPL`) in the input and press Enter — it appears in the watchlist
+4. Click "Remove" on a ticker — it disappears
+5. Switch to Settings → change theme to Light → UI updates
+6. Click "Export JSON" → downloads a `.json` file
+7. Click "Clear All" → watchlist empties
+8. Refresh the page → config persists from localStorage
+
+**Production build verification:**
+
+```bash
+npm run build      # TypeScript check + Vite build
+npm run preview    # Serve dist/ at http://localhost:4173
+```
+
 ## Signal Logic
 
 ```

@@ -1,7 +1,10 @@
 # CrossTide Web — Strategic Roadmap
 
-> **Roadmap refresh date:** April 19, 2026
+> **Roadmap refresh date:** April 21, 2026
+> **Current version:** v5.0.0 (production-ready)
 > **Goal:** Build CrossTide as a best-in-class **HTML/Web stock dashboard** — a standalone web application delivering SMA crossover detection, 12-method consensus signals, and interactive charting. Informed by proven patterns from the existing Flutter app and five shipped web projects in the MyScripts monorepo.
+>
+> **Status:** Phase 1 (Foundation) is complete and shipped. Phases 2+ are planned but not yet started.
 
 ---
 
