@@ -1,5 +1,21 @@
 export { createStore } from "./state";
 export type { Store } from "./state";
+export {
+  signal,
+  computed,
+  effect,
+  untracked,
+  batch,
+  persistedSignal,
+  localStorageAdapter,
+} from "./signals";
+export type {
+  ReadSignal,
+  WriteSignal,
+  SignalOptions,
+  PersistAdapter,
+  PersistedSignalOptions,
+} from "./signals";
 export { Cache } from "./cache";
 export { loadConfig, saveConfig, addTicker, removeTicker } from "./config";
 export { fetchWithTimeout, fetchWithRetry, FetchError } from "./fetch";
