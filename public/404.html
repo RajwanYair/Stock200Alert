@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CrossTide</title>
+    <!--
+      GitHub Pages SPA fallback. Captures the requested path/query and
+      redirects to index.html with the path encoded in the URL fragment so
+      the History API router can restore it on load.
+    -->
+    <script>
+      (function () {
+        var l = window.location;
+        var redirect = l.pathname + l.search + l.hash;
+        // Replace history so the back button doesn't loop on the 404.
+        l.replace(l.origin + "/?spa-redirect=" + encodeURIComponent(redirect));
+      })();
+    </script>
+  </head>
+  <body>
+    <p>Redirecting…</p>
+  </body>
+</html>

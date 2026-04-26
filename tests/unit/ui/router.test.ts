@@ -1,22 +1,27 @@
 /**
- * Router tests.
+ * Router tests — History API edition.
  */
 import { describe, it, expect, beforeEach } from "vitest";
 import {
   initRouter,
   navigateTo,
+  navigateToPath,
+  buildPath,
   getCurrentRoute,
+  getCurrentRouteInfo,
   onRouteChange,
+  _resetRouterForTests,
+  type RouteName,
 } from "../../../src/ui/router";
 
 function setupDOM(): void {
   document.body.innerHTML = `
     <nav>
-      <a class="nav-link" data-route="watchlist" href="#watchlist">Watchlist</a>
-      <a class="nav-link" data-route="consensus" href="#consensus">Consensus</a>
-      <a class="nav-link" data-route="chart" href="#chart">Chart</a>
-      <a class="nav-link" data-route="alerts" href="#alerts">Alerts</a>
-      <a class="nav-link" data-route="settings" href="#settings">Settings</a>
+      <a class="nav-link" data-route="watchlist" href="/watchlist">Watchlist</a>
+      <a class="nav-link" data-route="consensus" href="/consensus">Consensus</a>
+      <a class="nav-link" data-route="chart" href="/chart">Chart</a>
+      <a class="nav-link" data-route="alerts" href="/alerts">Alerts</a>
+      <a class="nav-link" data-route="settings" href="/settings">Settings</a>
     </nav>
     <div id="view-watchlist" class="view"></div>
     <div id="view-consensus" class="view"></div>
@@ -26,97 +31,181 @@ function setupDOM(): void {
   `;
 }
 
+function gotoPath(path: string): void {
+  window.history.replaceState({}, "", path);
+}
+
 describe("initRouter", () => {
   beforeEach(() => {
+    _resetRouterForTests();
     setupDOM();
-    window.location.hash = "";
+    gotoPath("/");
   });
 
-  it("activates watchlist view by default when no hash", () => {
+  it("activates watchlist view by default at /", () => {
     initRouter();
-
-    const view = document.getElementById("view-watchlist");
-    expect(view?.classList.contains("active")).toBe(true);
+    expect(document.getElementById("view-watchlist")?.classList.contains("active")).toBe(true);
   });
 
-  it("activates correct view from hash", () => {
-    window.location.hash = "#settings";
+  it("activates correct view from path", () => {
+    gotoPath("/settings");
     initRouter();
-
-    const view = document.getElementById("view-settings");
-    expect(view?.classList.contains("active")).toBe(true);
+    expect(document.getElementById("view-settings")?.classList.contains("active")).toBe(true);
   });
 
-  it("falls back to watchlist for invalid hash", () => {
-    window.location.hash = "#invalid";
+  it("falls back to watchlist for invalid path", () => {
+    gotoPath("/totally-bogus");
     initRouter();
-
-    const view = document.getElementById("view-watchlist");
-    expect(view?.classList.contains("active")).toBe(true);
+    expect(document.getElementById("view-watchlist")?.classList.contains("active")).toBe(true);
   });
 
   it("updates nav link active class", () => {
-    window.location.hash = "#consensus";
+    gotoPath("/consensus");
     initRouter();
-
-    const link = document.querySelector('[data-route="consensus"]');
-    expect(link?.classList.contains("active")).toBe(true);
-
-    const other = document.querySelector('[data-route="watchlist"]');
-    expect(other?.classList.contains("active")).toBe(false);
+    expect(document.querySelector('[data-route="consensus"]')?.classList.contains("active")).toBe(
+      true,
+    );
+    expect(document.querySelector('[data-route="watchlist"]')?.classList.contains("active")).toBe(
+      false,
+    );
   });
 
-  it("responds to hashchange events", () => {
+  it("responds to popstate events", () => {
     initRouter();
-    window.location.hash = "#settings";
-    window.dispatchEvent(new Event("hashchange"));
-
-    const view = document.getElementById("view-settings");
-    expect(view?.classList.contains("active")).toBe(true);
+    window.history.pushState({}, "", "/settings");
+    window.dispatchEvent(new PopStateEvent("popstate"));
+    expect(document.getElementById("view-settings")?.classList.contains("active")).toBe(true);
   });
 });
 
-describe("navigateTo", () => {
-  it("sets the hash", () => {
+describe("navigateTo / navigateToPath", () => {
+  beforeEach(() => {
+    _resetRouterForTests();
+    setupDOM();
+    gotoPath("/");
+  });
+
+  it("navigateTo updates the path", () => {
+    initRouter();
     navigateTo("alerts");
-    expect(window.location.hash).toBe("#alerts");
+    expect(window.location.pathname).toBe("/alerts");
+  });
+
+  it("navigateToPath supports parameters", () => {
+    initRouter();
+    navigateToPath("chart", { symbol: "AAPL" });
+    expect(window.location.pathname).toBe("/chart/AAPL");
+    expect(getCurrentRouteInfo().params["symbol"]).toBe("AAPL");
+  });
+
+  it("supports replace mode", () => {
+    initRouter();
+    const before = window.history.length;
+    navigateToPath("settings", {}, { replace: true });
+    expect(window.location.pathname).toBe("/settings");
+    expect(window.history.length).toBe(before);
   });
 });
 
-describe("getCurrentRoute", () => {
-  it("returns current route from hash", () => {
-    window.location.hash = "#chart";
+describe("buildPath", () => {
+  it("builds path without params", () => {
+    expect(buildPath("settings")).toBe("/settings");
+  });
+
+  it("builds path with params", () => {
+    expect(buildPath("chart", { symbol: "AAPL" })).toBe("/chart/AAPL");
+  });
+
+  it("URL-encodes param values", () => {
+    expect(buildPath("chart", { symbol: "BRK.A" })).toBe("/chart/BRK.A");
+    expect(buildPath("chart", { symbol: "a/b" })).toBe("/chart/a%2Fb");
+  });
+
+  it("builds path for watchlist", () => {
+    expect(buildPath("watchlist")).toMatch(/^(\/|\/watchlist)$/);
+  });
+});
+
+describe("getCurrentRoute / getCurrentRouteInfo", () => {
+  beforeEach(() => {
+    _resetRouterForTests();
+  });
+
+  it("returns route from path", () => {
+    gotoPath("/chart");
     expect(getCurrentRoute()).toBe("chart");
   });
 
-  it("returns watchlist for empty hash", () => {
-    window.location.hash = "";
+  it("returns watchlist for /", () => {
+    gotoPath("/");
     expect(getCurrentRoute()).toBe("watchlist");
+  });
+
+  it("parses /chart/:symbol param", () => {
+    gotoPath("/chart/MSFT");
+    const info = getCurrentRouteInfo();
+    expect(info.name).toBe("chart");
+    expect(info.params["symbol"]).toBe("MSFT");
+  });
+
+  it("falls back to legacy hash route", () => {
+    gotoPath("/");
+    window.location.hash = "#alerts";
+    expect(getCurrentRoute()).toBe("alerts");
+    window.location.hash = "";
   });
 });
 
 describe("onRouteChange", () => {
   beforeEach(() => {
+    _resetRouterForTests();
     setupDOM();
-    window.location.hash = "";
+    gotoPath("/");
   });
 
-  it("calls handler on route change", () => {
+  it("calls handler on navigation", () => {
     initRouter();
-    const routes: string[] = [];
+    const routes: RouteName[] = [];
     onRouteChange((r) => routes.push(r));
-    window.location.hash = "#alerts";
-    window.dispatchEvent(new Event("hashchange"));
+    navigateTo("alerts");
     expect(routes).toContain("alerts");
+  });
+
+  it("handler receives RouteInfo with params", () => {
+    initRouter();
+    let captured: RouteName | undefined;
+    let captSymbol: string | undefined;
+    onRouteChange((r, info) => {
+      captured = r;
+      captSymbol = info?.params["symbol"];
+    });
+    navigateToPath("chart", { symbol: "TSLA" });
+    expect(captured).toBe("chart");
+    expect(captSymbol).toBe("TSLA");
   });
 
   it("returns unsubscribe function", () => {
     initRouter();
-    const routes: string[] = [];
+    const routes: RouteName[] = [];
     const unsub = onRouteChange((r) => routes.push(r));
     unsub();
-    window.location.hash = "#settings";
-    window.dispatchEvent(new Event("hashchange"));
+    navigateTo("settings");
     expect(routes).toHaveLength(0);
+  });
+});
+
+describe("link interception", () => {
+  beforeEach(() => {
+    _resetRouterForTests();
+    setupDOM();
+    gotoPath("/");
+  });
+
+  it("intercepts clicks on data-route links", () => {
+    initRouter();
+    const link = document.querySelector<HTMLAnchorElement>('[data-route="settings"]');
+    expect(link).toBeTruthy();
+    link!.click();
+    expect(window.location.pathname).toBe("/settings");
   });
 });

@@ -1,5 +1,13 @@
-export { initRouter, navigateTo, getCurrentRoute, onRouteChange } from "./router";
-export type { RouteName, RouteChangeHandler } from "./router";
+export {
+  initRouter,
+  navigateTo,
+  navigateToPath,
+  buildPath,
+  getCurrentRoute,
+  getCurrentRouteInfo,
+  onRouteChange,
+} from "./router";
+export type { RouteName, RouteInfo, RouteChangeHandler } from "./router";
 export { initTheme, applyTheme } from "./theme";
 export type { Theme } from "./theme";
 export { renderWatchlist } from "./watchlist";
