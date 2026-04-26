@@ -1,0 +1,101 @@
+/**
+ * Card registry — declarative metadata + dynamic loader for each route's card.
+ *
+ * Each entry maps a {@link RouteName} to a lazy `import()` factory. Cards
+ * loaded on demand land in their own Vite chunk, keeping the initial JS
+ * payload small.
+ *
+ * Use {@link loadCard} to lazily resolve a card by route name; the result
+ * is cached so subsequent navigations are instant.
+ *
+ * Cards expose a small uniform contract:
+ *   `mount(container: HTMLElement, ctx: CardContext): CardHandle`
+ * where the returned handle exposes optional `update` and `dispose` hooks.
+ */
+import type { RouteName } from "../ui/router";
+
+export interface CardContext {
+  readonly route: RouteName;
+  readonly params: Readonly<Record<string, string>>;
+}
+
+export interface CardHandle {
+  readonly update?: (ctx: CardContext) => void;
+  readonly dispose?: () => void;
+}
+
+export type CardModule = {
+  readonly mount: (
+    container: HTMLElement,
+    ctx: CardContext,
+  ) => CardHandle | void;
+};
+
+export interface CardEntry {
+  readonly route: RouteName;
+  readonly title: string;
+  readonly viewId: string; // matches `<div id="view-...">`
+  readonly load: () => Promise<CardModule>;
+}
+
+const REGISTRY: readonly CardEntry[] = [
+  {
+    route: "watchlist",
+    title: "Watchlist",
+    viewId: "view-watchlist",
+    load: () => import("./watchlist-card").then((m) => m.default),
+  },
+  {
+    route: "consensus",
+    title: "Consensus",
+    viewId: "view-consensus",
+    load: () => import("./consensus-card").then((m) => m.default),
+  },
+  {
+    route: "chart",
+    title: "Chart",
+    viewId: "view-chart",
+    load: () => import("./chart-card").then((m) => m.default),
+  },
+  {
+    route: "alerts",
+    title: "Alerts",
+    viewId: "view-alerts",
+    load: () => import("./alerts-card").then((m) => m.default),
+  },
+  {
+    route: "settings",
+    title: "Settings",
+    viewId: "view-settings",
+    load: () => import("./settings-card").then((m) => m.default),
+  },
+];
+
+const cache = new Map<RouteName, Promise<CardModule>>();
+
+export function getCardEntry(route: RouteName): CardEntry | undefined {
+  return REGISTRY.find((e) => e.route === route);
+}
+
+export function listCards(): readonly CardEntry[] {
+  return REGISTRY;
+}
+
+export function loadCard(route: RouteName): Promise<CardModule> {
+  const entry = getCardEntry(route);
+  if (!entry) return Promise.reject(new Error(`Unknown route: ${route}`));
+  let p = cache.get(route);
+  if (!p) {
+    p = entry.load().catch((err) => {
+      cache.delete(route); // don't cache failed loads — allow retry
+      throw err;
+    });
+    cache.set(route, p);
+  }
+  return p;
+}
+
+/** Test-only: clear the load cache. */
+export function _resetRegistryCacheForTests(): void {
+  cache.clear();
+}
