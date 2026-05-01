@@ -1,6 +1,6 @@
 {
   "name": "crosstide",
-  "version": "7.6.0",
+  "version": "7.7.0",
   "description": "CrossTide Web — browser-based stock monitoring dashboard with 12-method consensus signals, interactive charting, and offline-first PWA.",
   "type": "module",
   "private": true,
@@ -19,11 +19,11 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "lhci": "lhci autorun",
+    "lhci": "lhci autorun --config config/lighthouserc.json",
     "lint": "eslint . --max-warnings 0",
-    "lint:css": "stylelint \"src/**/*.css\" --max-warnings 0",
-    "lint:html": "htmlhint index.html",
-    "lint:md": "markdownlint-cli2 \"**/*.md\" \"#node_modules\" \"#dist\" \"#coverage\" \"#build\" \"#docs/ROADMAP.archive*\"",
+    "lint:css": "stylelint \"src/**/*.css\" --config config/.stylelintrc.json --max-warnings 0",
+    "lint:html": "htmlhint index.html --config config/.htmlhintrc",
+    "lint:md": "markdownlint-cli2 --config config/.markdownlint.json \"**/*.md\" \"#**/node_modules/**\" \"#dist\" \"#coverage\" \"#build\" \"#test-results\" \"#playwright-report\" \"#docs/ROADMAP.archive*\"",
     "lint:all": "npm run lint && npm run lint:css && npm run lint:html && npm run lint:md && npm run format:check",
     "format": "prettier --write \"**/*.{ts,md,json,css,html,mjs}\" \"!dist/**\" \"!coverage/**\" \"!build/**\" \"!node_modules/**\" \"!test-results/**\" \"!playwright-report/**\" \"!docs/ROADMAP.archive*\"",
     "format:check": "prettier --check \"**/*.{ts,md,json,css,html,mjs}\" \"!dist/**\" \"!coverage/**\" \"!build/**\" \"!node_modules/**\" \"!test-results/**\" \"!playwright-report/**\" \"!docs/ROADMAP.archive*\"",
@@ -37,7 +37,7 @@
     "prepare": "simple-git-hooks"
   },
   "simple-git-hooks": {
-    "commit-msg": "npx commitlint --edit $1",
+    "commit-msg": "npx commitlint --config config/commitlint.config.mjs --edit $1",
     "pre-commit": "npx lint-staged"
   },
   "lint-staged": {
@@ -45,8 +45,8 @@
       "eslint --max-warnings 0 --no-warn-ignored --fix",
       "prettier --write"
     ],
-    "*.{css}": [
-      "stylelint --max-warnings 0 --fix",
+    "*.css": [
+      "stylelint --config config/.stylelintrc.json --max-warnings 0 --fix",
       "prettier --write"
     ],
     "*.{md,json,html}": [
@@ -73,7 +73,6 @@
     "prettier": "^3.8.3",
     "simple-git-hooks": "^2.13.1",
     "stylelint": "^17.7.0",
-    "stylelint-config-standard": "^40.0.0",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.10",

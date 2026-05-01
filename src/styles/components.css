@@ -1,6 +1,7 @@
 @layer components {
   .sortable {
     cursor: pointer;
+    -webkit-user-select: none;
     user-select: none;
   }
 
@@ -148,6 +149,10 @@
     gap: var(--sp-md);
     padding: var(--sp-md) var(--sp-lg);
     border-bottom: 1px solid var(--border);
+  }
+
+  .setting-group.hidden {
+    display: none;
   }
 
   .setting-group label {
@@ -822,6 +827,7 @@
   .sector-header {
     background: var(--bg-card-hover);
     cursor: pointer;
+    -webkit-user-select: none;
     user-select: none;
     border-top: 1px solid var(--border);
   }
@@ -972,10 +978,21 @@
   /* ── Live-price streaming (B1) ────────────────────────────────────── */
   @keyframes live-flash {
     0% {
-      background-color: color-mix(in sRGB, var(--accent) 30%, transparent);
+      background-color: rgba(var(--accent-rgb, 0, 120, 212), 0.3);
     }
     100% {
       background-color: transparent;
+    }
+  }
+
+  @supports (background-color: color-mix(in sRGB, red 30%, transparent)) {
+    @keyframes live-flash {
+      0% {
+        background-color: color-mix(in sRGB, var(--accent) 30%, transparent);
+      }
+      100% {
+        background-color: transparent;
+      }
     }
   }
 

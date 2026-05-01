@@ -66,6 +66,7 @@
 
     .signal-buy,
     .signal-sell {
+      -webkit-forced-color-adjust: none;
       forced-color-adjust: none;
     }
   }

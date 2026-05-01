@@ -19,6 +19,10 @@
   "typescript.tsdk": "./node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
   "eslint.useFlatConfig": true,
+  "markdownlint.config": {
+    "extends": "./config/.markdownlint.json"
+  },
+  "stylelint.configFile": "./config/.stylelintrc.json",
   "files.exclude": {
     "**/node_modules": true,
     "**/dist": true,

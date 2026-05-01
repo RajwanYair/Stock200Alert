@@ -93,6 +93,8 @@ export default tseslint.config(
       "dist/**",
       "coverage/**",
       "build/**",
+      "config/**",
+      "docs-site/**",
       "vite.config.ts",
       "vitest.config.ts",
     ],

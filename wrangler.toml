@@ -4,8 +4,3 @@ pages_build_output_dir = "dist"
 
 [vars]
 ENVIRONMENT = "production"
-
-# KV namespace for cached API responses (bind in CF dashboard)
-# [[kv_namespaces]]
-# binding = "CACHE"
-# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"

@@ -1,9 +1,9 @@
 /* CrossTide Starlight custom styles */
 
 :root {
-  --sl-color-accent: hsl(210 100% 56%);
-  --sl-color-accent-low: hsl(210 100% 15%);
-  --sl-color-accent-high: hsl(210 100% 75%);
+  --sl-color-accent: hsl(210, 100%, 56%);
+  --sl-color-accent-low: hsl(210, 100%, 15%);
+  --sl-color-accent-high: hsl(210, 100%, 75%);
 }
 
 /* Code block enhancements */

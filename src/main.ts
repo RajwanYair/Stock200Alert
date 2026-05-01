@@ -808,10 +808,10 @@ function main(): void {
   const pwaInstall = createPwaInstallManager();
   const pwaGroup = document.getElementById("pwa-install-group");
   function showPwaInstallGroup(): void {
-    if (pwaGroup) pwaGroup.style.display = "";
+    pwaGroup?.classList.remove("hidden");
   }
   function hidePwaInstallGroup(): void {
-    if (pwaGroup) pwaGroup.style.display = "none";
+    pwaGroup?.classList.add("hidden");
   }
   pwaInstall.onReady(showPwaInstallGroup);
   pwaInstall.onInstalled(() => {

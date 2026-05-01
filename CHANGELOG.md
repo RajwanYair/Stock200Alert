@@ -6,6 +6,66 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [7.7.0] - 2026-07-19
+
+### Minor — Production-readiness sprint
+
+#### Fixed
+
+- **CSS browser compatibility** — Added `-webkit-user-select: none` prefix on
+  `.sortable` and `.sector-header` (Safari support); added
+  `-webkit-forced-color-adjust: none` prefix in `a11y.css` (Safari forced
+  colours). `@keyframes live-flash` `color-mix()` wrapped in
+  `@supports (background-color: color-mix(...))` with `rgba()` fallback for
+  Chrome <111. `view-transition-name` and `::view-transition-*` rules wrapped
+  in `@supports (view-transition-name: none)` for progressive enhancement.
+- **Inline style removed** — `#pwa-install-group` `style="display:none"` in
+  `index.html` replaced with `.setting-group.hidden { display: none }` CSS
+  class; `main.ts` updated to use `classList.add/remove("hidden")`.
+- **Worker tsconfig** — Added missing `forceConsistentCasingInFileNames: true`
+  to `worker/tsconfig.json`.
+- **docs-site tsconfig** — Removed deprecated `baseUrl: "."` and corrected
+  `paths` to `"./src/*"`; ran `npm install` to resolve missing Astro type
+  extensions.
+- **docs-site CSS** — Fixed `hsl()` from modern space-separated syntax to
+  legacy comma notation for broad browser compat.
+
+#### Changed
+
+- **`config/` subdirectory** — Five root-level linter/tool config files moved
+  to `config/`:
+  - `.htmlhintrc`, `.markdownlint.json`, `.stylelintrc.json`,
+    `commitlint.config.mjs`, `lighthouserc.json`.
+    All `package.json` scripts, `simple-git-hooks`, `lint-staged`, `.github/`
+    workflows, `eslint.config.mjs`, and `.vscode/settings.json` updated to
+    reference the new paths.
+- **Lighthouse assertions** — All `"warn"` assertions in `config/lighthouserc.json`
+  promoted to `"error"` (performance, best-practices, SEO, FCP, LCP, TBT, CLS,
+  interactive). Zero false-passes from here on.
+- **`wrangler.toml`** (root + `worker/`) — Removed all commented-out
+  placeholder `[[kv_namespaces]]` and `[[r2_buckets]]` blocks.
+- **`.gitignore`** — Added `docs-site/node_modules/`.
+- **ESLint** — Added `config/**` and `docs-site/**` to ignore list.
+- **VS Code settings** — Added `markdownlint.config` and
+  `stylelint.configFile` extensions paths pointing to `config/`.
+
+#### Removed
+
+- **`stylelint-config-standard` devDependency** — Was listed in
+  `package.json` but unused (`.stylelintrc.json` has no `extends` array).
+  Removed with `npm uninstall --save-dev`.
+- **`lint-staged` brace syntax** — `*.{css}` single-value brace changed to
+  `*.css`.
+
+#### Infrastructure
+
+- **MyScripts shared tooling** — Added `@commitlint/cli`,
+  `@commitlint/config-conventional`, `@lhci/cli`, `lint-staged`, and
+  `simple-git-hooks` to `MyScripts/package.json` devDependencies so all
+  workspace projects share a single install of these tools.
+
+---
+
 ## [7.6.0] - 2026-06-07
 
 ### Patch — Engineering quality sprint (20-task maintenance)
