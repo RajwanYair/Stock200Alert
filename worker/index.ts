@@ -24,6 +24,7 @@ import { handleChart } from "./routes/chart.js";
 import { handleSearch } from "./routes/search.js";
 import { handleScreener } from "./routes/screener.js";
 import { handleOgImage } from "./routes/og.js";
+import { withSecurityHeaders } from "./security.js";
 
 export interface Env {
   ENVIRONMENT?: string;
@@ -116,15 +117,17 @@ export default {
     }
 
     try {
-      return await route(request, env);
-    } catch (err) {
+      return withSecurityHeaders(await route(request, env));
+    } catch (_err) {
       const origin = request.headers.get("Origin");
-      return withCors(
-        new Response(JSON.stringify({ error: "Internal server error" }), {
-          status: 500,
-          headers: { "Content-Type": "application/json" },
-        }),
-        origin,
+      return withSecurityHeaders(
+        withCors(
+          new Response(JSON.stringify({ error: "Internal server error" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          }),
+          origin,
+        ),
       );
     }
   },

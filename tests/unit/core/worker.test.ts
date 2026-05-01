@@ -8,6 +8,7 @@ import { describe, it, expect } from "vitest";
 import worker from "../../../worker/index";
 import { checkRateLimit } from "../../../worker/rate-limit";
 import { getAllowedOrigin } from "../../../worker/cors";
+import { withSecurityHeaders, _getSecurityHeaders } from "../../../worker/security";
 
 // Minimal Env object for tests
 const ENV = { ENVIRONMENT: "test", API_VERSION: "1" };
@@ -35,7 +36,7 @@ describe("GET /api/health", () => {
   it("returns status ok", async () => {
     const res = await worker.fetch(makeRequest("GET", "/api/health"), ENV);
     expect(res.status).toBe(200);
-    const body = await res.json() as { status: string; version: string };
+    const body = (await res.json()) as { status: string; version: string };
     expect(body.status).toBe("ok");
     expect(body.version).toBe("1");
   });
@@ -52,7 +53,7 @@ describe("GET /api/chart", () => {
   it("returns candles for AAPL", async () => {
     const res = await worker.fetch(makeRequest("GET", "/api/chart?ticker=AAPL&range=1mo"), ENV);
     expect(res.status).toBe(200);
-    const body = await res.json() as { ticker: string; candles: unknown[] };
+    const body = (await res.json()) as { ticker: string; candles: unknown[] };
     expect(body.ticker).toBe("AAPL");
     expect(body.candles.length).toBeGreaterThan(0);
   });
@@ -78,14 +79,14 @@ describe("GET /api/chart", () => {
   it("returns deterministic candles (same seed = same result)", async () => {
     const r1 = await worker.fetch(makeRequest("GET", "/api/chart?ticker=TSLA&range=1mo"), ENV);
     const r2 = await worker.fetch(makeRequest("GET", "/api/chart?ticker=TSLA&range=1mo"), ENV);
-    const b1 = await r1.json() as { candles: Array<{ close: number }> };
-    const b2 = await r2.json() as { candles: Array<{ close: number }> };
+    const b1 = (await r1.json()) as { candles: Array<{ close: number }> };
+    const b2 = (await r2.json()) as { candles: Array<{ close: number }> };
     expect(b1.candles[0]?.close).toBe(b2.candles[0]?.close);
   });
 
   it("OHLCV shape is correct", async () => {
     const res = await worker.fetch(makeRequest("GET", "/api/chart?ticker=GOOGL&range=5d"), ENV);
-    const body = await res.json() as { candles: Array<Record<string, unknown>> };
+    const body = (await res.json()) as { candles: Array<Record<string, unknown>> };
     const candle = body.candles[0];
     expect(candle).toHaveProperty("date");
     expect(candle).toHaveProperty("open");
@@ -109,20 +110,20 @@ describe("GET /api/search", () => {
   it("finds AAPL", async () => {
     const res = await worker.fetch(makeRequest("GET", "/api/search?q=aapl"), ENV);
     expect(res.status).toBe(200);
-    const body = await res.json() as { results: Array<{ ticker: string }> };
+    const body = (await res.json()) as { results: Array<{ ticker: string }> };
     expect(body.results[0]?.ticker).toBe("AAPL");
   });
 
   it("finds SPY by partial name", async () => {
     const res = await worker.fetch(makeRequest("GET", "/api/search?q=spy"), ENV);
     expect(res.status).toBe(200);
-    const body = await res.json() as { results: Array<{ ticker: string }> };
+    const body = (await res.json()) as { results: Array<{ ticker: string }> };
     expect(body.results.some((r) => r.ticker === "SPY")).toBe(true);
   });
 
   it("respects limit param", async () => {
     const res = await worker.fetch(makeRequest("GET", "/api/search?q=a&limit=3"), ENV);
-    const body = await res.json() as { results: unknown[] };
+    const body = (await res.json()) as { results: unknown[] };
     expect(body.results.length).toBeLessThanOrEqual(3);
   });
 
@@ -145,7 +146,7 @@ describe("POST /api/screener", () => {
     const body = JSON.stringify({ tickers: ["AAPL", "MSFT", "TSLA"] });
     const res = await worker.fetch(makeRequest("POST", "/api/screener", { body }), ENV);
     expect(res.status).toBe(200);
-    const data = await res.json() as { rows: Array<{ ticker: string; rsi: number }> };
+    const data = (await res.json()) as { rows: Array<{ ticker: string; rsi: number }> };
     expect(data.rows.length).toBeGreaterThan(0);
     expect(data.rows[0]).toHaveProperty("ticker");
     expect(data.rows[0]).toHaveProperty("rsi");
@@ -156,7 +157,7 @@ describe("POST /api/screener", () => {
   it("filters by minRsi", async () => {
     const body = JSON.stringify({ tickers: ["AAPL", "MSFT", "NVDA", "TSLA", "AMZN"], minRsi: 70 });
     const res = await worker.fetch(makeRequest("POST", "/api/screener", { body }), ENV);
-    const data = await res.json() as { rows: Array<{ rsi: number }> };
+    const data = (await res.json()) as { rows: Array<{ rsi: number }> };
     for (const row of data.rows) {
       expect(row.rsi).toBeGreaterThanOrEqual(70);
     }
@@ -188,10 +189,7 @@ describe("POST /api/screener", () => {
   });
 
   it("returns 400 for invalid JSON", async () => {
-    const res = await worker.fetch(
-      makeRequest("POST", "/api/screener", { body: "not json" }),
-      ENV,
-    );
+    const res = await worker.fetch(makeRequest("POST", "/api/screener", { body: "not json" }), ENV);
     expect(res.status).toBe(400);
   });
 });
@@ -216,7 +214,10 @@ describe("GET /api/og/:symbol", () => {
   });
 
   it("returns 400 for invalid symbol", async () => {
-    const res = await worker.fetch(makeRequest("GET", "/api/og/" + encodeURIComponent("<bad>")), ENV);
+    const res = await worker.fetch(
+      makeRequest("GET", "/api/og/" + encodeURIComponent("<bad>")),
+      ENV,
+    );
     expect(res.status).toBe(400);
   });
 
@@ -315,5 +316,83 @@ describe("routing", () => {
   it("ignores trailing slash", async () => {
     const res = await worker.fetch(makeRequest("GET", "/api/health/"), ENV);
     expect(res.status).toBe(200);
+  });
+});
+
+// ── Security headers (A20) ───────────────────────────────────────────────────
+
+describe("withSecurityHeaders", () => {
+  it("adds Content-Security-Policy header", () => {
+    const base = new Response(JSON.stringify({ ok: true }), {
+      headers: { "Content-Type": "application/json" },
+    });
+    const secured = withSecurityHeaders(base);
+    const csp = secured.headers.get("Content-Security-Policy");
+    expect(csp).not.toBeNull();
+    expect(csp).toContain("default-src");
+    expect(csp).toContain("frame-ancestors 'none'");
+    expect(csp).toContain("upgrade-insecure-requests");
+  });
+
+  it("adds X-Content-Type-Options: nosniff", () => {
+    const secured = withSecurityHeaders(new Response("ok"));
+    expect(secured.headers.get("X-Content-Type-Options")).toBe("nosniff");
+  });
+
+  it("adds X-Frame-Options: DENY", () => {
+    const secured = withSecurityHeaders(new Response("ok"));
+    expect(secured.headers.get("X-Frame-Options")).toBe("DENY");
+  });
+
+  it("adds Strict-Transport-Security", () => {
+    const secured = withSecurityHeaders(new Response("ok"));
+    const hsts = secured.headers.get("Strict-Transport-Security");
+    expect(hsts).toContain("max-age=31536000");
+    expect(hsts).toContain("includeSubDomains");
+  });
+
+  it("adds Permissions-Policy", () => {
+    const secured = withSecurityHeaders(new Response("ok"));
+    const pp = secured.headers.get("Permissions-Policy");
+    expect(pp).toContain("camera=()");
+    expect(pp).toContain("geolocation=()");
+    expect(pp).toContain("microphone=()");
+  });
+
+  it("preserves existing headers", () => {
+    const base = new Response("body", { headers: { "X-Custom": "value" } });
+    const secured = withSecurityHeaders(base);
+    expect(secured.headers.get("X-Custom")).toBe("value");
+  });
+
+  it("preserves status code", () => {
+    const base = new Response("Not Found", { status: 404 });
+    const secured = withSecurityHeaders(base);
+    expect(secured.status).toBe(404);
+  });
+});
+
+describe("_getSecurityHeaders", () => {
+  it("returns an object with all required security headers", () => {
+    const headers = _getSecurityHeaders();
+    expect(headers).toHaveProperty("Content-Security-Policy");
+    expect(headers).toHaveProperty("Permissions-Policy");
+    expect(headers).toHaveProperty("Referrer-Policy");
+    expect(headers).toHaveProperty("X-Content-Type-Options");
+    expect(headers).toHaveProperty("X-Frame-Options");
+    expect(headers).toHaveProperty("Strict-Transport-Security");
+  });
+});
+
+describe("Security headers on API responses", () => {
+  it("GET /api/health includes CSP", async () => {
+    const res = await worker.fetch(makeRequest("GET", "/api/health"), ENV);
+    expect(res.headers.get("Content-Security-Policy")).not.toBeNull();
+  });
+
+  it("404 response includes security headers", async () => {
+    const res = await worker.fetch(makeRequest("GET", "/unknown-route"), ENV);
+    expect(res.status).toBe(404);
+    expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });
 });

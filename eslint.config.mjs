@@ -166,4 +166,37 @@ export default tseslint.config(
       "no-console": "off",
     },
   },
+  {
+    // Cloudflare Worker — separate tsconfig, WebWorker globals
+    files: ["worker/**/*.ts"],
+    extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    languageOptions: {
+      globals: {
+        crypto: "readonly",
+        URL: "readonly",
+        Request: "readonly",
+        Response: "readonly",
+        Headers: "readonly",
+        fetch: "readonly",
+        console: "readonly",
+      },
+      parserOptions: {
+        project: ["./worker/tsconfig.json"],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      ...sharedRules,
+      "no-undef": "off",
+      "no-unused-vars": "off",
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        { varsIgnorePattern: "^_", argsIgnorePattern: "^_|^err$", caughtErrorsIgnorePattern: "^_" },
+      ],
+      "@typescript-eslint/no-explicit-any": "error",
+      "@typescript-eslint/consistent-type-imports": ["error", { prefer: "type-imports" }],
+      "@typescript-eslint/explicit-function-return-type": "error",
+      "no-console": "off",
+    },
+  },
 );
