@@ -79,3 +79,7 @@ export {
   freshnessLabel,
 } from "./freshness";
 export type { FreshnessBucket, FreshnessConfig } from "./freshness";
+
+export { emptyDrawingState, addShape, removeShape, updateShape, hitTest, fibLevelPrice, DEFAULT_FIB_LEVELS } from "./drawing";
+export type { Shape, Trendline, HLine, FibRetracement, Point, DrawingKind, DrawingState, HitTestOptions } from "./drawing";
+
