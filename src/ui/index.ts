@@ -20,3 +20,13 @@ export type { ModalOptions } from "./modal";
 export { sortRows, toggleSort } from "./sortable";
 export type { SortConfig, SortDirection } from "./sortable";
 export { announce, trapFocus, prefersReducedMotion } from "./a11y";
+export {
+  scoreCommand,
+  rankCommands,
+  createPaletteState,
+} from "./command-palette";
+export type {
+  PaletteCommand,
+  PaletteRanked,
+  PaletteState,
+} from "./command-palette";
