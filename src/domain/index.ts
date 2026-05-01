@@ -93,3 +93,7 @@ export type { Value, Node, EvalContext, FnImpl } from "./signal-dsl";
 export { heikinAshi } from "./heikin-ashi";
 export type { Candle, HeikinAshiCandle } from "./heikin-ashi";
 
+
+export { computeDonchian } from "./donchian";
+export type { DonchianPoint } from "./donchian";
+
