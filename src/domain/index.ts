@@ -234,3 +234,6 @@ export type { StochRsiPoint, StochRsiOptions } from "./stochastic-rsi";
 export { computeTsi } from "./tsi";
 export type { TsiPoint, TsiOptions } from "./tsi";
 
+
+export { computeWma } from "./wma";
+
