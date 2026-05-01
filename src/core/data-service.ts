@@ -7,6 +7,7 @@
 import type { DailyCandle, ConsensusResult, InstrumentType } from "../types/domain";
 import { aggregateConsensus } from "../domain/signal-aggregator";
 import { fetchWithTimeout } from "./fetch";
+import { safeParse, YahooChartSchema } from "../types/valibot-schemas";
 
 /**
  * Base URL for Yahoo Finance requests.
@@ -46,30 +47,6 @@ export function getCorsProxy(): string {
 function proxyUrl(url: string): string {
   if (!corsProxy) return url;
   return `${corsProxy}${encodeURIComponent(url)}`;
-}
-
-interface YahooChartResult {
-  chart?: {
-    result?: Array<{
-      meta?: {
-        regularMarketPrice?: number;
-        previousClose?: number;
-        symbol?: string;
-        instrumentType?: string; // "EQUITY", "ETF", "CRYPTOCURRENCY", etc.
-        sector?: string; // GICS sector for equities (not always present)
-      };
-      timestamp?: number[];
-      indicators?: {
-        quote?: Array<{
-          open?: (number | null)[];
-          high?: (number | null)[];
-          low?: (number | null)[];
-          close?: (number | null)[];
-          volume?: (number | null)[];
-        }>;
-      };
-    }>;
-  };
 }
 
 export interface TickerData {
@@ -114,7 +91,14 @@ interface CandleResult {
 async function fetchCandles(ticker: string): Promise<CandleResult> {
   const url = `${YAHOO_BASE}/v8/finance/chart/${encodeURIComponent(ticker)}?range=1y&interval=1d`;
   const res = await fetchWithTimeout(proxyUrl(url), {}, 15000);
-  const data = (await res.json()) as YahooChartResult;
+  const raw: unknown = await res.json();
+
+  // Validate response shape at the external boundary
+  const parsed = safeParse(YahooChartSchema, raw);
+  if (!parsed.success) {
+    throw new Error(`Invalid Yahoo Finance response for ${ticker}`);
+  }
+  const data = parsed.output;
   const result = data.chart?.result?.[0];
 
   if (!result?.timestamp || !result.indicators?.quote?.[0]) {

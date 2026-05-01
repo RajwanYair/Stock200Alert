@@ -9,7 +9,7 @@ describe("screener-worker facade", () => {
 
   it("falls back to synchronous applyFilters when Worker is undefined", async () => {
     const origWorker = globalThis.Worker;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (globalThis as any).Worker = undefined;
 
     try {
@@ -40,7 +40,7 @@ describe("screener-worker facade", () => {
 
   it("returns empty array when no inputs match", async () => {
     const origWorker = globalThis.Worker;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (globalThis as any).Worker = undefined;
 
     try {

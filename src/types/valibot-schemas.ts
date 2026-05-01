@@ -75,6 +75,8 @@ const YahooMetaSchema = object({
   regularMarketPrice: optional(number()),
   previousClose: optional(number()),
   symbol: optional(string()),
+  instrumentType: optional(string()),
+  sector: optional(string()),
 });
 
 const YahooResultSchema = object({
