@@ -33,17 +33,31 @@ export interface FullExportPayload {
   readonly schema_version: number;
   readonly exported_at: string;
   readonly app: string;
+  readonly checksum: string;
   readonly data: FullExportDomains;
+}
+
+/**
+ * Simple DJB2 hash of a string for integrity check.
+ */
+function djb2Hash(str: string): string {
+  let hash = 5381;
+  for (let i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash + str.charCodeAt(i)) | 0;
+  }
+  return (hash >>> 0).toString(36);
 }
 
 /**
  * Export all provided data domains as a schema-versioned JSON string.
  */
 export function exportFullDataJson(domains: FullExportDomains): string {
+  const dataStr = JSON.stringify(domains);
   const payload: FullExportPayload = {
     schema_version: EXPORT_SCHEMA_VERSION,
     exported_at: new Date().toISOString(),
     app: "CrossTide",
+    checksum: djb2Hash(dataStr),
     data: domains,
   };
   return JSON.stringify(payload, null, 2);
@@ -52,6 +66,7 @@ export function exportFullDataJson(domains: FullExportDomains): string {
 /**
  * Import and validate a full-data JSON export.
  * Returns the parsed payload. Throws on schema version mismatch or bad structure.
+ * Supports importing older schema versions (forward-compatible reading).
  */
 export function importFullDataJson(json: string): FullExportPayload {
   const raw: unknown = JSON.parse(json);
@@ -68,6 +83,16 @@ export function importFullDataJson(json: string): FullExportPayload {
 
   const data = obj["data"];
   if (!data || typeof data !== "object") throw new Error("Invalid full export: missing data");
+
+  // Validate checksum integrity (if present — older exports may not have it)
+  const checksum = obj["checksum"];
+  if (typeof checksum === "string") {
+    const dataStr = JSON.stringify(data);
+    const expected = djb2Hash(dataStr);
+    if (checksum !== expected) {
+      throw new Error("Full export integrity check failed: checksum mismatch");
+    }
+  }
 
   return obj as unknown as FullExportPayload;
 }

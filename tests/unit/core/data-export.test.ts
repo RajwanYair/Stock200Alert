@@ -193,10 +193,24 @@ describe("exportFullDataJson / importFullDataJson (C7)", () => {
     expect(parsed.data.watchlist).toHaveLength(2);
   });
 
+  it("includes a checksum field for integrity", () => {
+    const json = exportFullDataJson({ watchlist: WATCHLIST });
+    const parsed = JSON.parse(json);
+    expect(parsed.checksum).toBeDefined();
+    expect(typeof parsed.checksum).toBe("string");
+    expect(parsed.checksum.length).toBeGreaterThan(0);
+  });
+
   it("round-trips watchlist through importFullDataJson", () => {
     const json = exportFullDataJson({ watchlist: WATCHLIST });
     const payload = importFullDataJson(json);
     expect(payload.data.watchlist).toEqual(WATCHLIST);
+  });
+
+  it("rejects tampered data (checksum mismatch)", () => {
+    const json = exportFullDataJson({ watchlist: WATCHLIST });
+    const tampered = json.replace("AAPL", "HACK");
+    expect(() => importFullDataJson(tampered)).toThrow(/checksum mismatch/);
   });
 
   it("accepts exports from older schema versions without error", () => {
