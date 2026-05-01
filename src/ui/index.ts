@@ -119,3 +119,6 @@ export type { SparkbarOptions } from "./sparkbar";
 export { formatKeymap } from "./keymap-formatter";
 export type { KeymapOptions } from "./keymap-formatter";
 
+
+export { truncateEnd, truncateMiddle, graphemeLength, DEFAULT_ELLIPSIS } from "./text-truncate";
+
