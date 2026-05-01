@@ -54,6 +54,16 @@ export { observeWebVitals, makeBeaconReporter } from "./web-vitals";
 export type { VitalName, VitalReport, VitalHandler, VitalsObserver } from "./web-vitals";
 export { createAnalyticsClient } from "./analytics-client";
 export type { AnalyticsConfig, AnalyticsClient } from "./analytics-client";
+export {
+  isNotificationsSupported,
+  getNotificationPermission,
+  requestNotificationPermission,
+  showNotification,
+} from "./notifications";
+export type {
+  NotificationPermissionState,
+  AppNotificationOptions,
+} from "./notifications";
 export { createWorkerClient, serveWorkerRpc } from "./worker-rpc";
 export type {
   RpcRequest,
