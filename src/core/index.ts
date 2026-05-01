@@ -190,3 +190,25 @@ export type { FullExportPayload, FullExportDomains } from "./data-export";
 
 export { createFinnhubStream } from "./finnhub-ws";
 export type { FinnhubStream, FinnhubTradeTick, FinnhubStreamOptions } from "./finnhub-ws";
+
+export {
+  getLocale,
+  formatNumber,
+  formatCompact,
+  formatCurrency,
+  formatPercent,
+  formatDate,
+  formatDateTime,
+  formatRelativeTime,
+  formatTimeAgo,
+} from "./i18n";
+export type {
+  NumberFormatOptions,
+  CurrencyFormatOptions,
+  PercentFormatOptions,
+  DateFormatOptions,
+  DateStyle,
+  TimeStyle,
+  RelativeTimeUnit,
+  RelativeTimeOptions,
+} from "./i18n";
