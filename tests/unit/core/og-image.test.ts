@@ -1,8 +1,8 @@
 /**
  * OG image generator tests (B7).
  */
-import { describe, it, expect } from "vitest";
-import { generateOgImageSvg, svgToDataUri } from "../../../src/core/og-image";
+import { describe, it, expect, vi } from "vitest";
+import { generateOgImageSvg, svgToDataUri, downloadSvg } from "../../../src/core/og-image";
 
 describe("generateOgImageSvg", () => {
   it("returns a string starting with SVG header", () => {
@@ -85,5 +85,67 @@ describe("svgToDataUri", () => {
     const svg = generateOgImageSvg({ ticker: "TSLA", price: 250, direction: "HOLD" });
     const uri = svgToDataUri(svg);
     expect(uri.length).toBeGreaterThan(50);
+  });
+});
+
+describe("generateOgImageSvg — direction colours", () => {
+  it("SELL direction uses red color", () => {
+    const svg = generateOgImageSvg({ ticker: "X", direction: "SELL" });
+    expect(svg).toContain("#ef4444");
+  });
+
+  it("STRONG_SELL direction uses red color", () => {
+    const svg = generateOgImageSvg({ ticker: "X", direction: "STRONG_SELL" });
+    expect(svg).toContain("#ef4444");
+  });
+
+  it("HOLD direction uses amber color", () => {
+    const svg = generateOgImageSvg({ ticker: "X", direction: "HOLD" });
+    expect(svg).toContain("#f59e0b");
+  });
+
+  it("NEUTRAL direction uses amber color", () => {
+    const svg = generateOgImageSvg({ ticker: "X", direction: "NEUTRAL" });
+    expect(svg).toContain("#f59e0b");
+  });
+
+  it("BUY uses green color", () => {
+    const svg = generateOgImageSvg({ ticker: "X", direction: "BUY" });
+    expect(svg).toContain("#22c55e");
+  });
+
+  it("no direction omits the badge section", () => {
+    const svg = generateOgImageSvg({ ticker: "X", direction: undefined });
+    // badge only rendered when direction is provided
+    expect(svg).not.toContain("badge");
+    expect(svg).not.toContain("text-anchor=\"middle\"");
+  });
+});
+
+describe("downloadSvg", () => {
+  it("creates an anchor and triggers download", () => {
+    const clickSpy = vi.fn();
+    const mockAnchor = { href: "", download: "", click: clickSpy } as unknown as HTMLAnchorElement;
+    vi.spyOn(document, "createElement").mockReturnValueOnce(mockAnchor);
+    const mockUrl = "blob:http://localhost/123";
+    vi.spyOn(URL, "createObjectURL").mockReturnValueOnce(mockUrl);
+    const revokeSpy = vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+
+    downloadSvg("<svg/>", "test.svg");
+
+    expect(mockAnchor.download).toBe("test.svg");
+    expect(mockAnchor.href).toBe(mockUrl);
+    expect(clickSpy).toHaveBeenCalledOnce();
+    expect(revokeSpy).toHaveBeenCalledWith(mockUrl);
+  });
+
+  it("uses default filename when none provided", () => {
+    const mockAnchor = { href: "", download: "", click: vi.fn() } as unknown as HTMLAnchorElement;
+    vi.spyOn(document, "createElement").mockReturnValueOnce(mockAnchor);
+    vi.spyOn(URL, "createObjectURL").mockReturnValueOnce("blob:x");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+
+    downloadSvg("<svg/>");
+    expect(mockAnchor.download).toBe("og-preview.svg");
   });
 });
