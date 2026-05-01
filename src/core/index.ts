@@ -183,3 +183,7 @@ export type { Comparator } from "./binary-search";
 export { once, memoize } from "./once-memoize";
 export type { MemoizedFn } from "./once-memoize";
 
+
+export { safeParse, safeStringify } from "./safe-json";
+export type { SafeResult, SafeStringifyOptions } from "./safe-json";
+
