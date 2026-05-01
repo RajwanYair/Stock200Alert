@@ -1,0 +1,22 @@
+name = "crosstide-api"
+main = "index.ts"
+compatibility_date = "2024-12-01"
+
+[vars]
+ENVIRONMENT = "production"
+# Bump this whenever you make a backwards-incompatible API change
+API_VERSION = "1"
+
+# KV namespace for hot quote cache (bind in Cloudflare dashboard before deploying)
+# [[kv_namespaces]]
+# binding = "QUOTE_CACHE"
+# id = "your-kv-namespace-id-here"
+
+# R2 bucket for cold OHLCV storage (optional)
+# [[r2_buckets]]
+# binding = "OHLCV_STORE"
+# bucket_name = "crosstide-ohlcv"
+
+[dev]
+port = 8787
+local_protocol = "http"
