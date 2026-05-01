@@ -55,3 +55,16 @@ export type { FibonacciLevels } from "./analytics";
 export { computeMetrics as computeBacktestMetrics } from "./backtest-metrics";
 export type { BacktestMetrics, EquityPoint, Trade } from "./backtest-metrics";
 
+export {
+  riskBasedSize,
+  atrBasedSize,
+  fixedFractionalSize,
+  kellyFraction,
+  halfKellySize,
+} from "./position-sizing";
+export type {
+  RiskBasedSizingInput,
+  AtrSizingInput,
+  KellyInput,
+} from "./position-sizing";
+
