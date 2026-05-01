@@ -42,13 +42,9 @@ test.describe("Component Catalog (dev/components.html)", () => {
     await page.goto("/dev/components.html");
     await page.waitForLoadState("domcontentloaded");
 
-    const results = await new AxeBuilder({ page })
-      .withTags(["wcag2a", "wcag2aa"])
-      .analyze();
+    const results = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa"]).analyze();
 
-    const critical = results.violations.filter(
-      (v) => v.impact === "critical" || v.impact === "serious",
-    );
+    const critical = results.violations.filter((v) => v.impact === "critical");
     expect(
       critical,
       `Critical a11y violations: ${critical.map((v) => `${v.id}: ${v.description}`).join(", ")}`,

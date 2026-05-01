@@ -62,7 +62,7 @@
         font-size: 0.7rem;
         letter-spacing: 0.12em;
         text-transform: uppercase;
-        color: var(--text-muted, #7d8590);
+        color: var(--color-text);
         margin-bottom: 1rem;
         padding-bottom: 0.25rem;
         border-bottom: 1px solid var(--color-border);
@@ -85,7 +85,7 @@
 
       .component-label {
         font-size: 0.65rem;
-        color: var(--text-muted, #7d8590);
+        color: var(--color-text);
         letter-spacing: 0.06em;
       }
 
@@ -170,7 +170,7 @@
 
       .type-label {
         font-size: 0.6rem;
-        color: var(--text-muted, #7d8590);
+        color: var(--color-text);
         min-width: 80px;
       }
     </style>
@@ -180,10 +180,10 @@
     <header class="preview-header">
       <h1>CrossTide — Component Preview</h1>
       <div class="theme-toggle">
-        <span style="font-size: 0.7rem; color: var(--text-muted)">Theme:</span>
-        <button id="btn-dark" class="active" onclick="setTheme('dark')">dark</button>
-        <button id="btn-light" onclick="setTheme('light')">light</button>
-        <button id="btn-hc" onclick="setTheme('high-contrast')">HC</button>
+        <span style="font-size: 0.7rem; color: var(--color-text)">Theme:</span>
+        <button id="btn-dark" class="active" type="button">dark</button>
+        <button id="btn-light" type="button">light</button>
+        <button id="btn-hc" type="button">HC</button>
       </div>
     </header>
 
@@ -314,11 +314,11 @@
     <section class="section">
       <h2 class="section-title">Toasts</h2>
       <div id="toast-demo-area">
-        <button class="btn btn-secondary" onclick="demoToast('info')">Info</button>
-        <button class="btn btn-secondary" onclick="demoToast('success')">Success</button>
-        <button class="btn btn-secondary" onclick="demoToast('warning')">Warning</button>
-        <button class="btn btn-secondary" onclick="demoToast('error')">Error</button>
-        <button class="btn btn-secondary" onclick="demoToast('info', 0)">Sticky</button>
+        <button class="btn btn-secondary" id="toast-info" type="button">Info</button>
+        <button class="btn btn-secondary" id="toast-success" type="button">Success</button>
+        <button class="btn btn-secondary" id="toast-warning" type="button">Warning</button>
+        <button class="btn btn-secondary" id="toast-error" type="button">Error</button>
+        <button class="btn btn-secondary" id="toast-sticky" type="button">Sticky</button>
       </div>
     </section>
 
@@ -341,7 +341,8 @@
         </div>
         <div class="component-cell">
           <span class="component-label">select</span>
-          <select class="input" style="width: 140px">
+          <label for="theme-select" class="sr-only">Theme preset</label>
+          <select id="theme-select" class="input" style="width: 140px">
             <option>Dark</option>
             <option>Light</option>
             <option>High Contrast</option>
@@ -413,6 +414,13 @@
         const btn = document.getElementById(`btn-${t === "high-contrast" ? "hc" : t}`);
         if (btn) btn.classList.add("active");
       };
+      document.getElementById("btn-dark")?.addEventListener("click", () => window.setTheme("dark"));
+      document
+        .getElementById("btn-light")
+        ?.addEventListener("click", () => window.setTheme("light"));
+      document
+        .getElementById("btn-hc")
+        ?.addEventListener("click", () => window.setTheme("high-contrast"));
 
       // ── color swatches ────────────────────────────────────────────────
       const cssVars = [
@@ -516,6 +524,21 @@
         };
         showToast({ message: messages[type] ?? "Hello!", type, durationMs });
       };
+      document
+        .getElementById("toast-info")
+        ?.addEventListener("click", () => window.demoToast("info"));
+      document
+        .getElementById("toast-success")
+        ?.addEventListener("click", () => window.demoToast("success"));
+      document
+        .getElementById("toast-warning")
+        ?.addEventListener("click", () => window.demoToast("warning"));
+      document
+        .getElementById("toast-error")
+        ?.addEventListener("click", () => window.demoToast("error"));
+      document
+        .getElementById("toast-sticky")
+        ?.addEventListener("click", () => window.demoToast("info", 0));
     </script>
   </body>
 </html>
