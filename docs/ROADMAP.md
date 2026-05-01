@@ -147,10 +147,21 @@ beyond the open-source comparison set.
 
 | Area                                           | Why it matters                                          | Target |
 | ---------------------------------------------- | ------------------------------------------------------- | ------ |
+| **Company name display under ticker**          | Ticker-only rows require users to remember names; one secondary line eliminates that friction across all views | G19 |
+| **Per-method consensus weights**               | All 12 methods carry equal weight today; users who trust certain methods more have no way to express that preference; a simple weight map makes the consensus engine genuinely personalizable | G20 |
+| **Heatmap sector drill-down**                  | Current heatmap shows all tickers flat; clicking a sector cell should zoom into that sector and reveal which individual stock drove the move, with index-attribution bars | G21 |
+| **Correlation Matrix card**                    | `domain/correlation-matrix.ts` is complete but has no UI; a dedicated card shows pairwise correlation heatmap for watchlist tickers, highlights dangerous over-concentration | G22 |
+| **Market Breadth card**                        | No single view shows watchlist-wide signal distribution, % above 50/200 MA, or advance/decline ratio; easy to build on existing quote + SMA data | G23 |
+| **Earnings Calendar card**                     | Upcoming earnings dates, consensus EPS estimate, and historical surprise % for watchlist tickers; turns the dashboard into a forward-looking event tracker | H18 |
+| **Macro Dashboard card**                       | Missing market-context layer: VIX, 10Y yield, DXY, gold, crude oil — the five numbers every equity trader checks first every morning | H19 |
+| **Sector Rotation card**                       | No view shows 11-sector relative performance over rolling 1M/3M/6M windows; important for regime-aware trading decisions | H20 |
+| **Relative Strength Comparison card**          | No multi-ticker % return overlay vs a benchmark (SPY/QQQ); fundamental tool for deciding which ticker in a sector to own | H21 |
+| **Economic Calendar card**                     | Fed decisions, CPI, NFP, GDP releases create predictable volatility; a calendar card with FRED/public macro feed would close this gap | I10 |
+| **News Digest card**                           | Earnings, analyst upgrades, and macro news move prices; a curated RSS/Atom feed per ticker with no auth required adds context the indicators cannot | I11 |
+| **Per-card settings**                          | The Settings card today holds only global options (theme, export, clear); every card has tunable parameters (indicator periods, column visibility, refresh rates, display density) but no way to persist user preferences per card; a card-scoped settings system would make the dashboard genuinely configurable without cluttering the global settings page | G24 |
 | **Temporal API** (Stage 4, JS 2025)            | `Date` has DST and timezone traps in financial dates    | G7     |
 | **Navigation API**                             | Cleaner SPA nav than History pushState + popstate       | G8     |
 | **Popover API** (Baseline 2024)                | Replace custom modal/dropdown with native behaviour     | G9     |
-| **CSS Anchor Positioning** (Chrome 125+)       | Chart tooltips without JS measurement                   | H1     |
 | **Speculation Rules API**                      | Prefetch/prerender card chunks on hover                 | H3     |
 | **Compression Streams API**                    | gzip data exports in-browser before download            | G11    |
 | **File System Access API**                     | Save/load strategy configs to local files               | H6     |
@@ -807,6 +818,12 @@ live; GlitchTip receiving errors; Plausible receiving page-views; Worker confirm
 | G16 | Inter Variable font: self-hosted `woff2` subset with `font-display: optional`                    |    P2    |
 | G17 | `@vitest/browser` mode: migrate 3–5 DOM-intensive tests to browser mode                          |    P2    |
 | G18 | **ETF constituent drill-down**: collapsible ETF rows in Watchlist, Screener, and Heatmap; expand to show each constituent ticker with live quote, 52W range bar, consensus badge, and % weight in the ETF; collapse state persisted in `localStorage` |    P2    |
+| G19 | **Company name below ticker**: display the instrument's full company/fund name as a secondary line under the ticker symbol in the Watchlist table, Screener rows, Heatmap cells, Consensus card, and Chart card header. Populate `name` from the first successful quote response (Yahoo `shortName`); persist in `WatchlistEntry` and IDB so no extra fetch is needed. Add optional `name?: string` field to `WatchlistEntry` in `domain.ts`; update card render templates. |    P1    |
+| G20 | **Per-method consensus weights**: add a `methodWeights: Record<MethodName, number>` map (range 0.0 = disabled → 3.0 = triple-weighted, default 1.0) to `AppConfig`. Add a "Consensus Weights" section to the Settings card with a labeled slider/input per method and a "Reset to defaults" button. Update `consensus-engine.ts` to apply per-method weights when tallying directional votes and computing `strength`. Weights are included in config export/import. Micho method retains its anchor-role logic; its weight scales the strength contribution. |    P1    |
+| G21 | **Heatmap sector drill-down**: clicking a sector cell in the heatmap zooms into that sector and renders its individual constituent stocks. Shows: (a) each stock as a treemap cell sized by absolute price move contribution (`Δprice × shares_proxy`), (b) a "sector attribution" bar showing which stock drove the most of the sector's net move, (c) a breadcrumb row (`All Sectors › Technology`) for navigating back, (d) sort toggles for % change / market-cap proxy / absolute move. Drill depth is one level only (sector → stocks). All data comes from existing quote responses; no new API endpoint required. |    P1    |
+| G22 | **Correlation Matrix card**: expose `domain/correlation-matrix.ts` (already implemented, tested, but UI-less) as a full card. Renders a `n×n` color-coded grid (red = strong positive, blue = negative) for all watchlist tickers using the last 60 trading days of close prices cached in IDB. Tooltip shows exact `r` value and period. Highlights pairs with `|r| > 0.85` as over-concentration warnings. Controls: period selector (20/60/120 days), exclude-crypto toggle. |    P1    |
+| G23 | **Market Breadth card**: displays watchlist-aggregate signal health in a single glance. Panels: (a) BUY / NEUTRAL / SELL donut (count from latest consensus results), (b) % of watchlist with close above 50-day SMA and above 200-day SMA (uses `computeSma` already wired), (c) advance/decline bar for the current session (gainers vs losers from quote cache), (d) top 3 movers + laggards. No new API calls; reads data already fetched for the Watchlist card. |    P2    |
+| G24 | **Per-card settings**: introduce a `cardSettings: Record<CardId, Record<string, unknown>>` namespace in `AppConfig` so each card can store and retrieve its own configuration independently from global settings. Each card declares a typed `CardSettings` schema (Valibot) and a default value; the Settings card gains a "Card Settings" section with a card picker and a rendered form for the selected card's options. Example settings exposed per card: Watchlist (visible columns, auto-refresh interval, density), Chart (default interval, sub-pane indicator set, crosshair snap), Consensus (methods to display, signal history depth), Screener (default preset, max results, sort column), Heatmap (color scale, cell label format), Backtest (default strategy, lookback window, benchmark), Alerts (default threshold type, notification channel), Portfolio (benchmark ticker, display currency), Risk (confidence level for VaR, benchmark). Settings round-trip through export/import. Changing a card's settings triggers a reactive re-render via the signals layer with no page reload. |    P1    |
 
 **Exit criteria:** Worker on Hono; TS 6.0; `openapi.json` auto-generated; Temporal
 polyfill active; Compression Streams in export; `using` sweep complete.
@@ -836,6 +853,10 @@ polyfill active; Compression Streams in export; `using` sweep complete.
 | H15 | Tiingo provider implementation                                                               |    P2    |
 | H16 | `uPlot` integration for static inline charts (screener rows, consensus timeline)             |    P2    |
 | H17 | Tauri 2.0 desktop wrapper: Win/Mac/Linux app wrapping the PWA build                         |    P4    |
+| H18 | **Earnings Calendar card**: shows upcoming earnings dates for all watchlist tickers in a scrollable calendar / list view. Columns: ticker, company name, earnings date, EPS estimate (consensus), prior quarter EPS, historical surprise %. Source: Finnhub `/calendar/earnings` (free tier). Highlights tickers with earnings within 7 days. Integrates with the Alerts card to optionally fire a pre-earnings reminder notification. |    P2    |
+| H19 | **Macro Dashboard card**: displays the five numbers every equity trader checks at market open — VIX, US 10Y yield, DXY (US Dollar Index), gold spot (XAU/USD), and WTI crude (CL=F). Each metric shows: current value, daily % change, 30-day sparkline, and a color-coded regime badge (risk-on / risk-off / neutral derived from VIX threshold and DXY trend). Data sourced from existing Yahoo provider (all five are Yahoo-queryable tickers). Renders as a horizontal summary bar that can dock above the Watchlist as a global context strip. |    P2    |
+| H20 | **Sector Rotation card**: renders an `11 × N` table (11 GICS sectors, N timeframes: 1W / 1M / 3M / 6M / 1Y) showing sector ETF (XLC, XLY, XLP, XLE, XLF, XLV, XLI, XLB, XLRE, XLK, XLU) relative performance vs SPY. Color-codes each cell by relative strength (green outperform, red underperform). Side panel shows a line chart of the top and bottom ranked sectors over the selected window. Identifies rotation opportunities. Uses existing Yahoo history provider; all 11 sector ETFs + SPY are standard tickers. |    P2    |
+| H21 | **Relative Strength Comparison card**: overlays multiple tickers' % return from a common base date on a single time-series chart, normalized to 0% at the start of the chosen window (1M / 3M / 6M / 1Y / YTD). Benchmark (SPY, QQQ, or custom ticker) rendered as a dashed reference line. Answers "which ticker in this sector should I own?" Controls: add/remove tickers from watchlist, window selector, benchmark picker. Uses existing LWC LineSeries; data from IDB candle cache. |    P2    |
 
 ---
 
@@ -854,6 +875,8 @@ polyfill active; Compression Streams in export; `using` sweep complete.
 | I7  | Multi-device cloud sync GA: Passkey-encrypted blobs with CRDT-ish conflict resolution        |    P3    |
 | I8  | Collaborative watchlists: share-by-URL read-only snapshots with TTL (no auth required)       |    P3    |
 | I9  | Market regime detection: macro-regime classifier (ONNX or rule-based) in consensus engine    |    P3    |
+| I10 | **Economic Calendar card**: lists scheduled macro events (Fed meetings, FOMC minutes, CPI, PPI, NFP, GDP, PCE) for the next 30 days with consensus forecast, prior value, and actual (populated after release). Source: FRED API (free, no auth for public series) + Finnhub `/calendar/economic`. Color-codes high/medium/low impact events. Crosslinks to the Macro Dashboard card to show post-release moves. |    P3    |
+| I11 | **News Digest card**: curates recent headlines per watchlist ticker from public RSS/Atom feeds (Yahoo Finance RSS, Seeking Alpha public feed, Google News finance RSS). Groups headlines by ticker; shows publication time, source, and sentiment badge (rule-based keyword classifier, no LLM). Marks headlines within ±30 min of a significant price move on the chart timeline. No API key required; fetch via Worker CORS proxy to avoid mixed-content. |    P3    |
 
 ---
 
@@ -878,6 +901,31 @@ polyfill active; Compression Streams in export; `using` sweep complete.
 | F13 | ETF constituent drill-down        | Collapsible ETF rows showing constituent tickers; see G18 for full spec |
 
 ### Phase G items (v7.9.0) — see §15 Phase G table
+
+| #   | Item                                  | Notes                                                                   |
+| --- | ------------------------------------- | ----------------------------------------------------------------------- |
+| G19 | Company name below ticker             | `WatchlistEntry.name?`; populate from quote; show in Watchlist, Screener, Heatmap, Consensus, Chart |
+| G20 | Per-method consensus weights          | `AppConfig.methodWeights`; sliders in Settings; update consensus engine |
+| G21 | Heatmap sector drill-down             | Click sector → zoom to constituent stocks; attribution bar; breadcrumb nav |
+| G22 | Correlation Matrix card               | UI for existing `correlation-matrix.ts`; `n×n` color grid; over-concentration warnings |
+| G23 | Market Breadth card                   | BUY/SELL donut + % above 50/200 MA + advance/decline + top movers; no new API |
+| G24 | Per-card settings                     | `AppConfig.cardSettings[CardId]`; typed Valibot schema per card; Settings UI picker + rendered form; reactive re-render on change |
+
+### New cards — Phase H (v8.0.0)
+
+| #   | Item                                  | Notes                                                                   |
+| --- | ------------------------------------- | ----------------------------------------------------------------------- |
+| H18 | Earnings Calendar card                | Upcoming earnings dates, EPS estimates, surprise %; Finnhub `/calendar/earnings` |
+| H19 | Macro Dashboard card                  | VIX, 10Y yield, DXY, gold, crude; regime badge; dockable context strip |
+| H20 | Sector Rotation card                  | 11 GICS sector ETFs vs SPY, N timeframes; relative strength color table |
+| H21 | Relative Strength Comparison card     | Multi-ticker % return overlay vs benchmark; base-date normalized; LWC LineSeries |
+
+### New cards — Phase I (v9.0.0)
+
+| #   | Item                                  | Notes                                                                   |
+| --- | ------------------------------------- | ----------------------------------------------------------------------- |
+| I10 | Economic Calendar card                | FRED + Finnhub macro events; forecast vs actual; crosslinks Macro Dashboard |
+| I11 | News Digest card                      | Yahoo/SA/Google RSS per ticker; keyword sentiment badge; annotates chart timeline |
 
 ### Phase H items (v8.0.0) — see §15 Phase H table
 
@@ -1018,9 +1066,14 @@ polyfill active; Compression Streams in export; `using` sweep complete.
 **Building:**
 
 - Browser-based stock & crypto monitoring dashboard (open source, self-hostable)
-- 12-method consensus engine (unique product differentiator)
+- 12-method consensus engine (unique product differentiator) with per-method user weights
 - Interactive charting with drawing tools, multi-pane sub-indicators
 - Screener, alerts, backtest, portfolio analytics, risk metrics
+- Heatmap with sector drill-down and market-attribution view
+- Per-card settings system (card-scoped configuration persisted in `AppConfig`)
+- Correlation Matrix card, Market Breadth card, Relative Strength Comparison card
+- Earnings Calendar, Macro Dashboard, Sector Rotation cards (Phase H)
+- Economic Calendar, News Digest cards (Phase I)
 - Offline-first PWA with Workbox + Background Fetch
 - Signal scripting DSL via Web Worker
 - On-device AI pattern recognition (ONNX, Phase I)

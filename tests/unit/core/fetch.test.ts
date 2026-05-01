@@ -82,3 +82,58 @@ describe("FetchError", () => {
     expect(err.message).toBe("not found");
   });
 });
+
+describe("fetchWithTimeout — parent signal (F7)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("aborts immediately when parent signal is already aborted", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_url: string, opts: RequestInit) => {
+        if (opts.signal?.aborted) {
+          return Promise.reject(new DOMException("The operation was aborted.", "AbortError"));
+        }
+        return Promise.resolve(new Response("ok", { status: 200 }));
+      }),
+    );
+    const parent = new AbortController();
+    parent.abort();
+    await expect(fetchWithTimeout("https://example.com", {}, 10000, parent.signal)).rejects.toThrow();
+  });
+
+  it("aborts when parent signal fires mid-flight", async () => {
+    const parent = new AbortController();
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockImplementation((_url: string, opts: RequestInit) => {
+        return new Promise((_resolve, reject) => {
+          opts.signal?.addEventListener("abort", () => {
+            reject(new DOMException("The operation was aborted.", "AbortError"));
+          });
+        });
+      }),
+    );
+    setTimeout(() => parent.abort(), 10);
+    await expect(fetchWithTimeout("https://example.com", {}, 10000, parent.signal)).rejects.toThrow();
+  });
+});
+
+describe("fetchWithRetry — abort on parent signal (F7)", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("does not retry on AbortError", async () => {
+    const fetchMock = vi.fn().mockRejectedValue(
+      Object.assign(new Error("aborted"), { name: "AbortError" }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const parent = new AbortController();
+    parent.abort();
+    await expect(fetchWithRetry("https://example.com", {}, 3, 1, parent.signal)).rejects.toThrow();
+    // Should only attempt once — no retry on abort.
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+});

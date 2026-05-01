@@ -85,6 +85,24 @@ const PATTERNS: readonly RoutePattern[] = [
 const listeners: RouteChangeHandler[] = [];
 let initialized = false;
 
+/** Aborted whenever a new navigation begins. Cards thread this into their fetch calls. */
+let _navController = new AbortController();
+
+/**
+ * Returns a signal that will be aborted on the next navigation.
+ * Create a new derived AbortController from this signal if you need a
+ * longer-lived handle that you can cancel independently.
+ */
+export function getNavigationSignal(): AbortSignal {
+  return _navController.signal;
+}
+
+/** Called at the start of every navigation to cancel the previous wave of fetches. */
+function abortNavigation(): void {
+  _navController.abort();
+  _navController = new AbortController();
+}
+
 /**
  * Returns the configured base path (e.g. `/CrossTide`) so we can host on a
  * project-scoped GitHub Pages URL. Inferred from the document `<base>` element
@@ -198,6 +216,7 @@ export function onRouteChange(handler: RouteChangeHandler): () => void {
 }
 
 function handleRoute(): void {
+  abortNavigation();
   const info = getCurrentRouteInfo();
   activateViewWithTransition(info.name);
   for (const fn of listeners) fn(info.name, info);

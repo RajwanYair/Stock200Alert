@@ -85,9 +85,9 @@ interface CandleResult {
  * Fetch history candles from Yahoo Finance for a single ticker.
  * Uses 1-year range to have enough data for all indicators (SMA150 needs 151+ candles).
  */
-async function fetchCandles(ticker: string): Promise<CandleResult> {
+async function fetchCandles(ticker: string, signal?: AbortSignal): Promise<CandleResult> {
   const url = `${YAHOO_BASE}/v8/finance/chart/${encodeURIComponent(ticker)}?range=1y&interval=1d`;
-  const res = await fetchWithTimeout(proxyUrl(url), {}, 15000);
+  const res = await fetchWithTimeout(proxyUrl(url), {}, 15000, signal);
   const raw: unknown = await res.json();
 
   // Validate response shape at the external boundary
@@ -132,10 +132,11 @@ async function fetchCandles(ticker: string): Promise<CandleResult> {
 
 /**
  * Fetch full ticker data: price, change, volume stats, 52W range, and consensus.
+ * Pass a navigation `signal` (from `getNavigationSignal()`) to auto-cancel on route change.
  */
-export async function fetchTickerData(ticker: string): Promise<TickerData> {
+export async function fetchTickerData(ticker: string, signal?: AbortSignal): Promise<TickerData> {
   try {
-    const { candles, instrumentType, sector } = await fetchCandles(ticker);
+    const { candles, instrumentType, sector } = await fetchCandles(ticker, signal);
 
     if (candles.length === 0) {
       return emptyData(ticker, "No candle data available");
@@ -191,10 +192,12 @@ export async function fetchTickerData(ticker: string): Promise<TickerData> {
 
 /**
  * Fetch data for all tickers in parallel (with concurrency limit).
+ * Pass a navigation `signal` to cancel the whole batch on route change.
  */
 export async function fetchAllTickers(
   tickers: readonly string[],
   onProgress?: (done: number, total: number) => void,
+  signal?: AbortSignal,
 ): Promise<Map<string, TickerData>> {
   const results = new Map<string, TickerData>();
   const CONCURRENCY = 3;
@@ -203,8 +206,9 @@ export async function fetchAllTickers(
   const queue = [...tickers];
   const workers = Array.from({ length: Math.min(CONCURRENCY, queue.length) }, async () => {
     while (queue.length > 0) {
+      if (signal?.aborted) break;
       const ticker = queue.shift()!;
-      const data = await fetchTickerData(ticker);
+      const data = await fetchTickerData(ticker, signal);
       results.set(ticker, data);
       done++;
       onProgress?.(done, tickers.length);
