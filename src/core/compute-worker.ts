@@ -17,7 +17,13 @@ import type { BacktestConfig, BacktestResult } from "../domain/backtest-engine";
 import { runBacktest } from "../domain/backtest-engine";
 import { applyFilters } from "../cards/screener";
 import type { ScreenerInput, ScreenerFilter, ScreenerRow } from "../cards/screener";
-import { buildEquityCurve, summarizeTrades, type ClosedTrade, type EquityPoint, type CurveStats } from "../domain/equity-curve";
+import {
+  buildEquityCurve,
+  summarizeTrades,
+  type ClosedTrade,
+  type EquityPoint,
+  type CurveStats,
+} from "../domain/equity-curve";
 import { maxDrawdown, cagr } from "../domain/risk-ratios";
 import { serveWorkerRpc, type WorkerApi } from "./worker-rpc";
 

@@ -175,3 +175,84 @@
     animation: none;
   }
 }
+
+/* ── Container-query responsive cards (C5) ─────────────────────────────────── */
+/* Cards use container-type: inline-size, allowing internal layouts to
+   adapt based on card width rather than viewport width. */
+
+/* Portfolio: stack columns vertically when card is narrow */
+@container card (max-width: 600px) {
+  .portfolio-columns {
+    flex-direction: column;
+  }
+
+  .portfolio-summary-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .portfolio-summary-stat {
+    min-width: 45%;
+  }
+}
+
+/* Portfolio: side-by-side when card is wide */
+@container card (min-width: 601px) {
+  .portfolio-columns {
+    flex-direction: row;
+  }
+
+  .portfolio-col {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+/* Backtest: stack controls and stats on narrow cards */
+@container card (max-width: 500px) {
+  .backtest-control-row {
+    flex-wrap: wrap;
+  }
+
+  .backtest-label {
+    flex: 1 1 100%;
+  }
+
+  .portfolio-summary-row {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .portfolio-summary-stat {
+    min-width: 45%;
+  }
+}
+
+/* Watchlist: hide sparkline and 52W columns in narrow card */
+@container card (max-width: 480px) {
+  .watchlist-table th:nth-child(5),
+  .watchlist-table td:nth-child(5),
+  .watchlist-table th:nth-child(7),
+  .watchlist-table td:nth-child(7) {
+    display: none;
+  }
+}
+
+/* Heatmap: fewer columns in narrow container */
+@container card (max-width: 400px) {
+  .heatmap-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@container card (min-width: 401px) and (max-width: 700px) {
+  .heatmap-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@container card (min-width: 701px) {
+  .heatmap-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

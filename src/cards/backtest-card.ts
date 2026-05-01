@@ -15,9 +15,11 @@
  * A5: Computation is offloaded to a Web Worker via worker-rpc, keeping
  *     the main thread responsive during long backtests.
  */
-import { buildEquityCurve, summarizeTrades, type ClosedTrade, type EquityPoint } from "../domain/equity-curve";
+import { summarizeTrades, type ClosedTrade, type EquityPoint } from "../domain/equity-curve";
+import type { buildEquityCurve } from "../domain/equity-curve";
 import { cagr } from "../domain/risk-ratios";
 import { runBacktestAsync } from "../core/backtest-worker";
+import { fetchTickerData } from "../core/data-service";
 import type { CardModule } from "./registry";
 
 // ── Synthetic price generator ─────────────────────────────────────────────────
@@ -57,8 +59,6 @@ function syntheticCandles(
   }
   return out;
 }
-
-
 
 // ── SVG equity curve ──────────────────────────────────────────────────────────
 function renderEquitySVG(equityPoints: ReturnType<typeof buildEquityCurve>): string {
@@ -126,14 +126,56 @@ function renderTradeLog(
 }
 
 // ── Main render ───────────────────────────────────────────────────────────────
-type Candle = { date: string; open: number; high: number; low: number; close: number; volume: number };
+type Candle = {
+  date: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+};
 
 function renderBacktestCard(container: HTMLElement): void {
   let fastPeriod = 10;
   let slowPeriod = 30;
+  let ticker = "AAPL";
   const initialCapital = 10_000;
 
-  const CANDLES: Candle[] = syntheticCandles(500);
+  let CANDLES: Candle[] = syntheticCandles(500);
+  let dataSource: "real" | "synthetic" = "synthetic";
+
+  /** Fetch real candles for the selected ticker; fall back to synthetic. */
+  async function loadCandles(): Promise<void> {
+    try {
+      const data = await fetchTickerData(ticker);
+      if (data.candles.length >= 30) {
+        CANDLES = data.candles.map(
+          (c: {
+            date: string;
+            open: number;
+            high: number;
+            low: number;
+            close: number;
+            volume: number;
+          }) => ({
+            date: c.date,
+            open: c.open,
+            high: c.high,
+            low: c.low,
+            close: c.close,
+            volume: c.volume,
+          }),
+        );
+        dataSource = "real";
+      } else {
+        CANDLES = syntheticCandles(500);
+        dataSource = "synthetic";
+      }
+    } catch {
+      CANDLES = syntheticCandles(500);
+      dataSource = "synthetic";
+    }
+  }
 
   const run = async (): Promise<void> => {
     const resultEl = container.querySelector<HTMLElement>("#backtest-result");
