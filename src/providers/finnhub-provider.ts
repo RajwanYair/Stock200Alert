@@ -3,40 +3,19 @@
  *
  * Free tier: 60 requests/minute. API key is supplied by the proxy Worker
  * (never sent from the browser).
+ * API responses are validated with Valibot before mapping to domain types.
  */
 import type { DailyCandle } from "../types/domain";
 import type { MarketDataProvider, ProviderHealth, Quote, SearchResult } from "./types";
 import { FetchError, fetchWithRetry } from "../core/fetch";
+import {
+  safeParse,
+  FinnhubQuoteSchema,
+  FinnhubCandleSchema,
+  FinnhubSearchSchema,
+} from "../types/valibot-schemas";
 
 const DEFAULT_BASE_URL = "https://finnhub.io/api/v1";
-
-interface FinnhubQuoteResponse {
-  c?: number; // current
-  o?: number; // open
-  h?: number; // high
-  l?: number; // low
-  pc?: number; // previous close
-  t?: number; // unix s
-}
-
-interface FinnhubCandleResponse {
-  s?: "ok" | "no_data";
-  t?: readonly number[];
-  o?: readonly number[];
-  h?: readonly number[];
-  l?: readonly number[];
-  c?: readonly number[];
-  v?: readonly number[];
-}
-
-interface FinnhubSearchResponse {
-  result?: ReadonlyArray<{
-    description: string;
-    displaySymbol: string;
-    symbol: string;
-    type: string;
-  }>;
-}
 
 export function createFinnhubProvider(
   apiKey: string,
@@ -62,16 +41,12 @@ export function createFinnhubProvider(
       `&token=${encodeURIComponent(apiKey)}`;
     try {
       const res = await fetchWithRetry(url, {}, 2, 500);
-      const data = (await res.json()) as FinnhubQuoteResponse;
-      if (
-        typeof data.c !== "number" ||
-        typeof data.o !== "number" ||
-        typeof data.h !== "number" ||
-        typeof data.l !== "number" ||
-        typeof data.pc !== "number"
-      ) {
+      const raw: unknown = await res.json();
+      const parsed = safeParse(FinnhubQuoteSchema, raw);
+      if (!parsed.success) {
         throw new FetchError(`Finnhub: malformed quote for ${ticker}`);
       }
+      const data = parsed.output;
       recordSuccess();
       return {
         ticker,
@@ -98,32 +73,34 @@ export function createFinnhubProvider(
       `&token=${encodeURIComponent(apiKey)}`;
     try {
       const res = await fetchWithRetry(url, {}, 2, 500);
-      const data = (await res.json()) as FinnhubCandleResponse;
-      if (data.s !== "ok" || !data.t || !data.o || !data.h || !data.l || !data.c) {
+      const raw: unknown = await res.json();
+      const parsed = safeParse(FinnhubCandleSchema, raw);
+      if (!parsed.success || parsed.output.s !== "ok") {
         throw new FetchError(`Finnhub: no candles for ${ticker}`);
       }
+      const data = parsed.output;
+      const t = data.t;
+      const o = data.o;
+      const h = data.h;
+      const l = data.l;
+      const c = data.c;
+      if (!t || !o || !h || !l || !c) throw new FetchError(`Finnhub: incomplete candle data for ${ticker}`);
+
       const out: DailyCandle[] = [];
-      for (let i = 0; i < data.t.length; i++) {
-        const ts = data.t[i];
-        const o = data.o[i];
-        const h = data.h[i];
-        const l = data.l[i];
-        const c = data.c[i];
+      for (let i = 0; i < t.length; i++) {
+        const ts = t[i];
+        const ov = o[i];
+        const hv = h[i];
+        const lv = l[i];
+        const cv = c[i];
         const v = data.v?.[i] ?? 0;
-        if (
-          ts === undefined ||
-          o === undefined ||
-          h === undefined ||
-          l === undefined ||
-          c === undefined
-        )
-          continue;
+        if (ts === undefined || ov === undefined || hv === undefined || lv === undefined || cv === undefined) continue;
         out.push({
           date: new Date(ts * 1000).toISOString().slice(0, 10),
-          open: o,
-          high: h,
-          low: l,
-          close: c,
+          open: ov,
+          high: hv,
+          low: lv,
+          close: cv,
           volume: v,
         });
       }
@@ -139,7 +116,10 @@ export function createFinnhubProvider(
     const url = `${baseUrl}/search?q=${encodeURIComponent(query)}&token=${encodeURIComponent(apiKey)}`;
     try {
       const res = await fetchWithRetry(url, {}, 2, 500);
-      const data = (await res.json()) as FinnhubSearchResponse;
+      const raw: unknown = await res.json();
+      const parsed = safeParse(FinnhubSearchSchema, raw);
+      if (!parsed.success) throw new FetchError("Finnhub: invalid search response");
+      const data = parsed.output;
       recordSuccess();
       return (data.result ?? []).map((r) => ({
         symbol: r.symbol,

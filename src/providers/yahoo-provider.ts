@@ -3,40 +3,18 @@
  *
  * In production this should go through a Cloudflare Worker proxy to avoid CORS.
  * The provider tracks its own health (consecutive errors).
+ * API responses are validated with Valibot before mapping to domain types.
  */
 import type { DailyCandle } from "../types/domain";
 import type { MarketDataProvider, Quote, SearchResult, ProviderHealth } from "./types";
 import { fetchWithRetry, FetchError } from "../core/fetch";
+import {
+  safeParse,
+  YahooChartSchema,
+  YahooSearchSchema,
+} from "../types/valibot-schemas";
 
 const DEFAULT_BASE_URL = "https://query1.finance.yahoo.com";
-
-interface YahooChartResult {
-  chart?: {
-    result?: Array<{
-      meta?: { regularMarketPrice?: number; previousClose?: number; symbol?: string };
-      timestamp?: number[];
-      indicators?: {
-        quote?: Array<{
-          open?: number[];
-          high?: number[];
-          low?: number[];
-          close?: number[];
-          volume?: number[];
-        }>;
-      };
-    }>;
-  };
-}
-
-interface YahooSearchResult {
-  quotes?: Array<{
-    symbol?: string;
-    shortname?: string;
-    longname?: string;
-    exchDisp?: string;
-    quoteType?: string;
-  }>;
-}
 
 export function createYahooProvider(baseUrl: string = DEFAULT_BASE_URL): MarketDataProvider {
   let lastSuccessAt: number | null = null;
@@ -57,7 +35,10 @@ export function createYahooProvider(baseUrl: string = DEFAULT_BASE_URL): MarketD
     const url = `${baseUrl}/v8/finance/chart/${encodeURIComponent(ticker)}?range=1d&interval=1d`;
     try {
       const res = await fetchWithRetry(url, {}, 2, 500);
-      const data = (await res.json()) as YahooChartResult;
+      const raw: unknown = await res.json();
+      const parsed = safeParse(YahooChartSchema, raw);
+      if (!parsed.success) throw new FetchError(`Yahoo: invalid quote response for ${ticker}`);
+      const data = parsed.output;
       const result = data.chart?.result?.[0];
       if (!result?.meta) throw new FetchError("No chart result for " + ticker);
 
@@ -89,7 +70,10 @@ export function createYahooProvider(baseUrl: string = DEFAULT_BASE_URL): MarketD
     const url = `${baseUrl}/v8/finance/chart/${encodeURIComponent(ticker)}?range=${range}&interval=1d`;
     try {
       const res = await fetchWithRetry(url, {}, 2, 500);
-      const data = (await res.json()) as YahooChartResult;
+      const raw: unknown = await res.json();
+      const parsed = safeParse(YahooChartSchema, raw);
+      if (!parsed.success) throw new FetchError(`Yahoo: invalid history response for ${ticker}`);
+      const data = parsed.output;
       const result = data.chart?.result?.[0];
       if (!result?.timestamp) throw new FetchError("No history for " + ticker);
 
@@ -127,7 +111,10 @@ export function createYahooProvider(baseUrl: string = DEFAULT_BASE_URL): MarketD
     const url = `${baseUrl}/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=8&newsCount=0`;
     try {
       const res = await fetchWithRetry(url, {}, 1, 500);
-      const data = (await res.json()) as YahooSearchResult;
+      const raw: unknown = await res.json();
+      const parsed = safeParse(YahooSearchSchema, raw);
+      if (!parsed.success) throw new FetchError("Yahoo: invalid search response");
+      const data = parsed.output;
       recordSuccess();
       return (
         data.quotes?.map((q): SearchResult => {
