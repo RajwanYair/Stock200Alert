@@ -871,9 +871,9 @@ reimplementation allowed. Covers both numeric and string columns with locale-awa
 | 7      | R7: Registry — mock all 14 cards + retry-on-failure test | ✅    |
 | 8      | R13: Domain API type-level tests (20 `expectTypeOf` assertions) | ✅ |
 | 9      | R6: JSDoc sweep + ROADMAP update                        | ✅     |
-| 10     | CHANGELOG + v7.1.0 bump + `gh release`                  | ⏳     |
+| 10     | CHANGELOG + v7.1.0 bump + `gh release`                  | ✅     |
 
-**Conclusion:** 9 sprints complete, v7.1.0 in progress.
+**Conclusion:** all 10 sprints complete; v7.1.0 released.
 
 
 

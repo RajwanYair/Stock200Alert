@@ -6,7 +6,39 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [7.0.0] - 2026-05-01
+## [7.1.0] - 2026-05-12
+
+### Minor — Cloudflare Worker API, 13 indicator docs, user guides, RTL locale, coverage
+
+#### Added
+
+- **E2: Cloudflare Worker REST API** (`worker/`). Five endpoints: `GET /api/health`, `GET /api/chart`, `GET /api/search`, `POST /api/screener`, `GET /api/og/:symbol`. In-memory token-bucket rate limiting (60 req/min per IP). Mulberry32 PRNG for deterministic synthetic OHLCV. SVG social-preview `/api/og` endpoint. 34 new unit tests.
+
+- **C4: 8 additional indicator MDX reference pages.** Added: ATR, VWAP, EMA/SMA, CCI, Williams %R, OBV, Aroon, Awesome Oscillator. Each page includes KaTeX formula, parameters table, interpretation table, TypeScript usage example, and related indicators. Brings total to 13 indicator docs.
+
+- **User guide pages.** Three comprehensive MDX docs: Watchlist (add/remove/sort/filter/share), Charts (range selector, overlays, drawing tools, consensus badge), Portfolio (position entry, P&L, sector exposure, CSV import/export).
+
+- **D7: RTL locale wiring.** `setLocale(locale)` persists to localStorage and updates `<html lang>` + `<html dir>`. `getTextDirection(locale)` returns `"rtl"` for Arabic, Hebrew, Farsi, Urdu, and 3 others. `initLocale()` bootstraps `<html>` on page load. `main.ts` now calls `initLocale()` before `initTheme()`.
+
+#### Changed
+
+- **i18n.ts `getLocale()`** now reads from localStorage before `navigator.language`, enabling persisted locale preferences across sessions.
+
+#### Tests
+
+- **web-vitals**: +17 tests covering LCP, CLS, FCP, TTFB, INP via mock `PerformanceObserver`; `hadRecentInput` filter; largest-wins dedup; `stop()` after connect; `safeObserve` throw path; beacon fallbacks.
+- **telemetry**: +9 tests for `parseStackTrace`, `reportToGlitchTip` (sendBeacon/fetch/throw/sample-skip/invalid-DSN). Exported `_parseStackTraceForTests` and `_reportToGlitchTipForTests`.
+- **analytics-client**: +5 tests for `defaultSend` transport (sendBeacon, fetch fallback, sendBeacon throws, no sendBeacon, no transport).
+- **deep-clone**: +15 tests for fallback path covering all branches (primitive, object, array, Date, RegExp, Map, Set, circular refs). Exported `_fallbackCloneForTests`.
+- **registry**: Mocked all 14 card modules (7 were missing). Added test for cache eviction on load failure (retry behaviour).
+- **i18n**: +12 tests for `setLocale`, `persistLocale`, `getTextDirection`, `initLocale`.
+- **domain/api-types**: 20 `expectTypeOf` type-level assertions on `DailyCandle`, `SignalDirection`, `MethodSignal`, `ConsensusResult`, and all 13 indicator function return types.
+
+**Total: 2254 tests across 241 files (up from 2169/240).**
+
+---
+
+
 
 ### Major — Full-stack hardening, real data, responsive cards, security
 
