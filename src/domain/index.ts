@@ -222,3 +222,7 @@ export type { PpoPoint } from "./ppo";
 export { computeAdLine } from "./ad-line";
 export type { AdCandle } from "./ad-line";
 
+
+export { computeForceIndex, computeForceIndexRaw } from "./force-index";
+export type { ForceCandle } from "./force-index";
+
