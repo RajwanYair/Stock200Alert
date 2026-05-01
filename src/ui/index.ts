@@ -38,3 +38,9 @@ export {
   moveItem,
 } from "./reorder";
 export type { ReorderState } from "./reorder";
+export { buildSparklinePaths } from "./multi-sparkline";
+export type {
+  SparklineSeries,
+  SparklineLayout,
+  SparklinePath,
+} from "./multi-sparkline";
