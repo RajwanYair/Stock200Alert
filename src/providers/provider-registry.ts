@@ -19,6 +19,7 @@ import type { CircuitBreaker } from "../core/circuit-breaker";
 import { createYahooProvider } from "./yahoo-provider";
 import { createFinnhubProvider } from "./finnhub-provider";
 import { createProviderChain } from "./provider-chain";
+import { createStooqProvider } from "./stooq-provider";
 
 export interface ProviderRegistryEntry {
   readonly provider: MarketDataProvider;
@@ -88,10 +89,14 @@ function ensureChain(): MarketDataProvider {
   return chain;
 }
 
-// Bootstrap: always add Yahoo as the primary provider
+// Bootstrap: always add Yahoo as the primary provider; Stooq as EOD history fallback
 (function initRegistry(): void {
   const yahooBreaker = createCircuitBreaker({ failureThreshold: 3, cooldownMs: 60_000 });
   registryEntries.push({ provider: createYahooProvider(), breaker: yahooBreaker });
+
+  // Stooq (F12): free EOD history fallback — history only, no quote/search
+  const stooqBreaker = createCircuitBreaker({ failureThreshold: 5, cooldownMs: 120_000 });
+  registryEntries.push({ provider: createStooqProvider(), breaker: stooqBreaker });
 })();
 
 /**

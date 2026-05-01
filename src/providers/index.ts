@@ -4,6 +4,7 @@ export { createTwelveDataProvider } from "./twelve-data-provider";
 export { createPolygonProvider } from "./polygon-provider";
 export { createCoinGeckoProvider } from "./coingecko-provider";
 export { createFinnhubProvider } from "./finnhub-provider";
+export { createStooqProvider } from "./stooq-provider";
 export { createProviderChain } from "./provider-chain";
 export { CircuitBreaker, CircuitOpenError } from "./circuit-breaker";
 export type {
