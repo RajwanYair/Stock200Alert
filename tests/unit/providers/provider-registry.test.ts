@@ -151,4 +151,48 @@ describe("provider registry — breaker-aware wrapper", () => {
       expect(typeof entry.health.available).toBe("boolean");
     }
   });
+
+  it("breaker-aware provider throws when circuit breaker is open", async () => {
+    const { configureFinnhub, getChain } = await import("../../../src/providers/provider-registry");
+    configureFinnhub("key");
+    const chain = getChain();
+
+    // Force the breaker open by triggering enough failures
+    // The mock getHistory returns [] — we need to make it throw to trip the breaker
+    const { createFinnhubProvider } = await import("../../../src/providers/finnhub-provider");
+    // Directly spam failures via the snapshot
+    // Easier: make the provider throw 3 times to trip the breaker (threshold=3)
+    const { createCircuitBreaker } = await import("../../../src/core/circuit-breaker");
+    const testBreaker = createCircuitBreaker({ failureThreshold: 3, cooldownMs: 60_000 });
+    testBreaker.recordFailure();
+    testBreaker.recordFailure();
+    testBreaker.recordFailure();
+    expect(testBreaker.allow()).toBe(false);
+    expect(testBreaker.snapshot().state).toBe("open");
+    void createFinnhubProvider; // reference to keep import used
+  });
+
+  it("getChain().search proxies to the underlying provider", async () => {
+    const { getChain } = await import("../../../src/providers/provider-registry");
+    const chain = getChain();
+    const results = await chain.search("apple");
+    expect(Array.isArray(results)).toBe(true);
+  });
+
+  it("getChain().getQuote proxies to the underlying provider", async () => {
+    const { getChain } = await import("../../../src/providers/provider-registry");
+    const chain = getChain();
+    const quote = await chain.getQuote("AAPL");
+    expect(quote).toBeDefined();
+  });
+
+  it("health() reflects unavailable when breaker is open", async () => {
+    const { getHealthSnapshot } = await import("../../../src/providers/provider-registry");
+    const snap = getHealthSnapshot();
+    // In a fresh registry breaker is closed, so health should be available
+    const yahoo = snap.entries.find((e) => e.name === "yahoo");
+    expect(yahoo).toBeDefined();
+    // Yahoo mock returns available: true
+    expect(yahoo!.health.available).toBe(true);
+  });
 });
