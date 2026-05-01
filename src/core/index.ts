@@ -67,6 +67,12 @@ export {
 } from "./sri";
 export type { SriAlgorithm } from "./sri";
 export {
+  latestVersion,
+  validateMigrations,
+  applyMigrations,
+} from "./idb-migrations";
+export type { SchemaMigration } from "./idb-migrations";
+export {
   createStoragePressureMonitor,
   requestPersistentStorage,
 } from "./storage-pressure";
