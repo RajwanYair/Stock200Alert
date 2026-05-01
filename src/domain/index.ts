@@ -167,3 +167,7 @@ export { rollingMean, rollingStdDev, rollingMin, rollingMax, rollingZScore } fro
 export { seasonalityByMonth, seasonalityByDayOfWeek } from "./seasonality";
 export type { SeasonalityBucket, DailyReturn } from "./seasonality";
 
+
+export { computeElderRay } from "./elder-ray";
+export type { ElderRayPoint } from "./elder-ray";
+
