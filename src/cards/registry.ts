@@ -126,6 +126,12 @@ const REGISTRY: readonly CardEntry[] = [
     viewId: "view-correlation",
     load: () => import("./correlation-matrix-card").then((m) => m.default),
   },
+  {
+    route: "market-breadth",
+    title: "Market Breadth",
+    viewId: "view-market-breadth",
+    load: () => import("./market-breadth-card").then((m) => m.default),
+  },
 ];
 
 const cache = new Map<RouteName, Promise<CardModule>>();

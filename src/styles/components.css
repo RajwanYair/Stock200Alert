@@ -970,6 +970,115 @@
     color: var(--danger);
   }
 
+  /* ── G23: Market Breadth ──────────────────────────────────────────────── */
+  .breadth-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--sp-md);
+    margin-bottom: var(--sp-lg);
+  }
+
+  .breadth-panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: var(--sp-md);
+  }
+
+  .breadth-panel-title {
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: var(--sp-sm);
+  }
+
+  .breadth-donut-wrap {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-sm);
+  }
+
+  .breadth-donut {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+  }
+
+  .breadth-donut-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: var(--font-size-xs);
+  }
+
+  .breadth-sma-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr auto;
+    align-items: center;
+    gap: var(--sp-xs);
+    font-size: var(--font-size-sm);
+    margin-bottom: var(--sp-xs);
+  }
+
+  .breadth-sma-bar {
+    height: 8px;
+    background: var(--bg-app);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .breadth-sma-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+  }
+
+  .breadth-ad-bar {
+    display: flex;
+    height: 16px;
+    border-radius: 4px;
+    overflow: hidden;
+    margin-bottom: var(--sp-xs);
+  }
+
+  .breadth-ad-segment {
+    transition: width 0.3s ease;
+  }
+
+  .breadth-ad-up { background: var(--success); }
+  .breadth-ad-flat { background: var(--text-secondary); opacity: 0.4; }
+  .breadth-ad-down { background: var(--danger); }
+
+  .breadth-ad-legend {
+    display: flex;
+    gap: var(--sp-md);
+    font-size: var(--font-size-xs);
+  }
+
+  .breadth-movers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: var(--sp-md);
+  }
+
+  .breadth-movers-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+  }
+
+  .breadth-movers-table td {
+    padding: 3px 6px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .up { color: var(--success); }
+  .dn { color: var(--danger); }
+  .flat { color: var(--text-secondary); }
+
   .sector-count {
     margin-right: var(--sp-sm);
     color: var(--text-muted);

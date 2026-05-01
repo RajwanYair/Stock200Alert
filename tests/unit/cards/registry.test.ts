@@ -60,9 +60,9 @@ vi.mock("../../../src/cards/multi-chart-layout", () => ({
 const CTX: CardContext = { route: "watchlist", params: {} };
 
 describe("listCards", () => {
-  it("returns 15 entries covering all routes", () => {
+  it("returns 16 entries covering all routes", () => {
     const cards = listCards();
-    expect(cards).toHaveLength(15);
+    expect(cards).toHaveLength(16);
     const routes = cards.map((c) => c.route);
     expect(routes).toContain("watchlist");
     expect(routes).toContain("consensus");
@@ -79,6 +79,7 @@ describe("listCards", () => {
     expect(routes).toContain("signal-dsl");
     expect(routes).toContain("multi-chart");
     expect(routes).toContain("correlation");
+    expect(routes).toContain("market-breadth");
   });
 
   it("each entry has a title and viewId", () => {

@@ -32,7 +32,8 @@ export type RouteName =
   | "consensus-timeline"
   | "signal-dsl"
   | "multi-chart"
-  | "correlation";
+  | "correlation"
+  | "market-breadth";
 
 export interface RouteInfo {
   readonly name: RouteName;
@@ -58,6 +59,7 @@ const VALID_ROUTES = new Set<RouteName>([
   "signal-dsl",
   "multi-chart",
   "correlation",
+  "market-breadth",
 ]);
 
 interface RoutePattern {

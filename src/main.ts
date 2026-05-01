@@ -30,6 +30,7 @@ import { fetchAllTickers, fetchTickerData, type TickerData } from "./core/data-s
 import { TieredCache } from "./core/tiered-cache";
 import { createStoragePressureMonitor, requestPersistentStorage } from "./core/storage-pressure";
 import { setScreenerData } from "./cards/screener-data";
+import { setBreadthData } from "./cards/market-breadth-data";
 import { computeRsiSeries } from "./domain/rsi-calculator";
 import { computeSma } from "./domain/sma-calculator";
 import type { ScreenerInput } from "./cards/screener";
@@ -67,6 +68,7 @@ const cardContainers: Partial<Record<RouteName, string>> = {
   "signal-dsl": "signal-dsl-container",
   "multi-chart": "multi-chart-container",
   "correlation": "correlation-container",
+  "market-breadth": "market-breadth-container",
 };
 
 async function activateCard(
@@ -239,6 +241,21 @@ function main(): void {
       });
     }
     setScreenerData(screenerInputs);
+
+    // G23: populate market-breadth bridge (uses already-computed sma50/200)
+    const breadthInputs = screenerInputs.map((si) => ({
+      ticker: si.ticker,
+      price: si.price,
+      changePercent: results.get(si.ticker)?.changePercent ?? 0,
+      consensus: si.consensus,
+      aboveSma50: si.smaValues.get(50) !== null && si.smaValues.get(50) !== undefined
+        ? (results.get(si.ticker)?.price ?? 0) > si.smaValues.get(50)!
+        : null,
+      aboveSma200: si.smaValues.get(200) !== null && si.smaValues.get(200) !== undefined
+        ? (results.get(si.ticker)?.price ?? 0) > si.smaValues.get(200)!
+        : null,
+    }));
+    setBreadthData(breadthInputs);
 
     const errors = [...results.values()].filter((d) => d.error);
     if (errors.length > 0 && errors.length < tickers.length) {
