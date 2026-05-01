@@ -51,3 +51,7 @@ export { runBacktest } from "./backtest-engine";
 export type { BacktestConfig, BacktestTrade, BacktestResult } from "./backtest-engine";
 export { dailyReturns, sharpeRatio, sortinoRatio, maxDrawdown, fibonacciRetracement } from "./analytics";
 export type { FibonacciLevels } from "./analytics";
+
+export { computeMetrics as computeBacktestMetrics } from "./backtest-metrics";
+export type { BacktestMetrics, EquityPoint, Trade } from "./backtest-metrics";
+
