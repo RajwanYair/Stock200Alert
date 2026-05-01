@@ -43,6 +43,8 @@ export type { ErrorRecord, ErrorHandler } from "./error-boundary";
 export { registerServiceWorker } from "./sw-register";
 export { watchServiceWorkerUpdates } from "./sw-update";
 export type { SwUpdateHandle, SwUpdateOptions } from "./sw-update";
+export { createSyncQueue } from "./sync-queue";
+export type { QueuedRequest, SyncQueue, SyncQueueOptions } from "./sync-queue";
 export {
   createStoragePressureMonitor,
   requestPersistentStorage,
