@@ -2,7 +2,7 @@
  * Configuration management — load/save/defaults.
  */
 import type { AppConfig, WatchlistEntry } from "../types/domain";
-import { AppConfigSchema } from "../types/zod-schemas";
+import { AppConfigSchema, safeParse } from "../types/valibot-schemas";
 
 const STORAGE_KEY = "crosstide-config";
 const CONFIG_VERSION = 1;
@@ -25,9 +25,9 @@ export function loadConfig(): AppConfig {
     if (!isStoredEnvelope(parsed) || parsed.version !== CONFIG_VERSION) {
       return DEFAULT_CONFIG;
     }
-    const result = AppConfigSchema.safeParse(parsed.config);
+    const result = safeParse(AppConfigSchema, parsed.config);
     if (!result.success) return DEFAULT_CONFIG;
-    return result.data;
+    return result.output;
   } catch {
     return DEFAULT_CONFIG;
   }

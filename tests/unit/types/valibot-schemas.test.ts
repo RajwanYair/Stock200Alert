@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { safeParse } from "valibot";
+import { safeParse, parse } from "valibot";
 import {
   DailyCandleSchema,
   YahooChartSchema,
@@ -9,6 +9,13 @@ import {
   YahooSearchSchema,
   IsoDateSchema,
   NonNegativeNumberSchema,
+  TickerSchema,
+  MethodSignalSchema,
+  ConsensusResultSchema,
+  AppConfigSchema,
+  PolygonAggsSchema,
+  CoinGeckoOhlcSchema,
+  parseOrThrow,
 } from "../../../src/types/valibot-schemas";
 
 // ---------------------------------------------------------------------------
@@ -227,5 +234,110 @@ describe("YahooSearchSchema", () => {
 
   it("accepts empty quotes", () => {
     expect(safeParse(YahooSearchSchema, { quotes: [] }).success).toBe(true);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// TickerSchema (branded)
+// ---------------------------------------------------------------------------
+describe("TickerSchema", () => {
+  it("normalizes via brand constructor", () => {
+    expect(parse(TickerSchema, " aapl ")).toBe("AAPL");
+  });
+
+  it("rejects invalid ticker (digits only)", () => {
+    expect(safeParse(TickerSchema, "123").success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// MethodSignalSchema
+// ---------------------------------------------------------------------------
+describe("MethodSignalSchema", () => {
+  it("validates all required fields", () => {
+    expect(
+      parse(MethodSignalSchema, {
+        ticker: "AAPL",
+        method: "RSI",
+        direction: "BUY",
+        description: "RSI < 30",
+        currentClose: 175.5,
+        evaluatedAt: "2025-06-15T12:00:00Z",
+      }),
+    ).toBeDefined();
+  });
+
+  it("rejects unknown method", () => {
+    expect(
+      safeParse(MethodSignalSchema, {
+        ticker: "AAPL",
+        method: "UnknownMethod",
+        direction: "BUY",
+        description: "",
+        currentClose: 100,
+        evaluatedAt: "2025-06-15T12:00:00Z",
+      }).success,
+    ).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// ConsensusResultSchema
+// ---------------------------------------------------------------------------
+describe("ConsensusResultSchema", () => {
+  it("requires unit-interval strength", () => {
+    expect(
+      safeParse(ConsensusResultSchema, {
+        ticker: "AAPL",
+        direction: "BUY",
+        buyMethods: [],
+        sellMethods: [],
+        strength: 1.5,
+      }).success,
+    ).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// AppConfigSchema
+// ---------------------------------------------------------------------------
+describe("AppConfigSchema", () => {
+  it("validates default config", () => {
+    expect(parse(AppConfigSchema, { theme: "dark", watchlist: [] })).toBeDefined();
+  });
+
+  it("rejects bad theme", () => {
+    expect(safeParse(AppConfigSchema, { theme: "neon", watchlist: [] }).success).toBe(false);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// PolygonAggsSchema
+// ---------------------------------------------------------------------------
+describe("PolygonAggsSchema", () => {
+  it("accepts results-less response", () => {
+    expect(parse(PolygonAggsSchema, { status: "OK" })).toBeDefined();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// CoinGeckoOhlcSchema
+// ---------------------------------------------------------------------------
+describe("CoinGeckoOhlcSchema", () => {
+  it("accepts tuple array", () => {
+    expect(parse(CoinGeckoOhlcSchema, [[1718409600000, 100, 105, 99, 104]])).toHaveLength(1);
+  });
+});
+
+// ---------------------------------------------------------------------------
+// parseOrThrow
+// ---------------------------------------------------------------------------
+describe("parseOrThrow", () => {
+  it("returns parsed value on success", () => {
+    expect(parseOrThrow(IsoDateSchema, "2025-06-15", "Date")).toBe("2025-06-15");
+  });
+
+  it("throws on failure with schema name", () => {
+    expect(() => parseOrThrow(IsoDateSchema, "bogus", "Date")).toThrow(/Date/);
   });
 });

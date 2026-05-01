@@ -6,6 +6,21 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [7.8.0] - 2026-07-26
+
+### Changed — F1 (P0): Valibot-only validation
+
+- **Removed `zod` from production dependencies** — `valibot` is now the sole
+  runtime validator. `src/types/valibot-schemas.ts` covers all domain, provider,
+  and config schemas: `TickerSchema`, `MethodSignalSchema`, `ConsensusResultSchema`,
+  `AppConfigSchema`, `WatchlistEntrySchema`, `ThemeSchema`, all provider schemas
+  (Yahoo, Finnhub, CoinGecko, Polygon), plus `parseOrThrow` / `flattenIssues`
+  helpers.
+- Deleted `src/types/zod-schemas.ts` and `tests/unit/types/zod-schemas.test.ts`.
+- Removes ~13 KB gz from initial bundle.
+
+---
+
 ## [7.7.0] - 2026-07-19
 
 ### Minor — Production-readiness sprint

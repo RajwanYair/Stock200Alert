@@ -1,12 +1,12 @@
 /**
- * Valibot runtime schemas for external API boundary validation.
+ * Valibot runtime schemas for boundary validation.
  *
- * These schemas validate and type-narrow raw JSON from data providers
- * (Yahoo Finance, Finnhub) before it is mapped into domain types.
+ * These schemas validate and type-narrow raw JSON from data providers,
+ * localStorage, and message handlers before it enters the typed domain.
  * Using Valibot (~3 KB gz) instead of Zod keeps the bundle small.
  *
  * Usage:
- *   import { safeParse } from 'valibot';
+ *   import { safeParse, parse } from 'valibot';
  *   import { YahooChartSchema } from './valibot-schemas';
  *   const result = safeParse(YahooChartSchema, raw);
  *   if (!result.success) throw new Error('Bad response shape');
@@ -21,12 +21,31 @@ import {
   optional,
   union,
   literal,
+  picklist,
   pipe,
   minLength,
   minValue,
+  maxValue,
+  integer,
   transform,
   check,
+  parse,
+  ValiError,
 } from "valibot";
+import {
+  ticker as toTicker,
+  isoTimestamp as toIsoTimestamp,
+  uuid as toUuid,
+  nonNegativeInt as toNonNegativeInt,
+  nonNegativeNumber as toNonNegativeNumber,
+  unitInterval as toUnitInterval,
+  type Ticker,
+  type IsoTimestamp,
+  type Uuid,
+  type NonNegativeInt,
+  type NonNegativeNumber,
+  type UnitInterval,
+} from "./branded";
 
 // ---------------------------------------------------------------------------
 // Domain-level schemas
@@ -258,6 +277,193 @@ export const PolygonTickersSchema = object({
   results: optional(array(PolygonTickerItemSchema)),
   status: optional(string()),
 });
+
+// ---------------------------------------------------------------------------
+// Branded primitive schemas (mirror zod-schemas branded transforms)
+// ---------------------------------------------------------------------------
+
+export const TickerSchema = pipe(
+  string(),
+  check((s: string) => {
+    try {
+      toTicker(s);
+      return true;
+    } catch {
+      return false;
+    }
+  }, "Invalid ticker symbol"),
+  transform((s: string): Ticker => toTicker(s)),
+);
+
+export const IsoTimestampSchema = pipe(
+  string(),
+  check(
+    (s: string) => /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/.test(s),
+    "Not an ISO-8601 timestamp",
+  ),
+  transform((s: string): IsoTimestamp => toIsoTimestamp(s)),
+);
+
+export const UuidSchema = pipe(
+  string(),
+  check(
+    (s: string) =>
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(s),
+    "Not a valid UUID",
+  ),
+  transform((s: string): Uuid => toUuid(s)),
+);
+
+export const NonNegativeIntSchema = pipe(
+  number(),
+  minValue(0),
+  integer(),
+  transform((n: number): NonNegativeInt => toNonNegativeInt(n)),
+);
+
+export const NonNegativeNumberSchema2 = pipe(
+  number(),
+  minValue(0),
+  transform((n: number): NonNegativeNumber => toNonNegativeNumber(n)),
+);
+
+export const UnitIntervalSchema = pipe(
+  number(),
+  minValue(0),
+  maxValue(1),
+  transform((n: number): UnitInterval => toUnitInterval(n)),
+);
+
+// ---------------------------------------------------------------------------
+// Domain enum / picklist schemas
+// ---------------------------------------------------------------------------
+
+export const SignalDirectionSchema = picklist(["BUY", "SELL", "NEUTRAL"] as const);
+
+export const MethodNameSchema = picklist([
+  "Micho",
+  "RSI",
+  "MACD",
+  "Bollinger",
+  "Stochastic",
+  "OBV",
+  "ADX",
+  "CCI",
+  "SAR",
+  "WilliamsR",
+  "MFI",
+  "SuperTrend",
+  "Consensus",
+] as const);
+
+export const ThemeSchema = picklist(["dark", "light", "high-contrast"] as const);
+
+// ---------------------------------------------------------------------------
+// Domain object schemas
+// ---------------------------------------------------------------------------
+
+export const MethodSignalSchema = object({
+  ticker: TickerSchema,
+  method: MethodNameSchema,
+  direction: SignalDirectionSchema,
+  description: string(),
+  currentClose: NonNegativeNumberSchema,
+  evaluatedAt: IsoTimestampSchema,
+});
+
+export const ConsensusResultSchema = object({
+  ticker: TickerSchema,
+  direction: SignalDirectionSchema,
+  buyMethods: array(MethodSignalSchema),
+  sellMethods: array(MethodSignalSchema),
+  strength: UnitIntervalSchema,
+});
+
+export const WatchlistEntrySchema = object({
+  ticker: TickerSchema,
+  addedAt: string(),
+});
+
+export const AppConfigSchema = object({
+  theme: ThemeSchema,
+  watchlist: array(WatchlistEntrySchema),
+});
+
+// ---------------------------------------------------------------------------
+// Twelve Data schema (legacy — Twelve Data is being retired from provider chain;
+// kept for schema-version migration compatibility)
+// ---------------------------------------------------------------------------
+
+export const TwelveDataTimeSeriesSchema = object({
+  status: optional(string()),
+  values: optional(
+    array(
+      object({
+        datetime: string(),
+        open: string(),
+        high: string(),
+        low: string(),
+        close: string(),
+        volume: optional(string()),
+      }),
+    ),
+  ),
+});
+
+// ---------------------------------------------------------------------------
+// Helper utilities (mirror of former zod-schemas helpers)
+// ---------------------------------------------------------------------------
+
+export type ValibotIssueDetail = { path: string; message: string };
+
+/** Minimum structural shape of a Valibot issue for flattening. */
+interface FlatIssue {
+  message: string;
+  path?: Array<{ key?: unknown }>;
+}
+
+/** Flatten Valibot issues into a simple path → message list. */
+export function flattenIssues(error: { issues: FlatIssue[] }): ValibotIssueDetail[] {
+  const result: ValibotIssueDetail[] = [];
+  for (const issue of error.issues) {
+    const path =
+      issue.path
+        ?.map((seg) => String(seg.key ?? ""))
+        .filter(Boolean)
+        .join(".") ?? "";
+    result.push({ path, message: issue.message });
+  }
+  return result;
+}
+
+/**
+ * Parse with a clear error including the schema name and the first few issues.
+ * Throws on failure.
+ */
+export function parseOrThrow<T>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  schema: any,
+  value: unknown,
+  schemaName: string,
+): T {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return (parse as any)(schema, value) as T;
+  } catch (e) {
+    if (e instanceof ValiError) {
+      const issues = flattenIssues(
+        e as { issues: FlatIssue[] },
+      ).slice(0, 3);
+      throw new Error(
+        `${schemaName} validation failed: ${issues
+          .map((i) => `${i.path || "<root>"}: ${i.message}`)
+          .join("; ")}`,
+        { cause: e },
+      );
+    }
+    throw e;
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Re-export inferred output types for use in providers
