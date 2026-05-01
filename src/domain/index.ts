@@ -171,3 +171,7 @@ export type { SeasonalityBucket, DailyReturn } from "./seasonality";
 export { computeElderRay } from "./elder-ray";
 export type { ElderRayPoint } from "./elder-ray";
 
+
+export { computeTrix } from "./trix";
+export type { TrixPoint } from "./trix";
+
