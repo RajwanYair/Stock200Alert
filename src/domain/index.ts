@@ -196,3 +196,7 @@ export { computeCmo } from "./chande-momentum-oscillator";
 
 export { computeConnorsRsi } from "./connors-rsi";
 
+
+export { computeFisherTransform } from "./fisher-transform";
+export type { FisherPoint } from "./fisher-transform";
+
