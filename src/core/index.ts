@@ -136,3 +136,7 @@ export type {
   WorkerClient,
 } from "./worker-rpc";
 export { runBacktestAsync, disposeBacktestWorker } from "./backtest-worker";
+
+export { fuzzyScore, fuzzySearch } from "./fuzzy-match";
+export type { FuzzyMatch, FuzzyOptions } from "./fuzzy-match";
+
