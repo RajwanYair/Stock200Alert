@@ -748,19 +748,57 @@ Everything else is hand-written or zero-dep.
 
 ### Phase B — v6.3 _Streaming, Portfolio & Polish_
 
-| #   | Task                                                                                                | Priority |
-| --- | --------------------------------------------------------------------------------------------------- | :------: |
-| B1  | WebSocket streaming via Finnhub (Durable Object fan-out)                                            |    P1    |
-| B2  | Portfolio card: holdings, P/L, sector allocation (wires `portfolio-analytics.ts`), benchmark vs SPY |    P1    |
-| B3  | Risk metrics card: Sharpe, Sortino, max DD, beta, volatility (wires `risk-ratios.ts`)               |    P1    |
-| B4  | Backtest UI on top of existing engine (equity curve via `equity-curve.ts` + perf table)             |    P1    |
-| B5  | Provider Health card from circuit-breaker stats                                                     |    P2    |
-| B6  | Consensus history timeline (wires `cards/consensus-timeline.ts`)                                    |    P2    |
-| B7  | OG image rendering (`/api/og/:symbol.png`)                                                          |    P2    |
-| B8  | Polygon provider (paid escape hatch)                                                                |    P2    |
-| B9  | Synced crosshair across multi-pane chart                                                            |    P2    |
-| B10 | URL state encoder/decoder activation (wires `share-state.ts`)                                       |    P2    |
-| B11 | Cross-tab sync via BroadcastChannel                                                                 |    P2    |
+| #   | Task                                                                                                 | Priority | Notes                               |
+| --- | ---------------------------------------------------------------------------------------------------- | :------: | ----------------------------------- |
+| B1  | WebSocket streaming via Finnhub (Durable Object fan-out)                                             |    P1    |                                     |
+| B2  | Portfolio card: holdings, P/L, sector allocation (wires `portfolio-analytics.ts`), benchmark vs SPY  |    P1    |                                     |
+| B3  | Risk metrics card: Sharpe, Sortino, max DD, beta, volatility (wires `risk-ratios.ts`)                |    P1    |                                     |
+| B4  | Backtest UI on top of existing engine (equity curve via `equity-curve.ts` + perf table)              |    P1    |                                     |
+| B5  | Provider Health card from circuit-breaker stats                                                      |    P2    |                                     |
+| B6  | Consensus history timeline (wires `cards/consensus-timeline.ts`)                                     |    P2    |                                     |
+| B7  | OG image rendering (`/api/og/:symbol.png`)                                                           |    P2    |                                     |
+| B8  | Polygon provider (paid escape hatch)                                                                 |    P2    |                                     |
+| B9  | Synced crosshair across multi-pane chart                                                             |    P2    |                                     |
+| B10 | URL state encoder/decoder activation (wires `share-state.ts`)                                        |    P2    |                                     |
+| B11 | Cross-tab sync via BroadcastChannel                                                                  |    P2    |                                     |
+| B12 | **Instrument-type views — Stocks / ETFs / Crypto** (see detail below)                                |    P1    | Requested by user                   |
+| B13 | **Sector grouping** - collapsible sector rows with per-sector consensus aggregate (see detail below) |    P1    | Requested by user                   |
+| B14 | **Universal sortable column headers** across all data tables (see detail below)                      |    P1    | Requested by user; extends A11 sort |
+
+#### B12 — Instrument-type views (Stocks / ETFs / Crypto)
+
+Auto-classify each watchlist entry using the `quoteType` field returned by Yahoo Finance
+(`EQUITY` → Stock, `ETF` → ETF, `CRYPTOCURRENCY` → Crypto, unknown → Other).
+Add a filter-chip bar above the watchlist table (`All / Stocks / ETFs / Crypto`) that
+instantly filters rows without re-fetching. Store the user's last-selected tab in
+`localStorage`. Manual override: right-click (or long-press) a ticker to force-assign a
+type. Extend `WatchlistEntry` in the config schema and persist overrides in IDB.
+Type badges appear in the ticker cell (a small coloured chip).
+
+#### B13 — Sector grouping in the watchlist
+
+Resolve GICS sector for each equity from Yahoo Finance `sector` field in the chart
+`meta` object. Group watchlist rows under collapsible `<tr class="sector-header">` rows
+per sector (Technology, Healthcare, Financials, …). Each sector header shows: sector
+name, row count, and an aggregated mini-consensus badge (% BUY across holdings in that
+sector). Sector headers sort alphabetically; tickers within a sector respect the current
+sort column. Collapsed/expanded state is persisted per sector in `localStorage`. ETFs
+and Crypto fall into `— ETFs —` / `— Crypto —` group rows at the bottom.
+
+#### B14 — Universal sortable column headers
+
+Every `<table>` in the app (watchlist, screener, portfolio holdings, backtest results,
+alert history) must have fully interactive `<th>` headers with:
+
+- `aria-sort="ascending | descending | none"` attribute kept in sync
+- Visual sort-indicator chevron (▲ / ▼) in the header cell
+- Keyboard activation (Enter / Space on focused header)
+- Screen-reader announcement of new sort order via the existing `announceLive` helper
+- Sort state persisted per-table key in `localStorage`
+
+Extends and standardises the existing `ui/sortable.ts` utility — no per-card
+reimplementation allowed. Covers both numeric and string columns with locale-aware
+`Intl.Collator` comparison.
 
 ### Phase C — v6.4 _Reach, Polish, A11y+_
 
