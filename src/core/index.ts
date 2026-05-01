@@ -72,6 +72,13 @@ export {
   applyMigrations,
 } from "./idb-migrations";
 export type { SchemaMigration } from "./idb-migrations";
+export { decide as decideTierPolicy } from "./tier-policy";
+export type {
+  Tier,
+  AccessRecord,
+  PolicyOptions,
+  PolicyDecision,
+} from "./tier-policy";
 export {
   createStoragePressureMonitor,
   requestPersistentStorage,
