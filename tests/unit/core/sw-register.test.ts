@@ -33,4 +33,12 @@ describe("registerServiceWorker", () => {
     const result = await registerServiceWorker();
     expect(result).toBeNull();
   });
+
+  it("returns null when serviceWorker property does not exist on navigator", async () => {
+    // Stub navigator without the serviceWorker property so `in` check returns false.
+    vi.stubGlobal("navigator", { userAgent: "test" });
+    const result = await registerServiceWorker();
+    expect(result).toBeNull();
+    vi.unstubAllGlobals();
+  });
 });

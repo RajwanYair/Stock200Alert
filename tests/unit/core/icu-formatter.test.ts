@@ -147,3 +147,94 @@ describe("defineMessages + formatMessage", () => {
     expect(formatMessage(messages, "unknownKey")).toBe("unknownKey");
   });
 });
+
+// ──────────────────────────────────────────────────────────────
+// Edge cases — uncovered branches
+// ──────────────────────────────────────────────────────────────
+
+import { vi } from "vitest";
+
+describe("format — unmatched brace", () => {
+  it("treats unmatched { as a literal character", () => {
+    // findMatchingBrace returns -1 → literal path
+    expect(format("Hello {unclosed world")).toBe("Hello {unclosed world");
+  });
+
+  it("passes through when no braces", () => {
+    expect(format("no braces here")).toBe("no braces here");
+  });
+});
+
+describe("format — malformed / unknown block types", () => {
+  it("returns literal for block with no second comma (typeComma === -1)", () => {
+    // {x, type} — after first comma, rest = 'type', no second comma
+    expect(format("{x, notype}", { x: "val" })).toBe("{x, notype}");
+  });
+
+  it("returns literal for unknown block type", () => {
+    // {x, unknown, a{b}} — blockType 'unknown' is not plural or select
+    expect(format("{x, unknown, a{b}}", { x: "val" })).toBe("{x, unknown, a{b}}");
+  });
+});
+
+describe("format — plural fallback paths", () => {
+  it("falls back to 'other' case when category not present but other exists", () => {
+    // Category for 1 is 'one'; template only has 'few' and 'other'
+    const tpl = "{n, plural, few{# items} other{# things}}";
+    expect(format(tpl, { n: 1 })).toBe("1 things"); // hits 'other' fallback
+  });
+
+  it("returns String(value) when no case matches at all", () => {
+    // Category for 1 is 'one', no 'one', no 'other' — only 'few'
+    const tpl = "{n, plural, few{few items}}";
+    expect(format(tpl, { n: 1 })).toBe("1"); // falls through to String(value)
+  });
+});
+
+describe("format — selectValue no-match", () => {
+  it("returns the raw value when no case and no 'other'", () => {
+    // Only 'male' and 'female' cases, no 'other' — provide 'nonbinary'
+    const tpl = "{gender, select, male{He} female{She}}";
+    expect(format(tpl, { gender: "nonbinary" })).toBe("nonbinary");
+  });
+});
+
+describe("getPluralCategory — Intl.PluralRules fallback", () => {
+  it("falls back to English rules when Intl is unavailable", () => {
+    const origIntl = globalThis.Intl;
+    vi.stubGlobal("Intl", undefined);
+    expect(getPluralCategory(1, "en")).toBe("one");
+    expect(getPluralCategory(2, "en")).toBe("other");
+    vi.unstubAllGlobals();
+    // Restore after stub in case other tests need it
+    if (origIntl) vi.stubGlobal("Intl", origIntl);
+    vi.unstubAllGlobals();
+  });
+
+  it("falls back when Intl.PluralRules throws", () => {
+    vi.stubGlobal("Intl", {
+      PluralRules: class {
+        select(): never {
+          throw new Error("PluralRules failed");
+        }
+      },
+    });
+    expect(getPluralCategory(1, "en")).toBe("one");
+    expect(getPluralCategory(5, "en")).toBe("other");
+    vi.unstubAllGlobals();
+  });
+});
+describe("format - plural with string value", () => {
+  it("converts string variable to number in plural block", () => {
+    // rawValue is a string - the Number() conversion branch
+    const tpl = "{n, plural, one{item} other{items}}";
+    expect(format(tpl, { n: "2" })).toBe("items");
+    expect(format(tpl, { n: "1" })).toBe("item");
+  });
+
+  it("parseCases: casesPart with no { yields empty cases -> returns String(value)", () => {
+    // casesPart = "no-braces" - parseCases finds no { -> returns {}
+    // selectPlural({}, 3) has no match -> String(3)
+    expect(format("{n, plural, no-braces}", { n: 3 })).toBe("3");
+  });
+});

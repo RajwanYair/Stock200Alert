@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import {
   parseHexColor,
   relativeLuminance,
@@ -48,5 +48,19 @@ describe("contrast", () => {
     (globalThis as { matchMedia?: unknown }).matchMedia = undefined;
     expect(prefersMoreContrast()).toBe(false);
     (globalThis as { matchMedia?: unknown }).matchMedia = original;
+  });
+
+  it("prefersMoreContrast returns false when matchMedia throws", () => {
+    vi.stubGlobal("matchMedia", () => {
+      throw new Error("matchMedia not supported");
+    });
+    expect(prefersMoreContrast()).toBe(false);
+    vi.unstubAllGlobals();
+  });
+
+  it("prefersMoreContrast returns true when prefers-contrast:more matches", () => {
+    vi.stubGlobal("matchMedia", () => ({ matches: true }));
+    expect(prefersMoreContrast()).toBe(true);
+    vi.unstubAllGlobals();
   });
 });
