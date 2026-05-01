@@ -87,3 +87,7 @@ export type { Shape, Trendline, HLine, FibRetracement, Point, DrawingKind, Drawi
 export { getPalette, pickColor, isHexColor, PALETTE_NAMES } from "./palettes";
 export type { Palette, PaletteName, SemanticColor } from "./palettes";
 
+
+export { formatPrice, formatCompact, formatPercent, formatChange } from "./number-format";
+export type { FormatOptions } from "./number-format";
+
