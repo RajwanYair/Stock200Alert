@@ -121,7 +121,7 @@ export async function registerCredential(
         name: options.userName,
         displayName: options.displayName,
       },
-      challenge,
+      challenge: challenge as BufferSource,
       pubKeyCredParams: [
         { type: "public-key", alg: -7 }, // ES256
         { type: "public-key", alg: -257 }, // RS256
@@ -137,7 +137,9 @@ export async function registerCredential(
   };
 
   try {
-    const credential = (await navigator.credentials.create(createOptions)) as PublicKeyCredential | null;
+    const credential = (await navigator.credentials.create(
+      createOptions,
+    )) as PublicKeyCredential | null;
     if (!credential) return null;
 
     const response = credential.response as AuthenticatorAttestationResponse;
@@ -175,9 +177,9 @@ export async function authenticateCredential(
 
   const getOptions: CredentialRequestOptions = {
     publicKey: {
-      challenge,
+      challenge: challenge as BufferSource,
       rpId: options.rpId ?? window.location.hostname,
-      allowCredentials: allowCredentials.length > 0 ? allowCredentials : undefined,
+      ...(allowCredentials.length > 0 ? { allowCredentials } : {}),
       userVerification: "preferred",
       timeout: 60000,
     },

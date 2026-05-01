@@ -85,9 +85,7 @@ describe("registerCredential", () => {
     // Mock navigator.credentials.create
     Object.defineProperty(globalThis, "PublicKeyCredential", {
       value: class {
-        static isUserVerifyingPlatformAuthenticatorAvailable = vi
-          .fn()
-          .mockResolvedValue(true);
+        static isUserVerifyingPlatformAuthenticatorAvailable = vi.fn().mockResolvedValue(true);
       },
       writable: true,
       configurable: true,
