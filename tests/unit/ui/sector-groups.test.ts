@@ -190,7 +190,9 @@ describe("sector-groups", () => {
       document.body.appendChild(container);
 
       let called = 0;
-      bindSectorHeaders(container, () => { called++; });
+      bindSectorHeaders(container, () => {
+        called++;
+      });
 
       const row = container.querySelector<HTMLElement>("[data-sector]")!;
       row.click();

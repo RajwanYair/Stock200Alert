@@ -9,13 +9,11 @@ describe("screener-worker facade", () => {
 
   it("falls back to synchronous applyFilters when Worker is undefined", async () => {
     const origWorker = globalThis.Worker;
-     
+
     (globalThis as any).Worker = undefined;
 
     try {
-      const { runScreenerAsync } = await import(
-        "../../../src/core/screener-worker"
-      );
+      const { runScreenerAsync } = await import("../../../src/core/screener-worker");
 
       const inputs = [
         {
@@ -40,13 +38,11 @@ describe("screener-worker facade", () => {
 
   it("returns empty array when no inputs match", async () => {
     const origWorker = globalThis.Worker;
-     
+
     (globalThis as any).Worker = undefined;
 
     try {
-      const { runScreenerAsync } = await import(
-        "../../../src/core/screener-worker"
-      );
+      const { runScreenerAsync } = await import("../../../src/core/screener-worker");
 
       const inputs = [
         {
@@ -68,9 +64,7 @@ describe("screener-worker facade", () => {
   });
 
   it("disposeScreenerWorker does not throw when no worker exists", async () => {
-    const { disposeScreenerWorker } = await import(
-      "../../../src/core/screener-worker"
-    );
+    const { disposeScreenerWorker } = await import("../../../src/core/screener-worker");
     expect(() => disposeScreenerWorker()).not.toThrow();
   });
 

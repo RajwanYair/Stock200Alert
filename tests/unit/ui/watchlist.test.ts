@@ -257,12 +257,21 @@ describe("sector grouping branch", () => {
         {
           ...makeQuote("AAPL"),
           sector: "Technology",
-          consensus: { ticker: "AAPL", direction: "BUY" as const, strength: 0.8, buyMethods: [], sellMethods: [] },
+          consensus: {
+            ticker: "AAPL",
+            direction: "BUY" as const,
+            strength: 0.8,
+            buyMethods: [],
+            sellMethods: [],
+          },
         },
       ],
     ]);
     renderWatchlist(
-      { watchlist: [{ ticker: "AAPL", addedAt: new Date().toISOString(), instrumentType: "stock" }], theme: "dark" },
+      {
+        watchlist: [{ ticker: "AAPL", addedAt: new Date().toISOString(), instrumentType: "stock" }],
+        theme: "dark",
+      },
       quotes,
     );
 
