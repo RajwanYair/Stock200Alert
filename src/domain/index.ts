@@ -156,3 +156,7 @@ export type { AroonPoint } from "./aroon";
 export { computeChaikinMoneyFlow } from "./chaikin-money-flow";
 export type { CmfPoint } from "./chaikin-money-flow";
 
+
+export { computeAwesomeOscillator } from "./awesome-oscillator";
+export type { AoPoint } from "./awesome-oscillator";
+
