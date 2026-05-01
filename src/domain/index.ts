@@ -105,3 +105,7 @@ export type { KeltnerPoint, KeltnerOptions } from "./keltner";
 export { computeIchimoku } from "./ichimoku";
 export type { IchimokuPoint, IchimokuOptions } from "./ichimoku";
 
+
+export { computePivots } from "./pivots";
+export type { PivotInput, PivotLevels, PivotKind } from "./pivots";
+
