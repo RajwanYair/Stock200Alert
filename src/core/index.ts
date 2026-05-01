@@ -60,6 +60,13 @@ export {
 } from "./csp-builder";
 export type { CspOptions, SecurityHeaders } from "./csp-builder";
 export {
+  computeIntegrity,
+  integrityAttr,
+  isValidSriValue,
+  buildSriManifest,
+} from "./sri";
+export type { SriAlgorithm } from "./sri";
+export {
   createStoragePressureMonitor,
   requestPersistentStorage,
 } from "./storage-pressure";
