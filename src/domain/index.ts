@@ -89,3 +89,7 @@ export type { RatioOptions } from "./risk-ratios";
 export { tokenize, parse, evaluate, compileSignal } from "./signal-dsl";
 export type { Value, Node, EvalContext, FnImpl } from "./signal-dsl";
 
+
+export { heikinAshi } from "./heikin-ashi";
+export type { Candle, HeikinAshiCandle } from "./heikin-ashi";
+
