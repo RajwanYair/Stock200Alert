@@ -270,3 +270,6 @@ export type { UltimateOscillatorOptions } from "./ultimate-oscillator";
 export { computeKlingerOscillator } from "./klinger-oscillator";
 export type { KlingerOptions, VolumeCandle } from "./klinger-oscillator";
 
+
+export { computeChoppinessIndex } from "./choppiness-index";
+
