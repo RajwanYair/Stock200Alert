@@ -35,6 +35,27 @@ vi.mock("../../../src/cards/screener-card", () => ({
 vi.mock("../../../src/cards/settings-card", () => ({
   default: { mount: vi.fn(() => ({})) } satisfies CardModule,
 }));
+vi.mock("../../../src/cards/provider-health-card", () => ({
+  default: { mount: vi.fn(() => ({})) } satisfies CardModule,
+}));
+vi.mock("../../../src/cards/portfolio-card", () => ({
+  default: { mount: vi.fn(() => ({})) } satisfies CardModule,
+}));
+vi.mock("../../../src/cards/risk-card", () => ({
+  default: { mount: vi.fn(() => ({})) } satisfies CardModule,
+}));
+vi.mock("../../../src/cards/backtest-card", () => ({
+  default: { mount: vi.fn(() => ({})) } satisfies CardModule,
+}));
+vi.mock("../../../src/cards/consensus-timeline-card", () => ({
+  default: { mount: vi.fn(() => ({})) } satisfies CardModule,
+}));
+vi.mock("../../../src/cards/signal-dsl-card", () => ({
+  default: { mount: vi.fn(() => ({})) } satisfies CardModule,
+}));
+vi.mock("../../../src/cards/multi-chart-layout", () => ({
+  default: { mount: vi.fn(() => ({})) } satisfies CardModule,
+}));
 
 const CTX: CardContext = { route: "watchlist", params: {} };
 
@@ -96,7 +117,7 @@ describe("loadCard", () => {
     await p1;
   });
 
-  it("resolves for all routes", async () => {
+  it("resolves for all 14 routes", async () => {
     const routes = [
       "watchlist",
       "consensus",
@@ -105,6 +126,13 @@ describe("loadCard", () => {
       "heatmap",
       "screener",
       "settings",
+      "provider-health",
+      "portfolio",
+      "risk",
+      "backtest",
+      "consensus-timeline",
+      "signal-dsl",
+      "multi-chart",
     ] as const;
     await Promise.all(routes.map((r) => loadCard(r)));
   });
@@ -117,5 +145,23 @@ describe("loadCard", () => {
     const container = document.createElement("div");
     const mod = await loadCard("watchlist");
     expect(() => mod.mount(container, CTX)).not.toThrow();
+  });
+
+  it("evicts cache on load failure so next call retries", async () => {
+    // First call: make the load() throw
+    const entry = getCardEntry("watchlist")!;
+    const origLoad = entry.load;
+    let callCount = 0;
+    vi.spyOn(entry, "load").mockImplementation(() => {
+      callCount++;
+      if (callCount === 1) return Promise.reject(new Error("chunk failed"));
+      return origLoad();
+    });
+
+    await expect(loadCard("watchlist")).rejects.toThrow("chunk failed");
+    // Second call should retry (cache was cleared)
+    const mod = await loadCard("watchlist");
+    expect(typeof mod.mount).toBe("function");
+    vi.restoreAllMocks();
   });
 });
