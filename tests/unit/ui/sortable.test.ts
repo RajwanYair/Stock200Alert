@@ -1,5 +1,12 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { sortRows, toggleSort, ariaSort, bindSortableTable } from "../../../src/ui/sortable";
+import {
+  sortRows,
+  toggleSort,
+  ariaSort,
+  bindSortableTable,
+  persistSort,
+  loadSort,
+} from "../../../src/ui/sortable";
 
 describe("sortRows", () => {
   const data = [
@@ -135,5 +142,133 @@ describe("bindSortableTable", () => {
 
   it("handles null thead gracefully", () => {
     expect(() => bindSortableTable(null, vi.fn())).not.toThrow();
+  });
+});
+
+// ── localStorage sort persistence (B14) ───────────────────────────────────────
+
+function createStorageMock(): Storage {
+  const store = new Map<string, string>();
+  return {
+    get length() {
+      return store.size;
+    },
+    key(i: number) {
+      return [...store.keys()][i] ?? null;
+    },
+    getItem(k: string) {
+      return store.get(k) ?? null;
+    },
+    setItem(k: string, v: string) {
+      store.set(k, v);
+    },
+    removeItem(k: string) {
+      store.delete(k);
+    },
+    clear() {
+      store.clear();
+    },
+  };
+}
+
+describe("persistSort / loadSort", () => {
+  beforeEach(() => {
+    vi.stubGlobal("localStorage", createStorageMock());
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  describe("persistSort", () => {
+    it("saves a sort config under a prefixed key", () => {
+      persistSort("watchlist", { column: "price", direction: "desc" });
+      const raw = localStorage.getItem("ct_sort_watchlist");
+      expect(raw).not.toBeNull();
+      const parsed = JSON.parse(raw!) as unknown;
+      expect(parsed).toEqual({ column: "price", direction: "desc" });
+    });
+
+    it("overwrites an existing entry", () => {
+      persistSort("watchlist", { column: "price", direction: "asc" });
+      persistSort("watchlist", { column: "name", direction: "desc" });
+      const raw = localStorage.getItem("ct_sort_watchlist");
+      expect(JSON.parse(raw!)).toEqual({ column: "name", direction: "desc" });
+    });
+
+    it("uses different keys for different tables", () => {
+      persistSort("watchlist", { column: "price", direction: "asc" });
+      persistSort("screener", { column: "name", direction: "desc" });
+      expect(localStorage.getItem("ct_sort_watchlist")).not.toBeNull();
+      expect(localStorage.getItem("ct_sort_screener")).not.toBeNull();
+      expect(localStorage.getItem("ct_sort_watchlist")).not.toBe(
+        localStorage.getItem("ct_sort_screener"),
+      );
+    });
+
+    it("does not throw when localStorage is unavailable", () => {
+      vi.stubGlobal("localStorage", {
+        getItem: () => {
+          throw new Error("unavailable");
+        },
+        setItem: () => {
+          throw new Error("unavailable");
+        },
+        removeItem: () => null,
+        key: () => null,
+        clear: () => null,
+        length: 0,
+      });
+      expect(() => persistSort("x", { column: "c", direction: "asc" })).not.toThrow();
+    });
+  });
+
+  describe("loadSort", () => {
+    it("returns null when no entry exists", () => {
+      expect(loadSort("watchlist")).toBeNull();
+    });
+
+    it("returns the saved sort config", () => {
+      persistSort("watchlist", { column: "change", direction: "asc" });
+      const loaded = loadSort("watchlist");
+      expect(loaded).toEqual({ column: "change", direction: "asc" });
+    });
+
+    it("returns null for malformed JSON", () => {
+      localStorage.setItem("ct_sort_bad", "{not-valid-json");
+      expect(loadSort("bad")).toBeNull();
+    });
+
+    it("returns null for stored object missing column", () => {
+      localStorage.setItem("ct_sort_bad2", JSON.stringify({ direction: "asc" }));
+      expect(loadSort("bad2")).toBeNull();
+    });
+
+    it("returns null for stored object with invalid direction", () => {
+      localStorage.setItem("ct_sort_bad3", JSON.stringify({ column: "price", direction: "up" }));
+      expect(loadSort("bad3")).toBeNull();
+    });
+
+    it("roundtrips asc and desc directions correctly", () => {
+      persistSort("t1", { column: "col", direction: "asc" });
+      persistSort("t2", { column: "col", direction: "desc" });
+      expect(loadSort("t1")?.direction).toBe("asc");
+      expect(loadSort("t2")?.direction).toBe("desc");
+    });
+
+    it("does not throw when localStorage is unavailable", () => {
+      vi.stubGlobal("localStorage", {
+        getItem: () => {
+          throw new Error("unavailable");
+        },
+        setItem: () => null,
+        removeItem: () => null,
+        key: () => null,
+        clear: () => null,
+        length: 0,
+      });
+      expect(() => loadSort("x")).not.toThrow();
+      expect(loadSort("x")).toBeNull();
+    });
   });
 });

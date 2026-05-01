@@ -2,6 +2,7 @@
  * Sortable columns — generic table sort utility.
  *
  * Pure function: takes rows + sort config, returns sorted rows.
+ * Also provides localStorage persistence helpers for sort state (B14).
  */
 
 export type SortDirection = "asc" | "desc";
@@ -92,4 +93,49 @@ export function bindSortableTable<K extends string>(
       }
     });
   }
+}
+
+// ── Sort-state persistence (B14) ──────────────────────────────────────────────
+
+const SORT_STATE_PREFIX = "ct_sort_";
+
+/**
+ * Persist a sort config for a named table to localStorage.
+ *
+ * @param tableKey  Unique identifier for the table, e.g. "watchlist" or "screener".
+ * @param config    The current sort config to save.
+ */
+export function persistSort<K extends string>(tableKey: string, config: SortConfig<K>): void {
+  try {
+    localStorage.setItem(SORT_STATE_PREFIX + tableKey, JSON.stringify(config));
+  } catch {
+    // localStorage unavailable — silently skip
+  }
+}
+
+/**
+ * Load a previously persisted sort config for a named table from localStorage.
+ *
+ * @param tableKey  Unique identifier matching the key used in `persistSort`.
+ * @returns The saved `SortConfig`, or `null` if nothing is stored or the stored
+ *          value is malformed.
+ */
+export function loadSort<K extends string>(tableKey: string): SortConfig<K> | null {
+  try {
+    const raw = localStorage.getItem(SORT_STATE_PREFIX + tableKey);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      typeof (parsed as Record<string, unknown>)["column"] === "string" &&
+      ((parsed as Record<string, unknown>)["direction"] === "asc" ||
+        (parsed as Record<string, unknown>)["direction"] === "desc")
+    ) {
+      return parsed as SortConfig<K>;
+    }
+  } catch {
+    // Ignore malformed JSON
+  }
+  return null;
 }
