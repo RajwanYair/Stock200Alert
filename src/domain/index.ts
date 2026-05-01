@@ -136,3 +136,7 @@ export type { CorrelationInput, CorrelationResult } from "./correlation-matrix";
 
 export { simpleReturns, logReturns, cumulativeReturns, totalReturn, annualizedReturn, rollingReturns } from "./returns";
 
+
+export { anchoredVwap } from "./anchored-vwap";
+export type { AnchoredVwapPoint, AnchoredVwapOptions } from "./anchored-vwap";
+
