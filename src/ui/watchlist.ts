@@ -2,6 +2,7 @@
  * Watchlist renderer — renders the watchlist table from state.
  */
 import type { AppConfig, ConsensusResult, SignalDirection } from "../types/domain";
+import { formatCompact } from "./number-format";
 import { renderSparkline } from "./sparkline";
 
 interface TickerQuote {
@@ -47,7 +48,7 @@ function renderRow(ticker: string, quote: TickerQuote | null): string {
   const consensus = quote?.consensus
     ? renderBadge(quote.consensus.direction)
     : renderBadge("NEUTRAL");
-  const volume = quote ? formatVolume(quote.volume) : "--";
+  const volume = quote ? formatCompact(quote.volume) : "--";
   const sparkline = quote && quote.closes30d.length >= 2 ? renderSparkline(quote.closes30d) : "--";
   const range52w = quote ? render52wRange(quote.price, quote.low52w, quote.high52w) : "--";
   const volumeBar = quote ? renderVolumeBar(quote.volume, quote.avgVolume) : "";
@@ -93,10 +94,4 @@ function formatPrice(n: number): string {
 function formatChange(change: number, pct: number): string {
   const sign = change >= 0 ? "+" : "";
   return `${sign}${change.toFixed(2)} (${sign}${pct.toFixed(2)}%)`;
-}
-
-function formatVolume(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
-  return String(v);
 }

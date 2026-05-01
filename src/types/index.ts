@@ -4,6 +4,8 @@ export type {
   ConsensusResult,
   WatchlistEntry,
   AppConfig,
+  AlertRecord,
+  Holding,
 } from "./domain";
 export type { SignalDirection, MethodName, SmaPeriod } from "./domain";
 export { SMA_PERIODS } from "./domain";

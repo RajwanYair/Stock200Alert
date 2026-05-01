@@ -8,7 +8,7 @@ describe("announce", () => {
 
   it("creates a live region", () => {
     announce("hello");
-    const el = document.getElementById("sr-announcer");
+    const el = document.getElementById("ct-aria-live-region");
     expect(el).not.toBeNull();
     expect(el!.getAttribute("aria-live")).toBe("polite");
     expect(el!.textContent).toBe("hello");
@@ -16,14 +16,14 @@ describe("announce", () => {
 
   it("supports assertive priority", () => {
     announce("urgent", "assertive");
-    const el = document.getElementById("sr-announcer");
+    const el = document.getElementById("ct-aria-live-assertive");
     expect(el!.getAttribute("aria-live")).toBe("assertive");
   });
 
   it("reuses existing live region", () => {
     announce("first");
     announce("second");
-    const els = document.querySelectorAll("#sr-announcer");
+    const els = document.querySelectorAll("#ct-aria-live-region");
     expect(els).toHaveLength(1);
     expect(els[0]!.textContent).toBe("second");
   });

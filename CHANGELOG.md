@@ -6,6 +6,34 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [6.4.0] - 2026-05-01
+
+### Deduplication & architecture enforcement
+
+- **Architecture violation fixed.** `src/core/data-export.ts` was importing
+  `AlertRecord` and `Holding` types from the `cards/` layer (higher-level).
+  These types are now defined in `src/types/domain.ts` and re-exported from
+  their original card modules for backward compatibility.
+- **`formatVolume` deduplicated.** Local implementations in `chart.ts` and
+  `watchlist.ts` replaced with `formatCompact` from `ui/number-format.ts`.
+- **`prefersReducedMotion` deduplicated.** Removed duplicate in
+  `ui/contrast.ts`; single source of truth is `ui/a11y.ts`.
+- **`announce()` consolidated.** `ui/a11y.ts` now delegates to
+  `ui/aria-live.ts` instead of maintaining a separate live-region
+  implementation. Tests updated to match the canonical element IDs.
+- **`formatPercent` kept local** in `performance-metrics.ts` (different
+  semantics: always shows `+` sign for zero, whereas `number-format.ts`
+  only signs strictly-positive values).
+
+### Verified locally
+
+- `tsc --noEmit` (main + SW): 0 errors.
+- `npx eslint . --max-warnings 0`: 0 issues.
+- `npx vitest run`: 215 test files, 1771 tests — all pass.
+- `npx vite build`: 29.42 KB gzipped (85% under 200 KB budget).
+
+---
+
 ## [6.3.0] - 2026-05-01
 
 ### Production-readiness: SW build, dead-code removal, structural cleanup

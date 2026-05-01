@@ -4,13 +4,9 @@
  * Phase 2 scaffold: renders a holdings table with gain/loss calculations.
  * Actual brokerage integration is out of scope.
  */
+import type { Holding } from "../types/domain";
 
-export interface Holding {
-  readonly ticker: string;
-  readonly shares: number;
-  readonly avgCost: number; // average cost per share
-  readonly currentPrice: number;
-}
+export type { Holding };
 
 export interface PortfolioSummary {
   readonly holdings: readonly Holding[];

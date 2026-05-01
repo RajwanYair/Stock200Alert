@@ -23,11 +23,12 @@ export function formatRatio(value: number | null): string {
 }
 
 /**
- * Format a percentage (0.15 → "+15.00%").
+ * Format a percentage from a fraction (0.15 → "+15.00%").
+ * Always shows + sign for non-negative values.
  */
 export function formatPercent(value: number): string {
-  const sign = value >= 0 ? "+" : "";
-  return `${sign}${(value * 100).toFixed(2)}%`;
+  const pct = (value * 100).toFixed(2);
+  return value >= 0 ? `+${pct}%` : `${pct}%`;
 }
 
 /**

@@ -56,20 +56,6 @@ export function meetsWcag(
 }
 
 /**
- * Returns true if the user has indicated they prefer reduced motion.
- * Safe in non-DOM environments (returns false).
- */
-export function prefersReducedMotion(): boolean {
-  const m = (globalThis as { matchMedia?: (q: string) => MediaQueryList }).matchMedia;
-  if (typeof m !== "function") return false;
-  try {
-    return m("(prefers-reduced-motion: reduce)").matches;
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Returns true if the user has indicated a preference for higher
  * contrast (Windows high-contrast, macOS Increase Contrast).
  */

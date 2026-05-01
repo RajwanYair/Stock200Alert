@@ -6,6 +6,7 @@
  * For now, renders a summary table of recent OHLCV data.
  */
 import type { DailyCandle } from "../types/domain";
+import { formatCompact } from "../ui/number-format";
 
 export interface ChartOptions {
   ticker: string;
@@ -51,7 +52,7 @@ function renderOhlcTable(candles: readonly DailyCandle[]): string {
       <td class="font-mono">${c.high.toFixed(2)}</td>
       <td class="font-mono">${c.low.toFixed(2)}</td>
       <td class="font-mono">${c.close.toFixed(2)}</td>
-      <td class="font-mono">${formatVolume(c.volume)}</td>
+      <td class="font-mono">${formatCompact(c.volume)}</td>
     </tr>`,
     )
     .join("");
@@ -60,12 +61,6 @@ function renderOhlcTable(candles: readonly DailyCandle[]): string {
     <thead><tr><th>Date</th><th>O</th><th>H</th><th>L</th><th>C</th><th>Vol</th></tr></thead>
     <tbody>${rows}</tbody>
   </table>`;
-}
-
-function formatVolume(v: number): string {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
-  return String(v);
 }
 
 function escapeHtml(s: string): string {

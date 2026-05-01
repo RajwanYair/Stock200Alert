@@ -1,7 +1,7 @@
 # CrossTide — Strategic Roadmap (Deep Rethink, May 2026)
 
 > **Last updated:** May 1, 2026
-> **Declared version:** v6.1.0-rc.11 (Sprints 1–130 shipped)
+> **Declared version:** v6.4.0 (Sprints 1–130 shipped)
 > **Codebase scale:** 215 source modules, 1772 unit tests, ~98% domain coverage,
 > 359 commits, 11 release candidates.
 > **Honest verdict:** We have built a **best-in-class utility/domain library**.

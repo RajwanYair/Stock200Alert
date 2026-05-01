@@ -4,7 +4,6 @@ import {
   relativeLuminance,
   contrastRatio,
   meetsWcag,
-  prefersReducedMotion,
   prefersMoreContrast,
 } from "../../../src/ui/contrast";
 
@@ -42,13 +41,6 @@ describe("contrast", () => {
     expect(meetsWcag(7, "AAA")).toBe(true);
     expect(meetsWcag(6.99, "AAA")).toBe(false);
     expect(meetsWcag(3.1, "AA", "large")).toBe(true);
-  });
-
-  it("prefersReducedMotion returns false without matchMedia", () => {
-    const original = (globalThis as { matchMedia?: unknown }).matchMedia;
-    (globalThis as { matchMedia?: unknown }).matchMedia = undefined;
-    expect(prefersReducedMotion()).toBe(false);
-    (globalThis as { matchMedia?: unknown }).matchMedia = original;
   });
 
   it("prefersMoreContrast returns false without matchMedia", () => {

@@ -68,3 +68,21 @@ export interface AppConfig {
   readonly theme: "dark" | "light" | "high-contrast";
   readonly watchlist: readonly WatchlistEntry[];
 }
+
+/** An alert that has been fired and persisted. */
+export interface AlertRecord {
+  readonly id: string;
+  readonly ticker: string;
+  readonly alertType: string;
+  readonly direction: SignalDirection;
+  readonly description: string;
+  readonly firedAt: string; // ISO 8601
+}
+
+/** A single portfolio holding. */
+export interface Holding {
+  readonly ticker: string;
+  readonly shares: number;
+  readonly avgCost: number;
+  readonly currentPrice: number;
+}

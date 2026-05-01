@@ -1,32 +1,14 @@
 /**
  * Accessibility utilities — focus management, screen reader announcements.
  */
-
-const LIVE_REGION_ID = "sr-announcer";
-
-function ensureLiveRegion(): HTMLElement {
-  let el = document.getElementById(LIVE_REGION_ID);
-  if (!el) {
-    el = document.createElement("div");
-    el.id = LIVE_REGION_ID;
-    el.setAttribute("aria-live", "polite");
-    el.setAttribute("aria-atomic", "true");
-    el.className = "sr-only";
-    document.body.appendChild(el);
-  }
-  return el;
-}
+import { announce as ariaAnnounce } from "./aria-live";
 
 /**
  * Announce a message to screen readers via a live region.
+ * Delegates to the canonical aria-live implementation.
  */
 export function announce(message: string, priority: "polite" | "assertive" = "polite"): void {
-  const el = ensureLiveRegion();
-  el.setAttribute("aria-live", priority);
-  el.textContent = "";
-  // Force reflow so screen readers pick up the change
-  void el.offsetHeight;
-  el.textContent = message;
+  ariaAnnounce(message, priority);
 }
 
 /**

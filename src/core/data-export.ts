@@ -3,8 +3,7 @@
  *
  * Extends core export-import with card-specific serializers.
  */
-import type { AlertRecord } from "../cards/alert-history";
-import type { Holding } from "../cards/portfolio";
+import type { AlertRecord, Holding } from "../types/domain";
 import type { BacktestResult, BacktestTrade } from "../domain/backtest-engine";
 
 /**

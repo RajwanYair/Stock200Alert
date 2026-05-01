@@ -4,16 +4,9 @@
  * Renders a list of historical alerts with filtering by ticker, type, direction.
  * Persisted via IndexedDB (consumer responsibility).
  */
-import type { SignalDirection } from "../types/domain";
+import type { SignalDirection, AlertRecord } from "../types/domain";
 
-export interface AlertRecord {
-  readonly id: string;
-  readonly ticker: string;
-  readonly alertType: string;
-  readonly direction: SignalDirection;
-  readonly description: string;
-  readonly firedAt: string; // ISO 8601
-}
+export type { AlertRecord };
 
 export interface AlertHistoryFilter {
   readonly ticker?: string;
