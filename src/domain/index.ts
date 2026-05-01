@@ -207,3 +207,7 @@ export type { VortexPoint } from "./vortex-indicator";
 
 export { computeMassIndex } from "./mass-index";
 
+
+export { computeKst } from "./kst";
+export type { KstPoint, KstOptions } from "./kst";
+
