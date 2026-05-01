@@ -64,3 +64,11 @@ export type {
   KeyboardShortcut,
   ShortcutCategory,
 } from "./shortcuts-catalog";
+export {
+  parseHexColor,
+  relativeLuminance,
+  contrastRatio,
+  meetsWcag,
+  prefersMoreContrast,
+} from "./contrast";
+export type { RGB, WcagLevel, WcagSize } from "./contrast";
