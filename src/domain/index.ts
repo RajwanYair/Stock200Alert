@@ -273,3 +273,7 @@ export type { KlingerOptions, VolumeCandle } from "./klinger-oscillator";
 
 export { computeChoppinessIndex } from "./choppiness-index";
 
+
+export { computeEaseOfMovement } from "./ease-of-movement";
+export type { EaseOfMovementOptions } from "./ease-of-movement";
+
