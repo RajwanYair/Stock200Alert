@@ -6,12 +6,17 @@
  * Domain wiring:
  *   buildEquityCurve + summarizeTrades  ← src/domain/equity-curve.ts
  *   maxDrawdown + cagr                  ← src/domain/risk-ratios.ts
+ *   runBacktestAsync                    ← src/core/backtest-worker.ts (Web Worker)
  *
  * The synthetic price series is generated deterministically so results
  * are reproducible without a live data connection.
+ *
+ * A5: Computation is offloaded to a Web Worker via worker-rpc, keeping
+ *     the main thread responsive during long backtests.
  */
 import { buildEquityCurve, summarizeTrades, type ClosedTrade } from "../domain/equity-curve";
 import { maxDrawdown, cagr } from "../domain/risk-ratios";
+import { runBacktestAsync } from "../core/backtest-worker";
 import type { CardModule } from "./registry";
 
 // ── Synthetic price generator ─────────────────────────────────────────────────
@@ -52,64 +57,11 @@ function syntheticCandles(
   return out;
 }
 
-// ── Simple MA crossover backtest ──────────────────────────────────────────────
+// ── Simple MA crossover backtest (off-thread via compute worker) ──────────────
 interface BacktestParams {
   fastPeriod: number;
   slowPeriod: number;
   initialCapital: number;
-}
-
-function sma(prices: readonly number[], n: number, i: number): number {
-  let s = 0;
-  for (let k = i - n + 1; k <= i; k++) s += prices[k]!;
-  return s / n;
-}
-
-function runBacktest(
-  candles: ReturnType<typeof syntheticCandles>,
-  params: BacktestParams,
-): { trades: ClosedTrade[]; equityPoints: ReturnType<typeof buildEquityCurve> } {
-  const closes = candles.map((c) => c.close);
-  const { fastPeriod, slowPeriod, initialCapital } = params;
-  const trades: ClosedTrade[] = [];
-  let position: { entryTime: number; entryPrice: number } | null = null;
-
-  for (let i = slowPeriod; i < closes.length; i++) {
-    const fast = sma(closes, fastPeriod, i);
-    const fastPrev = sma(closes, fastPeriod, i - 1);
-    const slow = sma(closes, slowPeriod, i);
-    const slowPrev = sma(closes, slowPeriod, i - 1);
-
-    const crossUp = fastPrev <= slowPrev && fast > slow;
-    const crossDown = fastPrev >= slowPrev && fast < slow;
-
-    if (!position && crossUp) {
-      position = { entryTime: i, entryPrice: closes[i]! };
-    } else if (position && crossDown) {
-      trades.push({
-        entryTime: position.entryTime,
-        exitTime: i,
-        entryPrice: position.entryPrice,
-        exitPrice: closes[i]!,
-        side: "long",
-      });
-      position = null;
-    }
-  }
-
-  // Close open position at end
-  if (position) {
-    trades.push({
-      entryTime: position.entryTime,
-      exitTime: closes.length - 1,
-      entryPrice: position.entryPrice,
-      exitPrice: closes[closes.length - 1]!,
-      side: "long",
-    });
-  }
-
-  const equityPoints = buildEquityCurve(trades, initialCapital);
-  return { trades, equityPoints };
 }
 
 // ── SVG equity curve ──────────────────────────────────────────────────────────
