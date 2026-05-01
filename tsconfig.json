@@ -2,10 +2,9 @@
   "extends": "../tooling/tsconfig/base-typescript.json",
   "compilerOptions": {
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
-    "exactOptionalPropertyTypes": true
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "include": [
-    "src/**/*.ts"
-  ],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist", "coverage", "tests"]
 }
