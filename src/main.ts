@@ -9,6 +9,8 @@ import { initTheme } from "./ui/theme";
 import { renderWatchlist } from "./ui/watchlist";
 import { loadCard, type CardHandle, type CardContext } from "./cards/registry";
 import { showToast } from "./ui/toast";
+import { fetchAllTickers, fetchTickerData, type TickerData } from "./core/data-service";
+import type { ConsensusResult } from "./types/domain";
 
 const cardHandles = new Map<RouteName, CardHandle>();
 const cardContainers: Partial<Record<RouteName, string>> = {
@@ -42,11 +44,92 @@ async function activateCard(
 
 function main(): void {
   let config = loadConfig();
+  let tickerDataCache = new Map<string, TickerData>();
+  let refreshTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function updateStatus(text: string): void {
+    const el = document.getElementById("sync-status");
+    if (el) el.textContent = text;
+  }
+
+  async function refreshData(): Promise<void> {
+    const tickers = config.watchlist.map((e) => e.ticker);
+    if (tickers.length === 0) {
+      tickerDataCache.clear();
+      renderWatchlist(config, new Map());
+      updateStatus("Ready");
+      return;
+    }
+
+    updateStatus(`Fetching ${tickers.length} ticker(s)…`);
+
+    const results = await fetchAllTickers(tickers, (done, total) => {
+      updateStatus(`Loading ${done}/${total}…`);
+    });
+
+    tickerDataCache = results;
+
+    // Convert to the format renderWatchlist expects
+    const quotesMap = new Map<
+      string,
+      {
+        ticker: string;
+        price: number;
+        change: number;
+        changePercent: number;
+        volume: number;
+        avgVolume: number;
+        high52w: number;
+        low52w: number;
+        closes30d: readonly number[];
+        consensus: ConsensusResult | null;
+      }
+    >();
+
+    for (const [ticker, data] of results) {
+      quotesMap.set(ticker, {
+        ticker: data.ticker,
+        price: data.price,
+        change: data.change,
+        changePercent: data.changePercent,
+        volume: data.volume,
+        avgVolume: data.avgVolume,
+        high52w: data.high52w,
+        low52w: data.low52w,
+        closes30d: data.closes30d,
+        consensus: data.consensus,
+      });
+    }
+
+    renderWatchlist(config, quotesMap);
+
+    const errors = [...results.values()].filter((d) => d.error);
+    if (errors.length > 0 && errors.length < tickers.length) {
+      updateStatus(`Updated (${errors.length} failed)`);
+    } else if (errors.length === tickers.length) {
+      updateStatus("All fetches failed — check network/proxy");
+      showToast({
+        message: "Could not fetch data. Check browser console for CORS/proxy errors.",
+        type: "error",
+        durationMs: 8000,
+      });
+    } else {
+      updateStatus(`Updated ${new Date().toLocaleTimeString()}`);
+    }
+  }
+
+  function scheduleRefresh(): void {
+    if (refreshTimer) clearTimeout(refreshTimer);
+    refreshTimer = setTimeout(() => void refreshData(), 5 * 60 * 1000); // 5 min
+  }
 
   // Initialize UI
   initTheme(config.theme);
   initRouter();
   renderWatchlist(config, new Map());
+
+  // Fetch live data on startup
+  void refreshData().then(() => scheduleRefresh());
 
   onRouteChange((route, info) => {
     void activateCard(route, info?.params ?? {});
@@ -76,7 +159,12 @@ function main(): void {
       saveConfig(config);
       renderWatchlist(config, new Map());
       addInput.value = "";
-      showToast({ message: `Added ${ticker}`, type: "success" });
+      showToast({ message: `Added ${ticker} — fetching data…`, type: "success" });
+      // Fetch data for the new ticker
+      void fetchTickerData(ticker).then((data) => {
+        tickerDataCache.set(ticker, data);
+        void refreshData();
+      });
     }
   });
 
@@ -130,8 +218,8 @@ function main(): void {
         try {
           const parsed = JSON.parse(String(reader.result));
           if (!Array.isArray(parsed)) throw new Error("Expected an array");
-          const cleaned: { ticker: string; addedAt: number }[] = [];
-          const now = Date.now();
+          const cleaned: { ticker: string; addedAt: string }[] = [];
+          const now = new Date().toISOString();
           for (const raw of parsed) {
             const ticker =
               typeof raw === "string" ? raw : typeof raw?.ticker === "string" ? raw.ticker : null;
@@ -156,7 +244,11 @@ function main(): void {
           config = { ...config, watchlist: merged };
           saveConfig(config);
           renderWatchlist(config, new Map());
-          showToast({ message: `Imported ${added} new ticker(s)`, type: "success" });
+          showToast({
+            message: `Imported ${added} new ticker(s) — fetching data…`,
+            type: "success",
+          });
+          void refreshData();
         } catch (err) {
           showToast({ message: `Import failed: ${(err as Error).message}`, type: "error" });
         }
