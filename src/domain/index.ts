@@ -148,3 +148,7 @@ export type { MaCrossEvent, CrossKind } from "./ma-crossover";
 export { linearRegression, regressionLine, regressionChannel } from "./linear-regression";
 export type { LinearRegression } from "./linear-regression";
 
+
+export { computeAroon } from "./aroon";
+export type { AroonPoint } from "./aroon";
+
