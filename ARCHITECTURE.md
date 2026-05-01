@@ -1,6 +1,6 @@
 # Architecture
 
-> **Last updated:** v7.0.0 (May 2026)
+> **Last updated:** v7.2.0 (May 2026)
 
 CrossTide Web is a browser-based stock monitoring dashboard built with vanilla TypeScript and Vite.
 It follows a strict layered architecture, keeps the production bundle small, and ships as a
@@ -64,40 +64,51 @@ sequenceDiagram
   SW->>Core: Background Sync / cache response
 ```
 
-## Key product features (v7.0)
+## Key product features (v7.2)
 
-| Feature                    | Implementation                                                 |
-| -------------------------- | -------------------------------------------------------------- |
-| 30+ technical indicators   | `src/domain/*` — pure TS, exhaustive tests                     |
-| 12-method consensus engine | `src/domain/consensus-engine.ts`                               |
-| Interactive charting       | `lightweight-charts@^5` via `src/cards/lw-chart.ts`            |
-| Multi-chart layout         | `src/cards/multi-chart-layout.ts` — 2×2 / 1+3 synced crosshair |
-| Drawing tools              | Trendline + Fibonacci retracement canvas overlay               |
-| Real-time streaming        | Finnhub WebSocket via `src/core/reconnecting-ws.ts`            |
-| Screener (preset + custom) | `src/cards/screener-card.ts` + off-thread compute              |
-| Sector heatmap             | Canvas treemap `src/cards/heatmap-card.ts`                     |
-| Portfolio + risk metrics   | Sharpe, Sortino, max DD, CAGR, equity curve                    |
-| Backtest engine            | `src/domain/backtest-engine.ts` + Web Worker + equity curve UI |
-| Alert state machine        | `src/domain/alert-state-machine.ts` + in-browser notifications |
-| Offline-first PWA          | Workbox: precache + NetworkFirst/SWR + Background Sync         |
-| Command palette (`⌘K`)     | `src/ui/command-palette.ts` + fuzzy match                      |
-| Keyboard-first             | `src/core/keyboard.ts` — `j/k`, `/`, `g+h`, Vim-style nav      |
-| i18n (EN + HE RTL)         | ICU message formatter + Intl formatters                        |
-| Color-blind palettes       | deuteranopia, protanopia, tritanopia, high-contrast            |
-| Cross-tab sync             | BroadcastChannel `src/core/broadcast-channel.ts`               |
+| Feature                    | Implementation                                                              |
+| -------------------------- | --------------------------------------------------------------------------- |
+| 30+ technical indicators   | `src/domain/*` — pure TS, exhaustive tests                                  |
+| 12-method consensus engine | `src/domain/consensus-engine.ts`                                            |
+| Interactive charting       | `lightweight-charts@^5` via `src/cards/lw-chart.ts`                         |
+| Multi-chart layout         | `src/cards/multi-chart-layout.ts` — 2×2 / 1+3 synced crosshair              |
+| Drawing tools              | Trendline + Fibonacci retracement canvas overlay                            |
+| Real-time streaming        | Finnhub WebSocket via `src/core/reconnecting-ws.ts`                         |
+| Screener (preset + custom) | `src/cards/screener-card.ts` + off-thread compute                           |
+| Sector heatmap             | Canvas treemap `src/cards/heatmap-card.ts`                                  |
+| Portfolio + risk metrics   | Sharpe, Sortino, max DD, CAGR, equity curve                                 |
+| Backtest engine            | `src/domain/backtest-engine.ts` + Web Worker + equity curve UI              |
+| Alert state machine        | `src/domain/alert-state-machine.ts` + in-browser notifications              |
+| Offline-first PWA          | Workbox: precache + NetworkFirst/SWR + Background Sync                      |
+| Command palette (`⌘K`)     | `src/ui/command-palette.ts` + fuzzy match                                   |
+| Keyboard-first             | `src/core/keyboard.ts` — `j/k`, `/`, `g+h`, Vim-style nav                   |
+| i18n (EN + HE RTL)         | ICU message formatter + Intl formatters                                     |
+| Color-blind palettes       | deuteranopia, protanopia, tritanopia, high-contrast                         |
+| Cross-tab sync             | BroadcastChannel `src/core/broadcast-channel.ts`                            |
+| Security headers           | Cloudflare Worker middleware `worker/security.ts` — CSP, HSTS, COOP, CORP   |
+| Storage pressure guard     | `src/core/storage-manager.ts` — polls quota, LRU-evicts TieredCache at ≥80% |
+| Indicator docs             | 13 MDX reference pages in `docs/indicators/` — formula + usage              |
+| URL state sharing          | `src/core/share-state.ts` — base64-URL encoded watchlist snapshot           |
 
 ## Directory layout
 
 ```text
-src/
-├── domain/         pure calculators (30+ indicators, consensus, backtest, risk, …)
-├── core/           signals, cache, config, fetch, idb, worker-rpc, telemetry, …
-├── providers/      market-data adapters (Yahoo, Finnhub, CoinGecko, Polygon, chain)
-├── cards/          composable UI cards — 13 route cards, lazy-loaded via registry
-├── ui/             DOM helpers, router, toast, modal, command palette, a11y
-├── types/          shared interfaces + Valibot schemas for all provider boundaries
-├── styles/         design tokens, base, responsive, components, palettes
-└── main.ts         bootstrap: router, signals, keyboard, palette, cards, telemetry
+CrossTide/
+├── src/
+│   ├── domain/         pure calculators (30+ indicators, consensus, backtest, risk, …)
+│   ├── core/           signals, cache, config, fetch, idb, worker-rpc, storage-manager, …
+│   ├── providers/      market-data adapters (Yahoo, Finnhub, CoinGecko, Polygon, chain)
+│   ├── cards/          composable UI cards — 13 route cards, lazy-loaded via registry
+│   ├── ui/             DOM helpers, router, toast, modal, command palette, a11y
+│   ├── types/          shared interfaces + Valibot schemas for all provider boundaries
+│   ├── styles/         design tokens, base, responsive, components, palettes
+│   └── main.ts         bootstrap: router, signals, keyboard, palette, cards, telemetry
+├── worker/             Cloudflare Worker ES module (API proxy + security headers)
+│   ├── index.ts        route dispatch: /api/quote, /api/candles, /api/search, /og-image
+│   └── security.ts     withSecurityHeaders() middleware — CSP, HSTS, COOP, CORP, COEP
+├── docs/               Markdown/MDX reference — 13 indicator pages + user guide + roadmap
+├── tests/unit/         Vitest unit tests (≥2260 tests across ≥242 files)
+└── public/             Static assets, PWA manifest, 404.html
 ```
 
 ## Runtime dependencies
@@ -129,6 +140,11 @@ All other functionality is hand-written TypeScript — no framework runtime.
 
 The repo is fully self-contained: `git clone` → `npm ci` → `npm run ci` works on any machine.
 
+Git hooks are configured via `simple-git-hooks`:
+
+- **pre-commit**: `lint-staged` runs ESLint + Prettier on staged TS/CSS/MD files
+- **commit-msg**: `commitlint` enforces [Conventional Commits](https://www.conventionalcommits.org/)
+
 ## CI / CD
 
 | Workflow         | Trigger   | Purpose                                                     |
@@ -151,17 +167,36 @@ Local and CI both enforce, with **zero waivers**:
 - 0 HTMLHint findings (`npm run lint:html`)
 - 0 markdownlint findings (`npm run lint:md`)
 - Prettier clean (`npm run format:check`)
-- 2100+ unit tests pass (`npm test`), v8 coverage thresholds met
+- 2260+ unit tests pass (`npm test`), v8 coverage thresholds met
 - 15 Playwright E2E flows + axe a11y audit pass
 - Lighthouse CI budgets met
 - Production build under 200 KB gzipped JS (`npm run check:bundle`)
 
 ## Security
 
-- **CSP** enforced via Vite dev headers + `_headers` file (Cloudflare Pages)
+- **CSP + security headers** via Cloudflare Worker middleware (`worker/security.ts`) on all API responses:
+  `Content-Security-Policy`, `Strict-Transport-Security`, `X-Frame-Options: DENY`,
+  `X-Content-Type-Options: nosniff`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`,
+  `Cross-Origin-Resource-Policy`, `Referrer-Policy`
+- **CSP** also enforced via Vite dev headers + `_headers` file (Cloudflare Pages)
 - **SRI** hashes for preloaded scripts (`src/core/sri.ts`)
 - **Valibot** validation at every external data boundary (Yahoo, Finnhub, CoinGecko, Polygon)
 - **Token-bucket** rate limiter prevents API abuse
 - **Circuit-breaker** per provider with automatic failover chain
 - **No `innerHTML`** with user data — all DOM via `textContent` or sanitized templates
 - **Dependabot** + dependency-review-action for supply chain
+
+## Storage
+
+CrossTide uses a three-tier storage model:
+
+| Tier | Store          | TTL              | Notes                             |
+| ---- | -------------- | ---------------- | --------------------------------- |
+| L1   | In-memory Map  | Process          | `TieredCache` L1 layer            |
+| L2   | `localStorage` | Configurable TTL | `TieredCache` L2 layer — ~5 MB    |
+| L3   | IndexedDB      | No expiry        | Quote candles, watchlists, alerts |
+
+`src/core/storage-manager.ts` polls `navigator.storage.estimate()` every 60 s.
+When quota usage reaches **80%** it evicts the 20 oldest L1/L2 cache entries.
+At **95%** it evicts 50 entries and calls `navigator.storage.persist()` to request
+persistent storage from the browser.
