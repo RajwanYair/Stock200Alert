@@ -111,15 +111,15 @@ export function createStooqProvider(baseUrl: string = DEFAULT_BASE_URL): MarketD
   }
 
   /** Stooq does not expose a quote endpoint — not supported. */
-  async function getQuote(_ticker: string): Promise<Quote> {
+  function getQuote(_ticker: string): Promise<Quote> {
     recordError();
-    throw new FetchError("Stooq: getQuote is not supported");
+    return Promise.reject(new FetchError("Stooq: getQuote is not supported"));
   }
 
   /** Stooq does not expose a search endpoint — not supported. */
-  async function search(_query: string): Promise<readonly SearchResult[]> {
+  function search(_query: string): Promise<readonly SearchResult[]> {
     recordError();
-    throw new FetchError("Stooq: search is not supported");
+    return Promise.reject(new FetchError("Stooq: search is not supported"));
   }
 
   function health(): ProviderHealth {

@@ -33,7 +33,7 @@ export async function fetchWithTimeout(
       clearTimeout(timer);
       controller.abort();
     } else {
-      parentListener = () => controller.abort();
+      parentListener = (): void => { controller.abort(); };
       parentSignal.addEventListener("abort", parentListener, { once: true });
     }
   }

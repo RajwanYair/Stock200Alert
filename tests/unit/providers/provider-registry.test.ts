@@ -35,6 +35,22 @@ vi.mock("../../../src/providers/finnhub-provider", () => ({
   })),
 }));
 
+vi.mock("../../../src/providers/stooq-provider", () => ({
+  createStooqProvider: vi.fn(() => ({
+    name: "stooq",
+    getQuote: vi.fn().mockRejectedValue(new Error("not supported")),
+    getHistory: vi.fn().mockResolvedValue([]),
+    search: vi.fn().mockRejectedValue(new Error("not supported")),
+    health: vi.fn(() => ({
+      name: "stooq",
+      available: true,
+      lastSuccessAt: null,
+      lastErrorAt: null,
+      consecutiveErrors: 0,
+    })),
+  })),
+}));
+
 vi.mock("../../../src/providers/provider-chain", () => ({
   createProviderChain: vi.fn((providers) => ({
     name: "chain",

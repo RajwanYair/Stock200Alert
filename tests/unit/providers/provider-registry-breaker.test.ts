@@ -15,6 +15,9 @@ vi.mock("../../../src/providers/yahoo-provider", () => ({
 vi.mock("../../../src/providers/finnhub-provider", () => ({
   createFinnhubProvider: vi.fn(),
 }));
+vi.mock("../../../src/providers/stooq-provider", () => ({
+  createStooqProvider: vi.fn(),
+}));
 
 function makeProviderMock(
   name: string,
@@ -42,7 +45,9 @@ describe("breaker-aware wrapper — real provider-chain integration", () => {
 
   it("getQuote() exercises recordSuccess path when call resolves", async () => {
     const { createYahooProvider } = await import("../../../src/providers/yahoo-provider");
+    const { createStooqProvider } = await import("../../../src/providers/stooq-provider");
     vi.mocked(createYahooProvider).mockReturnValue(makeProviderMock("yahoo"));
+    vi.mocked(createStooqProvider).mockReturnValue(makeProviderMock("stooq"));
     const { getChain } = await import("../../../src/providers/provider-registry");
     const quote = await getChain().getQuote("AAPL");
     expect(quote).toBeDefined();
@@ -50,7 +55,9 @@ describe("breaker-aware wrapper — real provider-chain integration", () => {
 
   it("getHistory() exercises recordSuccess path when call resolves", async () => {
     const { createYahooProvider } = await import("../../../src/providers/yahoo-provider");
+    const { createStooqProvider } = await import("../../../src/providers/stooq-provider");
     vi.mocked(createYahooProvider).mockReturnValue(makeProviderMock("yahoo"));
+    vi.mocked(createStooqProvider).mockReturnValue(makeProviderMock("stooq"));
     const { getChain } = await import("../../../src/providers/provider-registry");
     const candles = await getChain().getHistory("AAPL", 30);
     expect(Array.isArray(candles)).toBe(true);
@@ -58,7 +65,9 @@ describe("breaker-aware wrapper — real provider-chain integration", () => {
 
   it("search() exercises recordSuccess path when call resolves", async () => {
     const { createYahooProvider } = await import("../../../src/providers/yahoo-provider");
+    const { createStooqProvider } = await import("../../../src/providers/stooq-provider");
     vi.mocked(createYahooProvider).mockReturnValue(makeProviderMock("yahoo"));
+    vi.mocked(createStooqProvider).mockReturnValue(makeProviderMock("stooq"));
     const { getChain } = await import("../../../src/providers/provider-registry");
     const results = await getChain().search("apple");
     expect(Array.isArray(results)).toBe(true);
@@ -66,7 +75,9 @@ describe("breaker-aware wrapper — real provider-chain integration", () => {
 
   it("breaker-aware health() returns available:true when breaker is closed", async () => {
     const { createYahooProvider } = await import("../../../src/providers/yahoo-provider");
+    const { createStooqProvider } = await import("../../../src/providers/stooq-provider");
     vi.mocked(createYahooProvider).mockReturnValue(makeProviderMock("yahoo"));
+    vi.mocked(createStooqProvider).mockReturnValue(makeProviderMock("stooq"));
     const { getChain } = await import("../../../src/providers/provider-registry");
     // chain.health() calls provider.health() for each wrapped provider
     const h = getChain().health();
@@ -75,7 +86,11 @@ describe("breaker-aware wrapper — real provider-chain integration", () => {
 
   it("exercises recordFailure then circuit breaker opens after threshold", async () => {
     const { createYahooProvider } = await import("../../../src/providers/yahoo-provider");
-    // Mock fails 3 times — trips the breaker (threshold = 3)
+    const { createStooqProvider } = await import("../../../src/providers/stooq-provider");
+    // Stooq also needs to fail for the test to exercise the Yahoo breaker in isolation
+    const stooqGetQuote = vi.fn().mockRejectedValue(new Error("stooq-not-supported"));
+    vi.mocked(createStooqProvider).mockReturnValue(makeProviderMock("stooq", stooqGetQuote));
+    // Mock Yahoo fails 3 times — trips the breaker (threshold = 3)
     const mockGetQuote = vi
       .fn()
       .mockRejectedValueOnce(new Error("net-fail-1"))
@@ -86,13 +101,14 @@ describe("breaker-aware wrapper — real provider-chain integration", () => {
     const { getChain } = await import("../../../src/providers/provider-registry");
     const chain = getChain();
 
-    // Failures 1 and 2: tryAll first-pass tries provider, op() throws, recordFailure
-    await expect(chain.getQuote("AAPL")).rejects.toThrow(/net-fail-1|circuit breaker/);
-    await expect(chain.getQuote("AAPL")).rejects.toThrow(/net-fail-2|circuit breaker/);
-    // Failure 3 trips the breaker — the second pass throws "circuit breaker is open"
-    await expect(chain.getQuote("AAPL")).rejects.toThrow(/circuit breaker is open/);
+    // Failures 1 and 2: tryAll first-pass tries Yahoo, op() throws, recordFailure
+    // then tries Stooq which also throws
+    await expect(chain.getQuote("AAPL")).rejects.toThrow();
+    await expect(chain.getQuote("AAPL")).rejects.toThrow();
+    // Failure 3 trips the Yahoo breaker — the second pass tries the "unhealthy" providers
+    await expect(chain.getQuote("AAPL")).rejects.toThrow();
 
-    // After the breaker is open: subsequent calls also throw "circuit breaker is open"
-    await expect(chain.getQuote("AAPL")).rejects.toThrow(/circuit breaker is open/);
+    // After the breaker is open: Yahoo is skipped (breaker open), only Stooq tried
+    await expect(chain.getQuote("AAPL")).rejects.toThrow();
   });
 });

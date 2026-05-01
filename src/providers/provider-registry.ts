@@ -11,9 +11,8 @@
  * a key is supplied via `configureFinnhub(apiKey)`. Yahoo Finance is the
  * default primary source via CORS proxy.
  */
-import type { MarketDataProvider, ProviderHealth } from "./types";
+import type { MarketDataProvider, ProviderHealth, Quote, SearchResult } from "./types";
 import type { DailyCandle } from "../types/domain";
-import type { Quote, SearchResult } from "./types";
 import { createCircuitBreaker } from "../core/circuit-breaker";
 import type { CircuitBreaker } from "../core/circuit-breaker";
 import { createYahooProvider } from "./yahoo-provider";

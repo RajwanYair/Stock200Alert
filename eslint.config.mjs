@@ -1,5 +1,6 @@
 import js from "@eslint/js";
 import tseslint from "typescript-eslint";
+import importX from "eslint-plugin-import-x";
 
 const browserGlobals = {
   window: "readonly",
@@ -102,6 +103,9 @@ export default tseslint.config(
   {
     files: ["src/**/*.ts"],
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
+    plugins: {
+      "import-x": importX,
+    },
     languageOptions: {
       globals: browserGlobals,
       parserOptions: {
@@ -111,6 +115,11 @@ export default tseslint.config(
     },
     rules: {
       ...sharedRules,
+      // G6: import-x rules
+      "import-x/no-duplicates": "error",
+      "import-x/no-self-import": "error",
+      "import-x/no-cycle": ["warn", { maxDepth: 5 }],
+      "import-x/no-useless-path-segments": ["error", { noUselessIndex: true }],
       "no-undef": "off",
       "no-unused-vars": "off",
       "@typescript-eslint/no-unused-vars": [
