@@ -218,3 +218,7 @@ export { computeDpo } from "./dpo";
 export { computePpo } from "./ppo";
 export type { PpoPoint } from "./ppo";
 
+
+export { computeAdLine } from "./ad-line";
+export type { AdCandle } from "./ad-line";
+
