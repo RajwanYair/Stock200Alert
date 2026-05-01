@@ -1,0 +1,92 @@
+---
+title: Using the Watchlist
+description: How to add tickers, filter by type, group by sector, and sort your CrossTide watchlist.
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+The **Watchlist** is the heart of CrossTide — a live table of tickers showing consensus
+scores, price, and key indicators at a glance.
+
+## Adding Tickers
+
+<Steps>
+
+1. Click the **＋ Add** button at the top-right of the Watchlist card.
+
+2. Type a ticker symbol (e.g. `AAPL`, `BTC-USD`, `SPY`).
+
+3. Press **Enter** or click **Add**. The ticker is saved to your local `IndexedDB`
+   store and persists across sessions — no account required.
+
+</Steps>
+
+<Aside type="tip">
+  You can paste a comma-separated list (e.g. `AAPL, MSFT, GOOGL`) to add multiple tickers
+  at once.
+</Aside>
+
+## Removing Tickers
+
+Click the **✕** icon that appears on hover next to any row to remove it permanently.
+To undo, re-add the ticker manually.
+
+## Instrument-Type Filter
+
+CrossTide auto-classifies each ticker as **Stock**, **ETF**, or **Crypto** based on the
+provider response. Use the filter chips above the table to show only one type:
+
+| Chip    | Shows                        |
+| ------- | ---------------------------- |
+| All     | Every ticker in your list    |
+| Stocks  | Equities (e.g. AAPL, TSLA)  |
+| ETFs    | Exchange-traded funds (SPY)  |
+| Crypto  | BTC-USD, ETH-USD, etc.       |
+
+The active filter is persisted in `localStorage` so your preference is remembered.
+
+## Sector Grouping
+
+Tickers are automatically grouped under collapsible **sector headers**
+(e.g. Technology, Healthcare, Financials). Click any sector header to collapse or
+expand that group. The collapsed/expanded state is persisted per-sector.
+
+ETFs and Crypto fall into **— ETFs —** and **— Crypto —** groups at the bottom.
+
+## Sorting
+
+Click any column header to sort:
+
+- First click → ascending (▲)
+- Second click → descending (▼)
+- Third click → back to default order
+
+Sort state is persisted per-table in `localStorage`. The following columns are sortable:
+
+| Column      | Sort type |
+| ----------- | --------- |
+| Ticker      | Alphabetical |
+| Price       | Numeric   |
+| Change %    | Numeric   |
+| Consensus   | Score     |
+| Volume      | Numeric   |
+
+## Sharing Your Watchlist
+
+Generate a **read-only share link** via the Share button (🔗) in the Watchlist header.
+The URL encodes your entire watchlist state as a Base64URL query parameter. Recipients
+can open it to see your tickers without signing in or modifying their own list.
+
+<Aside type="note">
+  Share URLs are read-only — the recipient's list is not replaced. They're shown a temporary
+  overlay that merges the shared tickers with their existing list.
+</Aside>
+
+## Keyboard Shortcuts
+
+| Shortcut    | Action                    |
+| ----------- | ------------------------- |
+| `j` / `k`  | Move focus down / up      |
+| `/`         | Focus search / add field  |
+| `Del`       | Remove focused ticker     |
+| `⌘K` / `Ctrl+K` | Open command palette |

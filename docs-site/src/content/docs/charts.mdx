@@ -1,0 +1,90 @@
+---
+title: Charts & Indicators
+description: How to use CrossTide's interactive charts, apply indicators, and draw tools.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Opening a Chart
+
+Click any ticker row in the Watchlist to open its chart in the **Chart Card**. The chart
+displays OHLCV candlestick data powered by [Lightweight Charts](https://tradingview.github.io/lightweight-charts/).
+
+## Time Range & Interval
+
+Use the range selector at the top of the chart:
+
+| Range | Description         |
+| ----- | ------------------- |
+| 1D    | 1 day (intraday)    |
+| 5D    | 5 days              |
+| 1MO   | 1 month             |
+| 3MO   | 3 months            |
+| 6MO   | 6 months            |
+| 1Y    | 1 year (default)    |
+| 2Y    | 2 years             |
+| 5Y    | 5 years             |
+| MAX   | All available data  |
+
+<Aside type="tip">
+  Use **keyboard** to navigate: `←` / `→` to pan, `+` / `-` to zoom. The chart remembers
+  the last selected range per ticker.
+</Aside>
+
+## Sub-Indicators
+
+CrossTide renders **sub-pane indicators** below the main candlestick chart:
+
+| Indicator | Default period | Notes                           |
+| --------- | -------------- | ------------------------------- |
+| RSI       | 14             | Overbought > 70, oversold < 30  |
+| MACD      | 12/26/9        | Histogram + signal line         |
+| Stochastic| 14/3           | %K and %D lines                 |
+| Volume    | —              | Bar chart with MA overlay       |
+
+Toggle any sub-pane by clicking its label in the legend above the chart.
+
+## Overlays
+
+Overlay indicators are drawn **on top of the price candles**:
+
+| Overlay       | Default | Notes                          |
+| ------------- | ------- | ------------------------------ |
+| SMA 20        | On      | Simple moving average          |
+| EMA 50        | Off     | Exponential moving average     |
+| Bollinger Bands | Off   | 20-period, 2σ bands            |
+| VWAP          | On      | Reset at session open          |
+
+## Multi-Chart Layout
+
+Switch to **2×2** or **1+3** layout using the grid icon in the card header to compare
+up to 4 tickers simultaneously. The crosshair is **synced** across all panes — hovering
+in one chart shows the corresponding timestamp in all others.
+
+## Drawing Tools
+
+Select a drawing tool from the toolbar on the left edge of the chart:
+
+| Tool            | Shortcut | Description                         |
+| --------------- | -------- | ----------------------------------- |
+| Trendline       | `T`      | Click two points to draw a line     |
+| Fibonacci       | `F`      | Drag to set 0% and 100% levels      |
+| Channel         | `C`      | Two parallel trendlines             |
+| Erase           | `E`      | Click a drawing to remove it        |
+
+Drawings are persisted per-ticker in `IndexedDB` and survive page refresh.
+
+<Aside type="note">
+  Drawing tools are not available in multi-chart view. Switch back to single-chart mode to draw.
+</Aside>
+
+## Consensus Overlay
+
+The **Consensus Badge** in the top-right of the chart shows the aggregate score from all
+12 trading methods. The score updates automatically when:
+
+- New candle data is fetched
+- You change the time range
+- A live WebSocket tick arrives (if enabled)
+
+Scores are colour-coded: **green** = BUY, **red** = SELL, **amber** = HOLD/NEUTRAL.

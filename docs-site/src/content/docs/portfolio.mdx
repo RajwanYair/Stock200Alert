@@ -1,0 +1,93 @@
+---
+title: Portfolio Tracker
+description: Track your positions, cost basis, P&L, and sector exposure in the CrossTide portfolio view.
+---
+
+import { Aside, Steps } from "@astrojs/starlight/components";
+
+## Overview
+
+The **Portfolio Card** lets you track open positions entirely in the browser — no brokerage
+connection is required. All data is stored locally in `IndexedDB` and never leaves your device.
+
+<Aside type="note">
+  CrossTide is a **read-only analysis tool**. It does not execute trades or connect to
+  brokerage APIs. Position data you enter is used solely for performance tracking.
+</Aside>
+
+## Adding a Position
+
+<Steps>
+
+1. Open the **Portfolio** card (click the briefcase icon in the sidebar).
+
+2. Click **＋ New Position**.
+
+3. Fill in the fields:
+   - **Ticker** — e.g. `AAPL`
+   - **Shares** — quantity (supports fractional shares)
+   - **Cost Basis / Share** — your average purchase price
+   - **Date Opened** — optional, used for holding-period calculation
+
+4. Click **Save**. The position appears immediately with live P&L from the last price feed.
+
+</Steps>
+
+## Viewing P&L
+
+Each position row shows:
+
+| Column        | Description                                      |
+| ------------- | ------------------------------------------------ |
+| Ticker        | Symbol + company name                            |
+| Shares        | Units held                                       |
+| Avg Cost      | Your entered cost basis per share                |
+| Last Price    | Most recently fetched price                      |
+| Market Value  | Shares × Last Price                              |
+| Gain / Loss   | Market Value − (Shares × Avg Cost)               |
+| Gain %        | Percentage return on cost basis                  |
+| Consensus     | CrossTide signal for this ticker                 |
+
+The **Portfolio Total** row at the bottom shows aggregate market value and overall P&L.
+
+## Sector Exposure
+
+The **Sector Breakdown** chart (right panel) shows your portfolio's weighting by
+GICS sector as a donut chart:
+
+- Hover a segment to see the sector name and percentage weighting
+- Sectors are pulled from the provider's metadata — manually entered tickers may show
+  "Unknown" until a metadata fetch completes
+
+<Aside type="tip">
+  Use the sector breakdown to spot **concentration risk** — if Technology exceeds 40% of
+  your portfolio, consider whether you're overexposed to a single sector's movements.
+</Aside>
+
+## Editing & Closing Positions
+
+- **Edit**: Click the pencil icon on any row to update shares or cost basis.
+- **Close**: Click the ✕ icon then confirm. Closed positions move to the **History** tab
+  with realized P&L recorded.
+- **Bulk delete**: Select multiple rows with checkboxes, then click **Delete Selected**.
+
+## Import / Export
+
+Use the **Import** button to load positions from a CSV file with columns:
+`ticker, shares, cost_basis, date_opened`
+
+Use the **Export** button to download your current portfolio as CSV for backup or
+import into spreadsheets.
+
+<Aside type="caution">
+  Importing a CSV **merges** positions — duplicate tickers accumulate shares. Use
+  "Clear All" first if you want to replace your portfolio entirely.
+</Aside>
+
+## Keyboard Shortcuts
+
+| Shortcut         | Action                     |
+| ---------------- | -------------------------- |
+| `n`              | New position form          |
+| `⌘K` / `Ctrl+K` | Command palette            |
+| `?`              | Show all shortcuts         |
