@@ -33,7 +33,25 @@
     "ci": "npm run typecheck && npm run lint:all && npm run test:coverage && npm run build && npm run check:bundle",
     "clean": "node scripts/clean.mjs",
     "changeset": "changeset",
-    "version": "changeset version"
+    "version": "changeset version",
+    "prepare": "simple-git-hooks"
+  },
+  "simple-git-hooks": {
+    "commit-msg": "npx commitlint --edit $1",
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{ts,mjs}": [
+      "eslint --max-warnings 0 --fix",
+      "prettier --write"
+    ],
+    "*.{css}": [
+      "stylelint --max-warnings 0 --fix",
+      "prettier --write"
+    ],
+    "*.{md,json,html}": [
+      "prettier --write"
+    ]
   },
   "engines": {
     "node": ">=20.19.0"
@@ -50,8 +68,10 @@
     "eslint": "^10.2.1",
     "happy-dom": "^20.9.0",
     "htmlhint": "^1.9.2",
+    "lint-staged": "^16.4.0",
     "markdownlint-cli2": "^0.22.0",
     "prettier": "^3.8.3",
+    "simple-git-hooks": "^2.13.1",
     "stylelint": "^17.7.0",
     "stylelint-config-standard": "^40.0.0",
     "typescript": "^5.9.0",
