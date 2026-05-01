@@ -81,3 +81,7 @@ export type { Ticker, ISODate, Price, Percent } from "./branded";
 export { rebaseToHundred, compareToBenchmark, beta } from "./benchmark";
 export type { SeriesPoint, RelativePoint } from "./benchmark";
 
+
+export { cagr, calmarRatio } from "./risk-ratios";
+export type { RatioOptions } from "./risk-ratios";
+
