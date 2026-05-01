@@ -88,7 +88,14 @@ const sharedRules = {
 
 export default tseslint.config(
   {
-    ignores: ["node_modules/**", "dist/**", "coverage/**", "build/**"],
+    ignores: [
+      "node_modules/**",
+      "dist/**",
+      "coverage/**",
+      "build/**",
+      "vite.config.ts",
+      "vitest.config.ts",
+    ],
   },
   {
     files: ["src/**/*.ts"],

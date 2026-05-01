@@ -214,11 +214,12 @@ function main(): void {
     if (errors.length > 0 && errors.length < tickers.length) {
       updateStatus(`Updated (${errors.length} failed)`);
     } else if (errors.length === tickers.length) {
-      updateStatus("All fetches failed — check network/proxy");
+      updateStatus("All fetches failed — check network");
       showToast({
-        message: "Could not fetch data. Check browser console for CORS/proxy errors.",
+        message:
+          "Could not fetch market data. If you are behind a corporate firewall, ensure your browser proxy is configured (the app fetches Yahoo Finance directly from the browser). Check the browser console (F12) for details.",
         type: "error",
-        durationMs: 8000,
+        durationMs: 12000,
       });
     } else {
       updateStatus(`Updated ${new Date().toLocaleTimeString()}`);
@@ -231,7 +232,7 @@ function main(): void {
   }
 
   // Initialize UI
-  initLocale();           // D7: apply persisted locale & <html dir>
+  initLocale(); // D7: apply persisted locale & <html dir>
   initTheme(config.theme);
   loadPersistedPalette(); // C2: restore color-blind palette from localStorage
   initRouter();

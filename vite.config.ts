@@ -63,10 +63,10 @@ export default defineConfig({
     },
     headers: {
       // Mirrors public/_headers — source of truth: src/core/csp-builder.ts
-      // In dev all Yahoo requests go through the Vite proxy (/api/yahoo → same-origin)
-      // so query1.finance.yahoo.com does NOT need to be in connect-src here.
+      // In dev the browser fetches Yahoo Finance directly (browser proxy handles corporate
+      // firewalls), so query1.finance.yahoo.com must be in connect-src.
       "Content-Security-Policy":
-        "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://finnhub.io https://www.alphavantage.co https://api.coingecko.com wss://ws.finnhub.io; worker-src 'self' blob:; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+        "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://query1.finance.yahoo.com https://finnhub.io https://www.alphavantage.co https://api.coingecko.com wss://ws.finnhub.io; worker-src 'self' blob:; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
       "Referrer-Policy": "strict-origin-when-cross-origin",

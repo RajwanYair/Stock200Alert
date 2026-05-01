@@ -12,22 +12,19 @@ import { safeParse, YahooChartSchema } from "../types/valibot-schemas";
 /**
  * Base URL for Yahoo Finance requests.
  *
- * • Dev / preview  (/api/yahoo/*):  Vite dev-server proxies to query1.finance.yahoo.com
- *   entirely server-side (Node.js), so the browser never makes a cross-origin request.
- *   This also honours HTTPS_PROXY / HTTP_PROXY env vars on the dev machine (corporate
- *   firewalls).
+ * Yahoo Finance v8 chart API returns "Access-Control-Allow-Origin: *" so the
+ * browser can call it directly in all environments (dev, preview, production).
+ * The browser routes the request through whatever proxy the user has configured,
+ * which is exactly what we want on corporate networks.
  *
- * • Production (GitHub Pages / any static CDN):  Yahoo Finance v8 chart API responds
- *   with "Access-Control-Allow-Origin: *" so the browser can call it directly.  No
- *   third-party CORS proxy required.
+ * Note: we no longer use the Vite dev-server proxy (/api/yahoo/*) because that
+ * path runs inside Node.js, which does NOT automatically use the browser's proxy
+ * settings.  On corporate networks with a firewall, Node.js requests are blocked
+ * while browser requests succeed via the system / browser proxy.
  */
 const YAHOO_DIRECT = "https://query1.finance.yahoo.com";
 
-// import.meta.env.DEV is true only during `vite dev`/`vite preview`; it is
-// replaced by the literal `false` in production builds by Vite.
-const USE_DEV_PROXY: boolean = (import.meta.env.DEV as boolean | undefined) === true;
-
-const YAHOO_BASE: string = USE_DEV_PROXY ? "/api/yahoo" : YAHOO_DIRECT;
+const YAHOO_BASE: string = YAHOO_DIRECT;
 
 /**
  * Optional CORS-proxy prefix (deprecated — left for compatibility).
