@@ -107,3 +107,7 @@ export type { RelativeTimeOptions } from "./relative-time";
 export { buildLinePath, buildAreaPath, buildSmoothLinePath } from "./svg-path";
 export type { Point as SvgPoint, SvgPathOptions } from "./svg-path";
 
+
+export { createLinearScale, niceTicks } from "./scale-linear";
+export type { LinearScale, LinearScaleOptions } from "./scale-linear";
+
