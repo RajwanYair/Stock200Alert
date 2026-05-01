@@ -196,3 +196,6 @@ export { chunk, window as windowSlide, zip } from "./chunk-array";
 
 export { pick, omit, pickBy } from "./pick-omit";
 
+
+export { djb2, djb2Hex, fnv1a32 } from "./hash-djb2";
+
