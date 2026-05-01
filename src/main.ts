@@ -29,6 +29,7 @@ import { bindSortableTable } from "./ui/sortable";
 import { loadPersistedPalette, applyPalette, VALID_PALETTES, type ExtendedPaletteName } from "./ui/palette-switcher";
 import { exportFullDataJson, exportFullDataCsv } from "./core/data-export";
 import { downloadFile } from "./core/export-import";
+import { createPwaInstallManager } from "./ui/pwa-install";
 
 const cardHandles = new Map<RouteName, CardHandle>();
 const cardContainers: Partial<Record<RouteName, string>> = {
@@ -694,6 +695,31 @@ function main(): void {
   });
   pressureMonitor.start();
   void appCache; // retain reference
+
+  // ── C8: PWA install prompt ─────────────────────────────────────────────────
+  const pwaInstall = createPwaInstallManager();
+  const pwaGroup = document.getElementById("pwa-install-group");
+  function showPwaInstallGroup(): void {
+    if (pwaGroup) pwaGroup.style.display = "";
+  }
+  function hidePwaInstallGroup(): void {
+    if (pwaGroup) pwaGroup.style.display = "none";
+  }
+  pwaInstall.onReady(showPwaInstallGroup);
+  pwaInstall.onInstalled(() => {
+    hidePwaInstallGroup();
+    showToast({ message: "CrossTide installed as an app!", type: "success" });
+  });
+  document.getElementById("btn-install-pwa")?.addEventListener("click", () => {
+    void pwaInstall.prompt().then((outcome) => {
+      if (outcome === "accepted") hidePwaInstallGroup();
+    });
+  });
+  document.getElementById("btn-dismiss-pwa")?.addEventListener("click", () => {
+    pwaInstall.dismiss();
+    hidePwaInstallGroup();
+  });
+  void pwaInstall; // retain reference
 
   // Request persistent storage on first ticker add (A21)
   function maybeRequestPersist(): void {
