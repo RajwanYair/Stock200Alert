@@ -79,4 +79,65 @@ describe("portfolio card", () => {
       expect(container.innerHTML).not.toContain("<script>");
     });
   });
+
+  describe("dividend projection", () => {
+    it("projectedAnnualIncome is 0 when no dividendYield on any holding", () => {
+      const s = computePortfolioSummary(HOLDINGS);
+      expect(s.projectedAnnualIncome).toBe(0);
+      expect(s.averageDividendYield).toBe(0);
+    });
+
+    it("computes projected income for a single holding with yield", () => {
+      const h: Holding = { ticker: "JNJ", shares: 100, avgCost: 150, currentPrice: 160, dividendYield: 0.025 };
+      const s = computePortfolioSummary([h]);
+      // income = 100 * 160 * 0.025 = 400
+      expect(s.projectedAnnualIncome).toBeCloseTo(400, 5);
+      expect(s.averageDividendYield).toBeCloseTo(0.025, 5);
+    });
+
+    it("sums income across multiple holdings with different yields", () => {
+      const holdings: Holding[] = [
+        { ticker: "JNJ", shares: 100, avgCost: 150, currentPrice: 160, dividendYield: 0.025 },
+        { ticker: "AAPL", shares: 50, avgCost: 170, currentPrice: 180, dividendYield: 0.006 },
+      ];
+      const s = computePortfolioSummary(holdings);
+      const expectedIncome = 100 * 160 * 0.025 + 50 * 180 * 0.006; // 400 + 54 = 454
+      expect(s.projectedAnnualIncome).toBeCloseTo(expectedIncome, 5);
+    });
+
+    it("averageDividendYield is income / totalValue", () => {
+      const holdings: Holding[] = [
+        { ticker: "T", shares: 200, avgCost: 20, currentPrice: 22, dividendYield: 0.06 },
+      ];
+      const s = computePortfolioSummary(holdings);
+      expect(s.averageDividendYield).toBeCloseTo(0.06, 5);
+    });
+
+    it("renderPortfolio shows projected income row when yield is present", () => {
+      const holdings: Holding[] = [
+        { ticker: "JNJ", shares: 100, avgCost: 150, currentPrice: 160, dividendYield: 0.025 },
+      ];
+      renderPortfolio(container, holdings);
+      expect(container.textContent).toContain("Proj. Annual Income");
+      expect(container.textContent).toContain("400.00/yr");
+    });
+
+    it("renderPortfolio hides projected income row when no dividends", () => {
+      renderPortfolio(container, HOLDINGS);
+      expect(container.textContent).not.toContain("Proj. Annual Income");
+    });
+
+    it("renderPortfolio shows dividends column for dividend-paying holdings", () => {
+      const holdings: Holding[] = [
+        { ticker: "JNJ", shares: 100, avgCost: 150, currentPrice: 160, dividendYield: 0.025 },
+      ];
+      renderPortfolio(container, holdings);
+      expect(container.textContent).toContain("/yr");
+    });
+
+    it("renderPortfolio shows em-dash for holdings with no yield", () => {
+      renderPortfolio(container, HOLDINGS);
+      expect(container.textContent).toContain("—");
+    });
+  });
 });

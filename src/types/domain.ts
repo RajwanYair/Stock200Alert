@@ -94,4 +94,6 @@ export interface Holding {
   readonly shares: number;
   readonly avgCost: number;
   readonly currentPrice: number;
+  /** Annual dividend yield as a decimal (e.g. 0.035 = 3.5%). Optional. */
+  readonly dividendYield?: number;
 }
