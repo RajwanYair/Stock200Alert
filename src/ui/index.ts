@@ -53,3 +53,14 @@ export type {
   ContainerQueryHandle,
   ContainerQueryOptions,
 } from "./container-query";
+export {
+  SHORTCUTS,
+  shortcutsByCategory,
+  findShortcut,
+  formatKeys,
+  searchShortcuts,
+} from "./shortcuts-catalog";
+export type {
+  KeyboardShortcut,
+  ShortcutCategory,
+} from "./shortcuts-catalog";
