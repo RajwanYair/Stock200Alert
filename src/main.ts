@@ -66,6 +66,7 @@ const cardContainers: Partial<Record<RouteName, string>> = {
   "consensus-timeline": "consensus-timeline-container",
   "signal-dsl": "signal-dsl-container",
   "multi-chart": "multi-chart-container",
+  "correlation": "correlation-container",
 };
 
 async function activateCard(

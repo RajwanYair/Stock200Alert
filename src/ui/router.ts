@@ -31,7 +31,8 @@ export type RouteName =
   | "backtest"
   | "consensus-timeline"
   | "signal-dsl"
-  | "multi-chart";
+  | "multi-chart"
+  | "correlation";
 
 export interface RouteInfo {
   readonly name: RouteName;
@@ -56,6 +57,7 @@ const VALID_ROUTES = new Set<RouteName>([
   "consensus-timeline",
   "signal-dsl",
   "multi-chart",
+  "correlation",
 ]);
 
 interface RoutePattern {

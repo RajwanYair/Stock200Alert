@@ -899,6 +899,77 @@
     margin-right: var(--sp-xs);
   }
 
+  /* ── G22: Correlation Matrix ─────────────────────────────────────────── */
+  .corr-controls {
+    display: flex;
+    gap: var(--sp-md);
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-md);
+  }
+
+  .corr-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--sp-xs);
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .corr-scroll {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .corr-table {
+    border-collapse: collapse;
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+  }
+
+  .corr-cell {
+    padding: 4px 6px;
+    text-align: center;
+    border: 1px solid var(--border);
+    min-width: 52px;
+    cursor: default;
+  }
+
+  .corr-label {
+    background: var(--bg-card) !important;
+    font-weight: 600;
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+  }
+
+  .corr-diagonal {
+    opacity: 0.5;
+  }
+
+  .corr-warn {
+    outline: 2px solid var(--danger);
+    outline-offset: -2px;
+    font-weight: 700;
+  }
+
+  .corr-warnings {
+    background: color-mix(in srgb, var(--danger) 10%, var(--bg-card));
+    border: 1px solid var(--danger);
+    border-radius: var(--radius-sm);
+    padding: var(--sp-sm) var(--sp-md);
+    margin-bottom: var(--sp-md);
+    font-size: var(--font-size-sm);
+  }
+
+  .corr-warnings ul {
+    margin: var(--sp-xs) 0 0 var(--sp-md);
+    padding: 0;
+  }
+
+  .corr-error {
+    color: var(--danger);
+  }
+
   .sector-count {
     margin-right: var(--sp-sm);
     color: var(--text-muted);

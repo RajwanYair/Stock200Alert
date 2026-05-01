@@ -120,6 +120,12 @@ const REGISTRY: readonly CardEntry[] = [
     viewId: "view-multi-chart",
     load: () => import("./multi-chart-layout").then((m) => m.default),
   },
+  {
+    route: "correlation",
+    title: "Correlation",
+    viewId: "view-correlation",
+    load: () => import("./correlation-matrix-card").then((m) => m.default),
+  },
 ];
 
 const cache = new Map<RouteName, Promise<CardModule>>();
