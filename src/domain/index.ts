@@ -190,3 +190,6 @@ export { computeHullMA } from "./hull-ma";
 
 export { percentile, percentRank, rollingPercentRank } from "./percentile-rank";
 
+
+export { computeCmo } from "./chande-momentum-oscillator";
+
