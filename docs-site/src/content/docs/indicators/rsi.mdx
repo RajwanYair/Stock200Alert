@@ -1,0 +1,66 @@
+---
+title: RSI — Relative Strength Index
+description: RSI measures momentum by comparing recent gains to recent losses on a 0–100 scale.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+RS = \frac{\text{Average Gain (n periods)}}{\text{Average Loss (n periods)}}
+$$
+
+$$
+RSI = 100 - \frac{100}{1 + RS}
+$$
+
+## Parameters
+
+| Parameter | Default | Range | Notes |
+|---|---|---|---|
+| `period` | 14 | 2–200 | Wilder's original: 14 days |
+
+## Interpretation
+
+| RSI Value | Signal |
+|---|---|
+| > 70 | Overbought — potential sell / reversal |
+| 30–70 | Neutral |
+| < 30 | Oversold — potential buy / reversal |
+
+<Aside type="tip">
+  CrossTide's RSI method (one of 12 consensus inputs) triggers **BUY** when RSI
+  crosses above 30 from below and **SELL** when it crosses below 70 from above —
+  it looks for *exits* from extreme zones, not the zones themselves.
+</Aside>
+
+## Usage
+
+```ts
+import { computeRsi } from "../../src/domain/rsi-calculator";
+import type { DailyCandle } from "../../src/types/domain";
+
+const candles: DailyCandle[] = [ /* OHLCV data */ ];
+const values = computeRsi(candles, { period: 14 });
+// values: number[] aligned to candles (NaN for first period-1 items)
+
+const latest = values.at(-1) ?? NaN;
+console.log(`RSI(14): ${latest.toFixed(2)}`);
+```
+
+## Test Vectors
+
+| Input (14 closes) | Expected RSI |
+|---|---|
+| 14 × 100 (flat) | 100\* |
+| Alternating +1/-1 | ≈ 50 |
+| 14 × rising +1 | 100 |
+| 14 × falling -1 | 0 |
+
+\* Wilder smoothing: division by zero guard returns 100.
+
+## References
+
+- Wilder, J. W. (1978). *New Concepts in Technical Trading Systems.*
+- [RSI on Investopedia](https://www.investopedia.com/terms/r/rsi.asp)

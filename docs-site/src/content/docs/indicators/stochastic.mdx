@@ -1,0 +1,73 @@
+---
+title: Stochastic Oscillator
+description: The Stochastic Oscillator compares a closing price to its price range over a look-back period.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\%K = 100 \cdot \frac{\text{Close} - \text{Lowest Low}_n}{\text{Highest High}_n - \text{Lowest Low}_n}
+$$
+
+$$
+\%D = \text{SMA}_m(\%K)
+$$
+
+## Parameters
+
+| Parameter | Default | Notes |
+|---|---|---|
+| `kPeriod` | 14 | %K look-back window |
+| `dPeriod` | 3 | %D smoothing period |
+| `smooth` | 3 | Slowing period (Fast=1, Slow=3) |
+
+## Interpretation
+
+| %K Value | Signal |
+|---|---|
+| > 80 | Overbought zone |
+| < 20 | Oversold zone |
+| %K crosses above %D in oversold | **BUY** signal |
+| %K crosses below %D in overbought | **SELL** signal |
+
+<Aside type="tip">
+  CrossTide uses the **Slow Stochastic** (smooth=3) for its consensus method.
+  Signal fires only when both %K and %D are in the extreme zone at the time
+  of the crossover, reducing false signals.
+</Aside>
+
+## Usage
+
+```ts
+import { computeStochastic } from "../../src/domain/stochastic-calculator";
+import type { DailyCandle } from "../../src/types/domain";
+
+const candles: DailyCandle[] = [ /* OHLCV data */ ];
+const result = computeStochastic(candles, {
+  kPeriod: 14,
+  dPeriod: 3,
+  smooth: 3,
+});
+
+console.log("%K:", result.k.at(-1));
+console.log("%D:", result.d.at(-1));
+```
+
+## Test Vectors
+
+For a flat-close series (all closes equal to mid-range):
+
+- `%K` ≈ 50 for all bars
+- `%D` ≈ 50 after `dPeriod` bars
+
+For a monotonically rising series:
+
+- `%K` = 100
+- `%D` = 100 after `dPeriod` bars
+
+## References
+
+- Lane, G. C. (1984). Lane's Stochastics. *Technical Analysis of Stocks and Commodities.*
+- [Stochastic Oscillator on Investopedia](https://www.investopedia.com/terms/s/stochasticoscillator.asp)

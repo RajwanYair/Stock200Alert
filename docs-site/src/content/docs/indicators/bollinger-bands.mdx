@@ -1,0 +1,66 @@
+---
+title: Bollinger Bands
+description: Bollinger Bands use a moving average and standard deviation to define dynamic price envelopes.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Middle Band} = \text{SMA}_n(\text{close})
+$$
+
+$$
+\text{Upper Band} = \text{SMA}_n + k \cdot \sigma_n
+$$
+
+$$
+\text{Lower Band} = \text{SMA}_n - k \cdot \sigma_n
+$$
+
+Where $\sigma_n$ is the rolling standard deviation of closes over $n$ periods.
+
+## Parameters
+
+| Parameter | Default | Notes |
+|---|---|---|
+| `period` | 20 | SMA + σ window |
+| `stdDev` | 2 | Band width multiplier ($k$) |
+
+## Interpretation
+
+| Condition | Signal |
+|---|---|
+| Close touches / breaks Upper Band | Overbought; potential reversal |
+| Close touches / breaks Lower Band | Oversold; potential reversal |
+| Band squeeze (narrow width) | Low volatility; breakout approaching |
+| Band expansion | Volatility surge; trend confirmation |
+| **%B > 1** | Price above upper band |
+| **%B < 0** | Price below lower band |
+
+<Aside type="caution">
+  Bollinger Bands are not a standalone system — combine with RSI or volume
+  confirmation for higher-quality signals. CrossTide uses a **lower-band bounce
+  + RSI < 40** composite for its Bollinger method signal.
+</Aside>
+
+## Usage
+
+```ts
+import { computeBollingerBands } from "../../src/domain/bollinger-bands";
+import type { DailyCandle } from "../../src/types/domain";
+
+const candles: DailyCandle[] = [ /* OHLCV data */ ];
+const bands = computeBollingerBands(candles, { period: 20, stdDev: 2 });
+
+const { upper, middle, lower } = bands;
+const latestClose = candles.at(-1)!.close;
+const percentB = (latestClose - lower.at(-1)!) / (upper.at(-1)! - lower.at(-1)!);
+console.log(`%B: ${(percentB * 100).toFixed(1)}%`);
+```
+
+## References
+
+- Bollinger, J. (2001). *Bollinger on Bollinger Bands.* McGraw-Hill.
+- [Bollinger Bands on Investopedia](https://www.investopedia.com/terms/b/bollingerbands.asp)

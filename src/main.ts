@@ -548,7 +548,7 @@ function main(): void {
       label: "Copy share link for current view",
       hint: "Shift+S",
       section: "Actions",
-      run: () => {
+      run: (): void => {
         const shareUrl = buildShareUrl(window.location.pathname, { card: currentRoute });
         const fullUrl = window.location.origin + shareUrl;
         void navigator.clipboard
@@ -565,7 +565,7 @@ function main(): void {
       id: "check-storage",
       label: "Check storage usage",
       section: "Actions",
-      run: () => {
+      run: (): void => {
         void pressureMonitor.check().then((e) => {
           if (!e) {
             showToast({ message: "Storage estimate unavailable in this browser.", type: "info" });
@@ -585,7 +585,7 @@ function main(): void {
       id: "clear-cache",
       label: "Clear app cache",
       section: "Actions",
-      run: () => {
+      run: (): void => {
         appCache.clear();
         localStorage.removeItem("crosstide-cache");
         showToast({ message: "App cache cleared.", type: "info" });
@@ -595,7 +595,7 @@ function main(): void {
       id: "toggle-sector-grouping",
       label: "Toggle sector grouping in watchlist",
       section: "Actions",
-      run: () => {
+      run: (): void => {
         const next = !isSectorGroupingEnabled();
         setSectorGrouping(next);
         const filteredConfig = {

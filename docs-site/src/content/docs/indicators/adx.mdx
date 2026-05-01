@@ -1,0 +1,72 @@
+---
+title: ADX — Average Directional Index
+description: ADX quantifies trend strength (0–100) regardless of direction using +DI and -DI.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
++DM = \text{today's High} - \text{yesterday's High} \quad (\text{if} > 0 \text{ and } > |-DM|)
+$$
+
+$$
+-DM = \text{yesterday's Low} - \text{today's Low} \quad (\text{if} > 0 \text{ and } > |+DM|)
+$$
+
+$$
+TR = \max(\text{High}-\text{Low},\ |\text{High}-\text{PrevClose}|,\ |\text{Low}-\text{PrevClose}|)
+$$
+
+$$
++DI_n = 100 \cdot \frac{\text{Smooth}_{n}(+DM)}{\text{Smooth}_{n}(TR)}, \quad
+-DI_n = 100 \cdot \frac{\text{Smooth}_{n}(-DM)}{\text{Smooth}_{n}(TR)}
+$$
+
+$$
+DX = 100 \cdot \frac{|{+DI} - {-DI}|}{+DI + {-DI}}, \quad
+ADX_n = \text{Smooth}_{n}(DX)
+$$
+
+Smoothing uses Wilder's EMA: $\text{Smooth}(x) = \text{prev} - \frac{\text{prev}}{n} + x$.
+
+## Parameters
+
+| Parameter | Default | Notes |
+|---|---|---|
+| `period` | 14 | Smoothing window |
+
+## Interpretation
+
+| ADX Value | Trend Strength |
+|---|---|
+| < 20 | Weak / absent trend |
+| 20–25 | Developing trend |
+| 25–50 | Strong trend |
+| > 50 | Very strong trend |
+
+<Aside type="tip">
+  ADX tells you **how strong** a trend is — not its direction. Use +DI vs -DI
+  to determine direction. CrossTide fires **BUY** when ADX > 25 and +DI crosses
+  above -DI, **SELL** when ADX > 25 and -DI crosses above +DI.
+</Aside>
+
+## Usage
+
+```ts
+import { computeAdx } from "../../src/domain/adx-calculator";
+import type { DailyCandle } from "../../src/types/domain";
+
+const candles: DailyCandle[] = [ /* OHLCV data */ ];
+const result = computeAdx(candles, { period: 14 });
+
+console.log("ADX:", result.adx.at(-1));
+console.log("+DI:", result.plusDI.at(-1));
+console.log("-DI:", result.minusDI.at(-1));
+```
+
+## References
+
+- Wilder, J. W. (1978). *New Concepts in Technical Trading Systems.*
+- [ADX on Investopedia](https://www.investopedia.com/terms/a/adx.asp)
