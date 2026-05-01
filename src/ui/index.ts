@@ -72,3 +72,10 @@ export {
   prefersMoreContrast,
 } from "./contrast";
 export type { RGB, WcagLevel, WcagSize } from "./contrast";
+export {
+  classifyFreshness,
+  ageBetween,
+  formatAge,
+  freshnessLabel,
+} from "./freshness";
+export type { FreshnessBucket, FreshnessConfig } from "./freshness";
