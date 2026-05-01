@@ -6,6 +6,34 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [6.1.0-rc.3] - 2026
+
+### Added — Phase A indicators, portfolio analytics, formatters (Sprints 41–50)
+
+- **Heikin-Ashi** (`domain/heikin-ashi`) — smoothed candle transform.
+- **Donchian channels** (`domain/donchian`) — N-bar high/low channel.
+- **Keltner channels** (`domain/keltner`) — EMA midline ± multiplier × ATR.
+- **Ichimoku Kinko Hyo** (`domain/ichimoku`) — Tenkan/Kijun/Senkou A/B/Chikou
+  with displacement.
+- **Pivot points** (`domain/pivots`) — classic, Fibonacci, Camarilla,
+  Woodie variants.
+- **ZigZag** (`domain/zigzag`) — pivot detector with configurable
+  reversal threshold.
+- **Candle resampler** (`domain/resample`) — bucket OHLCV to coarser
+  timeframes (m1/m5/h1/d1/w1).
+- **Equity curve** (`domain/equity-curve`) — build curve and stats from
+  closed trades (PnL / win rate / profit factor / avg win/loss).
+- **Portfolio analytics** (`domain/portfolio-analytics`) — sector
+  allocation, position weights, top-N concentration.
+- **Number formatters** (`ui/number-format`) — locale-aware price,
+  compact (K/M/B), percent, signed change.
+
+### Tests
+
+- 1204 tests across 135 files (+84 new in this RC).
+
+---
+
 ## [6.1.0-rc.2] - 2025
 
 ### Added — Phase A streaming, DSL, and risk metrics (Sprints 31–40)
