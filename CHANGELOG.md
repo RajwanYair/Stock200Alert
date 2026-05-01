@@ -6,6 +6,39 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [6.1.0-rc.8] - 2026
+
+### Added — Sprints 91–100 (more indicators + core/UI utilities)
+
+- **Know Sure Thing** (`domain/kst`) — Pring's smoothed weighted ROC
+  composite with configurable signal SMA.
+- **Detrended Price Oscillator** (`domain/dpo`) — trend-removed price
+  oscillator using a displaced SMA.
+- **Percentage Price Oscillator** (`domain/ppo`) — MACD expressed as a
+  percentage of the slow EMA, with signal and histogram.
+- **Accumulation/Distribution Line** (`domain/ad-line`) — Chaikin's
+  cumulative money-flow line driven by close location within the bar.
+- **Force Index** (`domain/force-index`) — Elder's price-change × volume
+  with optional EMA smoothing.
+- **Binary search helpers** (`core/binary-search`) — `lowerBound`,
+  `upperBound`, `binarySearch` with optional comparator.
+- **once / memoize** (`core/once-memoize`) — single-shot guard plus
+  cache-by-key function memoization with `clear()` / `delete()`.
+- **safe-json** (`core/safe-json`) — non-throwing `safeParse` returning
+  a Result, and `safeStringify` that handles cycles, BigInt, functions
+  and undefined.
+- **text-truncate** (`ui/text-truncate`) — grapheme-aware
+  `truncateEnd` and `truncateMiddle` with custom ellipsis.
+- **focus-trap helpers** (`ui/focus-trap`) — DOM-free focusable-element
+  discovery and ring navigation (`getFocusableElements`,
+  `nextFocusable`).
+
+### Tests
+
+- 1573 unit tests (was 1504).
+
+---
+
 ## [6.1.0-rc.7] - 2026
 
 ### Added — Sprints 81–90 (more indicators + core/UI utilities)

@@ -122,3 +122,7 @@ export type { KeymapOptions } from "./keymap-formatter";
 
 export { truncateEnd, truncateMiddle, graphemeLength, DEFAULT_ELLIPSIS } from "./text-truncate";
 
+
+export { getFocusableElements, nextFocusable, FOCUS_TRAP_SELECTOR } from "./focus-trap";
+export type { FocusableElement, FocusableHost } from "./focus-trap";
+
