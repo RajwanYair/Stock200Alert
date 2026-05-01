@@ -103,3 +103,7 @@ export type { ColorStop, ColorScale, ColorScaleOptions } from "./color-scale";
 export { formatRelativeTime } from "./relative-time";
 export type { RelativeTimeOptions } from "./relative-time";
 
+
+export { buildLinePath, buildAreaPath, buildSmoothLinePath } from "./svg-path";
+export type { Point as SvgPoint, SvgPathOptions } from "./svg-path";
+
