@@ -39,3 +39,13 @@ export {
 } from "./error-boundary";
 export type { ErrorRecord, ErrorHandler } from "./error-boundary";
 export { registerServiceWorker } from "./sw-register";
+export { createWorkerClient, serveWorkerRpc } from "./worker-rpc";
+export type {
+  RpcRequest,
+  RpcResponse,
+  RpcError,
+  RpcMessage,
+  WorkerApi,
+  WorkerClient,
+} from "./worker-rpc";
+export { runBacktestAsync, disposeBacktestWorker } from "./backtest-worker";

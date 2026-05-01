@@ -27,7 +27,7 @@ export function loadConfig(): AppConfig {
     }
     const result = AppConfigSchema.safeParse(parsed.config);
     if (!result.success) return DEFAULT_CONFIG;
-    return result.data as AppConfig;
+    return result.data;
   } catch {
     return DEFAULT_CONFIG;
   }
