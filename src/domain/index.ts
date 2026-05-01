@@ -144,3 +144,7 @@ export type { AnchoredVwapPoint, AnchoredVwapOptions } from "./anchored-vwap";
 export { detectMaCrossovers, crossoverFlags } from "./ma-crossover";
 export type { MaCrossEvent, CrossKind } from "./ma-crossover";
 
+
+export { linearRegression, regressionLine, regressionChannel } from "./linear-regression";
+export type { LinearRegression } from "./linear-regression";
+
