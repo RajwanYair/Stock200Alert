@@ -168,3 +168,6 @@ export type { EventBus, EventBusOptions, EventMap } from "./event-bus";
 export { urlBuilder } from "./url-builder";
 export type { UrlBuilder, QueryValue } from "./url-builder";
 
+
+export { deepEqual } from "./deep-equal";
+
