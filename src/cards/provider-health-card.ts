@@ -3,8 +3,10 @@
  *
  * Reads from the provider registry singleton (which holds circuit breakers
  * for Yahoo Finance and Finnhub). Auto-refreshes every 30 seconds.
+ * Fires toast/notification alerts on health state transitions.
  */
 import { renderProviderHealth } from "./provider-health";
+import { checkHealthTransition } from "./provider-health-monitor";
 import { getHealthSnapshot } from "../providers/provider-registry";
 import type { ProviderHealthSnapshot } from "./provider-health";
 import type { CardModule } from "./registry";
@@ -16,6 +18,7 @@ function refresh(container: HTMLElement): void {
     lastRefreshAt: reg.capturedAt,
   };
   renderProviderHealth(container, snapshot);
+  checkHealthTransition(snapshot);
 }
 
 const providerHealthCard: CardModule = {

@@ -3,7 +3,7 @@
  *
  * Bootstrap: load config, initialize UI, set up event listeners.
  */
-import { loadConfig, saveConfig, addTicker, removeTicker } from "./core/config";
+import { loadConfig, saveConfig, addTicker, removeTicker, reorderWatchlist } from "./core/config";
 import { createCrossTabSync } from "./core/broadcast-channel";
 import { registerServiceWorker } from "./core/sw-register";
 import { watchServiceWorkerUpdates } from "./core/sw-update";
@@ -337,6 +337,49 @@ function main(): void {
       liveRegion.textContent = `Sorted by ${col} ${s.direction === "asc" ? "ascending" : "descending"}`;
     }
   });
+
+  // ── A11: Drag-reorder watchlist rows ──────────────────────────────────────
+  if (tbody) {
+    let dragFromIndex: number | null = null;
+
+    tbody.addEventListener("dragstart", (e) => {
+      const row = (e.target as HTMLElement).closest<HTMLElement>("tr[data-ticker]");
+      if (!row) return;
+      dragFromIndex = [...tbody.children].indexOf(row);
+      row.classList.add("dragging");
+      e.dataTransfer?.setData("text/plain", row.dataset["ticker"] ?? "");
+    });
+
+    tbody.addEventListener("dragover", (e) => {
+      e.preventDefault();
+      const row = (e.target as HTMLElement).closest<HTMLElement>("tr[data-ticker]");
+      if (row) row.classList.add("drag-over");
+    });
+
+    tbody.addEventListener("dragleave", (e) => {
+      const row = (e.target as HTMLElement).closest<HTMLElement>("tr[data-ticker]");
+      if (row) row.classList.remove("drag-over");
+    });
+
+    tbody.addEventListener("drop", (e) => {
+      e.preventDefault();
+      const row = (e.target as HTMLElement).closest<HTMLElement>("tr[data-ticker]");
+      if (!row || dragFromIndex === null) return;
+      row.classList.remove("drag-over");
+      const toIndex = [...tbody.children].indexOf(row);
+      if (toIndex !== dragFromIndex) {
+        config = reorderWatchlist(config, dragFromIndex, toIndex);
+        saveAndBroadcast(config);
+        refreshWatchlist(config, buildQuotesMap());
+      }
+      dragFromIndex = null;
+    });
+
+    tbody.addEventListener("dragend", () => {
+      dragFromIndex = null;
+      tbody.querySelectorAll(".dragging").forEach((el) => el.classList.remove("dragging"));
+    });
+  }
 
   // Theme change
   const themeSelect = document.getElementById("theme-select") as HTMLSelectElement | null;

@@ -155,7 +155,7 @@ function renderRow(ticker: string, quote: WatchlistQuote | null): string {
   const range52w = quote ? render52wRange(quote.price, quote.low52w, quote.high52w) : "--";
   const volumeBar = quote ? renderVolumeBar(quote.volume, quote.avgVolume) : "";
 
-  return `<tr data-ticker="${ticker}">
+  return `<tr data-ticker="${ticker}" draggable="true">
     <td><strong>${ticker}</strong>${instrumentTypeBadge(quote?.instrumentType)}</td>
     <td class="font-mono">${price}</td>
     <td class="${changeClass} font-mono">${change}</td>

@@ -57,6 +57,16 @@ export function removeTicker(config: AppConfig, ticker: string): AppConfig {
   };
 }
 
+/** Move a watchlist entry from one index to another (for drag-reorder). */
+export function reorderWatchlist(config: AppConfig, from: number, to: number): AppConfig {
+  if (from < 0 || from >= config.watchlist.length) return config;
+  const next = [...config.watchlist];
+  const [item] = next.splice(from, 1);
+  const insertAt = Math.max(0, Math.min(to, next.length));
+  next.splice(insertAt, 0, item!);
+  return { ...config, watchlist: next };
+}
+
 function isStoredEnvelope(val: unknown): val is StoredConfig {
   return (
     typeof val === "object" &&
