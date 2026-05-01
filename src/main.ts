@@ -17,7 +17,7 @@ import type { PaletteCommand } from "./ui/command-palette";
 import { fetchAllTickers, fetchTickerData, type TickerData } from "./core/data-service";
 import type { ConsensusResult } from "./types/domain";
 import { TieredCache } from "./core/tiered-cache";
-import { createStoragePressureMonitor } from "./core/storage-pressure";
+import { createStoragePressureMonitor, requestPersistentStorage } from "./core/storage-pressure";
 import { setScreenerData } from "./cards/screener-data";
 import { computeRsiSeries } from "./domain/rsi-calculator";
 import { computeSma } from "./domain/sma-calculator";
@@ -217,6 +217,7 @@ function main(): void {
       renderWatchlist(config, new Map());
       addInput.value = "";
       showToast({ message: `Added ${ticker} — fetching data…`, type: "success" });
+      maybeRequestPersist();
       // Fetch data for the new ticker
       void fetchTickerData(ticker).then((data) => {
         tickerDataCache.set(ticker, data);
@@ -373,6 +374,36 @@ function main(): void {
         });
       },
     },
+    {
+      id: "check-storage",
+      label: "Check storage usage",
+      section: "Actions",
+      run: () => {
+        void pressureMonitor.check().then((e) => {
+          if (!e) {
+            showToast({ message: "Storage estimate unavailable in this browser.", type: "info" });
+            return;
+          }
+          const pct = (e.ratio * 100).toFixed(1);
+          const usedMb = (e.usage / 1024 / 1024).toFixed(1);
+          const quotaMb = (e.quota / 1024 / 1024).toFixed(0);
+          showToast({
+            message: `Storage: ${pct}% used (${usedMb} MB / ${quotaMb} MB)`,
+            type: e.ratio >= 0.8 ? "warning" : "info",
+          });
+        });
+      },
+    },
+    {
+      id: "clear-cache",
+      label: "Clear app cache",
+      section: "Actions",
+      run: () => {
+        appCache.clear();
+        localStorage.removeItem("crosstide-cache");
+        showToast({ message: "App cache cleared.", type: "info" });
+      },
+    },
   ];
 
   // Ctrl+K / Cmd+K → open palette
@@ -419,20 +450,36 @@ function main(): void {
 
   // --- Storage Pressure Monitor ---
   const appCache = new TieredCache();
+  let storagePersistRequested = false;
   const pressureMonitor = createStoragePressureMonitor({
     threshold: 0.8,
     intervalMs: 60_000,
     onPressure: (estimate) => {
-      const evicted = appCache.evictOldest(10);
-      if (evicted > 0) {
-        console.warn(
-          `[storage-pressure] ${(estimate.ratio * 100).toFixed(1)}% used — evicted ${evicted} cache entries`,
-        );
-      }
+      const pct = (estimate.ratio * 100).toFixed(0);
+      const evicted = appCache.evictOldest(20);
+      showToast({
+        message: `Storage ${pct}% full — freed ${evicted} cache entr${evicted === 1 ? "y" : "ies"}. Consider clearing old data.`,
+        type: "warning",
+        durationMs: 8000,
+      });
+      console.warn(
+        `[storage-pressure] ${pct}% used — evicted ${evicted} cache entries`,
+      );
     },
   });
   pressureMonitor.start();
   void appCache; // retain reference
+
+  // Request persistent storage on first ticker add (A21)
+  function maybeRequestPersist(): void {
+    if (storagePersistRequested) return;
+    storagePersistRequested = true;
+    void requestPersistentStorage().then((granted) => {
+      if (!granted) {
+        console.info("[storage] Persistent storage not granted (normal on first visit).");
+      }
+    });
+  }
 }
 
 main();

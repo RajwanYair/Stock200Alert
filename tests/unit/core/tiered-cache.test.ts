@@ -93,4 +93,29 @@ describe("TieredCache", () => {
     cache.set("y", 2, 60_000);
     expect(cache.size).toBe(2);
   });
+
+  it("evictOldest removes the N soonest-to-expire entries", () => {
+    // Set entries with ascending TTLs so oldest (shortest TTL) evicts first
+    cache.set("a", 1, 1_000);
+    cache.set("b", 2, 2_000);
+    cache.set("c", 3, 3_000);
+    const evicted = cache.evictOldest(2);
+    expect(evicted).toBe(2);
+    expect(cache.size).toBe(1);
+    // "c" (longest TTL) should remain
+    expect(cache.get("c")).toBe(3);
+    expect(cache.get("a")).toBeNull();
+    expect(cache.get("b")).toBeNull();
+  });
+
+  it("evictOldest returns 0 when cache is empty", () => {
+    expect(cache.evictOldest(5)).toBe(0);
+  });
+
+  it("evictOldest clamps to actual size", () => {
+    cache.set("x", 1, 60_000);
+    const evicted = cache.evictOldest(100);
+    expect(evicted).toBe(1);
+    expect(cache.size).toBe(0);
+  });
 });
