@@ -23,7 +23,7 @@ const MOCK_SECTORS: readonly SectorData[] = [
 ];
 
 const heatmapCard: CardModule = {
-  mount(container) {
+  mount(container, _ctx) {
     renderHeatmap(container, MOCK_SECTORS, {
       width: container.clientWidth || 600,
       height: 320,
