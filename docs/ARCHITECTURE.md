@@ -1,30 +1,47 @@
 # Architecture
 
-CrossTide Web is a browser-based stock monitoring dashboard built with vanilla TypeScript and Vite.
-It follows a strict layered architecture, keeps the production bundle small, and ships as a single
-self-contained PWA.
+CrossTide Web is a browser-based stock monitoring dashboard built with vanilla TypeScript and
+Vite. It follows a strict layered architecture, ships as a fully-offline PWA, and has zero
+third-party runtime dependencies beyond `valibot` (3 KB gz).
 
-## Layered architecture
+> **Last updated:** v6.7.0
+
+---
+
+## 1. Layered dependency graph
 
 ```mermaid
 flowchart TD
-  Cards[Cards / src/cards] --> UI[UI / src/ui]
-  UI --> Core[Core / src/core]
-  UI --> Domain[Domain / src/domain]
-  Cards --> Domain
-  Cards --> Core
-  Core --> Providers[Providers / src/providers]
-  Core --> Types[Types / src/types]
+  Main[src/main.ts] --> Cards & UI
+  Cards[src/cards/] --> UI[src/ui/]
+  Cards --> Domain[src/domain/]
+  Cards --> Core[src/core/]
+  Cards --> Providers[src/providers/]
+  UI --> Core
+  UI --> Domain
+  Core --> Types[src/types/]
   Domain --> Types
+  Providers --> Core
   Providers --> Types
-  Main[src/main.ts] --> UI
-  Main --> Cards
+  SW[src/sw.ts] --> Core
 ```
 
-**Dependency rule:** each layer may only import from layers below it. The domain layer is pure
-(zero side effects, no DOM access).
+**Dependency rule (enforced by ESLint `import/no-restricted-paths`):**
 
-## Runtime data flow
+| Layer | May import from |
+|---|---|
+| `types/` | nothing |
+| `domain/` | `types/` |
+| `core/` | `types/`, `domain/` |
+| `providers/` | `types/`, `core/` |
+| `ui/` | `types/`, `core/` |
+| `cards/` | `types/`, `domain/`, `core/`, `providers/`, `ui/` |
+
+Violations fail CI.
+
+---
+
+## 2. Runtime data flow
 
 ```mermaid
 sequenceDiagram
@@ -33,66 +50,185 @@ sequenceDiagram
   participant Core as src/core
   participant Provider as src/providers
   participant Domain as src/domain
+
   User->>UI: interact (add ticker, change view)
-  UI->>Core: dispatch / read signal
-  Core->>Provider: fetch quote / candles (cache-aware)
-  Provider-->>Core: typed response
+  UI->>Core: dispatch / read state
+  Core->>Provider: fetch quote / candles (circuit-breaker-aware)
+  Provider-->>Core: Valibot-validated response
   Core->>Domain: compute consensus / indicators
   Domain-->>Core: pure result
-  Core-->>UI: notify subscribers
-  UI-->>User: render
+  Core-->>UI: notify / re-render
+  UI-->>User: DOM update
 ```
 
-## Directory layout
+---
+
+## 3. Directory layout
 
 ```text
 src/
-├── domain/         pure calculators (SMA, EMA, RSI, MACD, consensus, …)
-├── core/           state, cache, config, fetch, idb, sync-queue, csp, sri, …
-├── providers/      market-data adapters (Yahoo, Polygon, Finnhub, …)
-├── cards/          composable UI cards (chart, screener, alerts, …)
-├── ui/             DOM helpers, accessibility, formatting
-├── types/          shared interfaces (DailyCandle, ConsensusResult, …)
-├── styles/         tokens, base, layout, components
-└── main.ts         bootstrap entry
+├── types/          domain.ts — DailyCandle, ConsensusResult, WatchlistEntry …
+├── domain/         pure calculators: SMA, EMA, RSI, MACD, ADX, Bollinger,
+│                   consensus-engine, risk-ratios, equity-curve …
+├── core/           state, cache, config, csp-builder, idb, lru-cache,
+│                   tiered-cache, storage-pressure, fetch, circuit-breaker,
+│                   keyboard, notifications, share-state, token-bucket,
+│                   sync-queue, worker-rpc, web-vitals …
+├── providers/      Yahoo, Finnhub, Alpha Vantage, CoinGecko, Stooq adapters
+│                   + chain.ts (circuit-breaker fan-out)
+├── cards/          Composable UI cards — lazy-loaded per route:
+│                   chart, watchlist, consensus, screener, heatmap, alerts,
+│                   portfolio, risk, backtest, consensus-timeline,
+│                   provider-health, settings …
+├── ui/             router, theme, toast, command-palette, watchlist table,
+│                   sparkline, sortable, treemap-layout, palettes …
+├── styles/         tokens.css, base.css, layout.css, components.css
+├── sw.ts           Service worker (Workbox-compatible, compiled separately)
+└── main.ts         Bootstrap: config → router → cards → keyboard → SW
 ```
 
-## Tooling — single source of truth
+---
 
-| Concern        | File                            | Notes                                                              |
-| -------------- | ------------------------------- | ------------------------------------------------------------------ |
-| TypeScript     | `tsconfig.json`                 | strict + `exactOptionalPropertyTypes` + `noUncheckedIndexedAccess` |
-| Bundler        | `vite.config.ts`                | Vite 8, oxc minifier, ES2022                                       |
-| Tests          | `vitest.config.ts`              | happy-dom, v8 coverage, 90 % thresholds                            |
-| Linting (TS)   | `eslint.config.mjs`             | ESLint 10 flat + typescript-eslint 8, `--max-warnings 0`           |
-| Linting (CSS)  | `.stylelintrc.json`             | inline rule set (no external `extends`)                            |
-| Linting (HTML) | `.htmlhintrc`                   | inline rule set                                                    |
-| Linting (MD)   | `.markdownlint.json`            | `default: true`, allow common HTML elements                        |
-| Format         | `.prettierrc`                   | repo-local; `npm run format:check` is the gate                     |
-| Bundle budget  | `scripts/check-bundle-size.mjs` | 200 KB gzipped JS                                                  |
+## 4. Routing & card registry
 
-The repo is fully self-contained: `git clone` → `npm ci` → `npm run ci` works on any machine.
+Routes use the **History API** (`src/ui/router.ts`).
+Every route maps to a card module loaded via lazy `import()`:
 
-## CI / CD
+| Route | Card module |
+|---|---|
+| `/watchlist` | built-in (watchlist table in `main.ts`) |
+| `/consensus` | `cards/consensus-card.ts` |
+| `/chart` | `cards/chart-card.ts` |
+| `/alerts` | `cards/alerts-card.ts` |
+| `/heatmap` | `cards/heatmap.ts` |
+| `/screener` | `cards/screener.ts` |
+| `/portfolio` | `cards/portfolio.ts` |
+| `/risk` | `cards/risk-card.ts` (Sortino, max DD, CAGR, Calmar) |
+| `/backtest` | `cards/backtest-card.ts` (MA crossover, equity curve) |
+| `/consensus-timeline` | `cards/consensus-timeline.ts` |
+| `/provider-health` | `cards/provider-health.ts` |
+| `/settings` | `cards/settings-card.ts` |
 
-- **`.github/workflows/ci.yml`** — install → typecheck → lint (TS+CSS+HTML+MD+Prettier) → tests
-  → build → bundle check → upload `dist/` and coverage artifacts. PRs also run
-  `dependency-review-action`.
-- **`.github/workflows/release.yml`** — on tag `v*`, re-runs the gates, zips `dist/` into
-  `crosstide-vX.Y.Z.zip`, generates a SHA-256 sidecar, and publishes a GitHub Release with both
-  files.
-- **`.github/workflows/pages.yml`** — pushes to `main` deploy the latest build to GitHub Pages.
-- **`.github/dependabot.yml`** — weekly npm + github-actions update PRs, grouped by dev/prod.
+The registry (`cards/registry.ts`) returns `{ mount(el, ctx) }` for each entry.
+Cards are never destroyed on route change — they are hidden/shown via CSS.
 
-## Quality gates
+---
 
-Local and CI both enforce, with **zero waivers**:
+## 5. Security headers
 
-- 0 TypeScript errors (`npm run typecheck`)
-- 0 ESLint warnings (`npm run lint`)
-- 0 Stylelint warnings (`npm run lint:css`)
-- 0 HTMLHint findings (`npm run lint:html`)
-- 0 markdownlint findings (`npm run lint:md`)
-- Prettier clean (`npm run format:check`)
-- 1772 unit tests pass (`npm test`), v8 coverage thresholds met
-- Production build under 200 KB gzipped JS (`npm run check:bundle`)
+All responses (CF Pages HTTP headers, dev server, preview server) enforce the same policy.
+**Source of truth: `src/core/csp-builder.ts`** — regenerate with `node scripts/gen-csp.mjs`.
+
+| Header | Value summary |
+|---|---|
+| `Content-Security-Policy` | `default-src 'self'`; no inline scripts; `wasm-unsafe-eval` for future WASM |
+| `Permissions-Policy` | camera, geolocation, mic, payment all `()` |
+| `X-Content-Type-Options` | `nosniff` |
+| `X-Frame-Options` | `DENY` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `COEP` | `same-origin` |
+| `COOP` | `same-origin` |
+| `HSTS` | `max-age=31536000; includeSubDomains` |
+
+The `<meta http-equiv="Content-Security-Policy">` in `index.html` mirrors the same policy as
+a defence-in-depth fallback for GitHub Pages (which cannot serve HTTP headers).
+
+---
+
+## 6. Storage strategy
+
+| Tier | Tech | Use | TTL |
+|---|---|---|---|
+| L1 | `Map` + `TieredCache` L1 | Hot quotes, computed series | Session |
+| L2 | `localStorage` (via `TieredCache`) | Config, theme, last route | Persistent |
+| L3 | `IndexedDB` (`core/idb.ts`) | Candle history, alerts, portfolio | LRU 50 MB |
+| L4 | Service Worker Cache API | App shell + API SWR responses | Per-strategy |
+
+`createStoragePressureMonitor()` polls `navigator.storage.estimate()` every 60 s.
+When usage exceeds **80%**, it evicts the oldest 20 `TieredCache` entries and shows
+a user-facing toast. `requestPersistentStorage()` is called on first ticker add.
+
+---
+
+## 7. PWA / Service Worker
+
+`src/sw.ts` is compiled by Vite as a separate entry (`dist/sw.js`).
+It uses a custom `tsconfig.sw.json` with `lib: ["WebWorker"]`.
+
+- Precaches the app shell (HTML, CSS, JS)
+- NetworkFirst strategy for `/api/*` routes
+- CacheFirst for static assets
+- Background sync via `core/sync-queue.ts` (IDB-backed retry queue)
+
+---
+
+## 8. URL share-state
+
+`core/share-state.ts` encodes the active route + card state into a `?s=` URL parameter
+(base64url-encoded JSON). `Shift+S` copies the current view's share link; the URL is
+restored automatically on next page load.
+
+---
+
+## 9. Tooling
+
+| Concern | File | Notes |
+|---|---|---|
+| TypeScript | `tsconfig.json` | strict + `exactOptionalPropertyTypes` + `noUncheckedIndexedAccess` + `verbatimModuleSyntax` |
+| SW TypeScript | `tsconfig.sw.json` | Separate, `lib: ["WebWorker"]` |
+| Bundler | `vite.config.ts` | Vite 8, oxc minifier, ES2022 |
+| Tests | `vitest.config.ts` | happy-dom, v8 coverage, ≥90% thresholds |
+| Linting (TS) | `eslint.config.mjs` | ESLint 10 flat + typescript-eslint 8, `--max-warnings 0` |
+| Linting (CSS) | `.stylelintrc.json` | Stylelint 16 |
+| Linting (HTML) | `.htmlhintrc` | HTMLHint |
+| Linting (MD) | `.markdownlint.json` | markdownlint-cli2 |
+| Format | `.prettierrc` | `npm run format:check` is CI gate |
+| Bundle budget | `scripts/check-bundle-size.mjs` | ≤ 200 KB gz initial JS |
+| Security headers | `scripts/gen-csp.mjs` | Regenerates `public/_headers` from source of truth |
+| Commits | `commitlint.config.mjs` | Conventional Commits enforced in CI |
+| Changelog | `.changeset/` | Changesets-based version bumps |
+
+---
+
+## 10. CI / CD
+
+```
+ci.yml
+  commitlint        → verifies commit message format
+  typecheck         → tsc --noEmit (main + sw tsconfigs)
+  lint              → eslint / stylelint / htmlhint / markdownlint / prettier
+  test              → vitest run --coverage (1 800+ tests, ≥90% coverage)
+  e2e               → playwright (10 flows + axe zero-violations gate)
+  lighthouse        → lhci autorun (perf ≥90, a11y ≥95, best ≥95, SEO ≥90)
+  build             → vite build
+  bundle            → check-bundle-size.mjs (≤200 KB gz)
+  dependency-review → on PRs only
+
+release.yml  → on tag v*, re-runs gates → dist.zip + SHA-256 → GitHub Release
+pages.yml    → on push main → deploy dist/ to GitHub Pages
+```
+
+---
+
+## 11. Quality gates (zero waivers)
+
+- 0 TypeScript errors
+- 0 ESLint / Stylelint / HTMLHint / markdownlint warnings
+- Prettier clean
+- 1 800+ unit tests pass; v8 coverage thresholds met
+- Playwright E2E: 10 flows pass; 0 axe serious/critical violations
+- Lighthouse: perf ≥ 90, a11y ≥ 95, best-practices ≥ 95, SEO ≥ 90
+- Bundle ≤ 200 KB gz initial JS
+
+---
+
+## 12. Performance budget
+
+| Asset | Budget | Gate |
+|---|---|---|
+| JS initial | ≤ 180 KB gz | `check:bundle` |
+| Lazy card chunk | ≤ 50 KB gz each | build |
+| CSS | ≤ 30 KB gz | build |
+| LCP (4G mid Android) | ≤ 1.8 s | Lighthouse CI |
+| INP p75 | ≤ 200 ms | Lighthouse CI |
+| CLS | ≤ 0.05 | Lighthouse CI |
