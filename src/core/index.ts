@@ -190,3 +190,6 @@ export type { SafeResult, SafeStringifyOptions } from "./safe-json";
 
 export { deepClone } from "./deep-clone";
 
+
+export { chunk, window as windowSlide, zip } from "./chunk-array";
+
