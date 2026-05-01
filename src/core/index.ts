@@ -191,6 +191,9 @@ export type { FullExportPayload, FullExportDomains } from "./data-export";
 export { createFinnhubStream } from "./finnhub-ws";
 export type { FinnhubStream, FinnhubTradeTick, FinnhubStreamOptions } from "./finnhub-ws";
 
+export { generateOgImageSvg, svgToDataUri, downloadSvg } from "./og-image";
+export type { OgImageOptions, ConsensusDirection } from "./og-image";
+
 export {
   getLocale,
   formatNumber,
