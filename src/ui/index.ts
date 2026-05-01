@@ -91,3 +91,7 @@ export type { Palette, PaletteName, SemanticColor } from "./palettes";
 export { formatPrice, formatCompact, formatPercent, formatChange } from "./number-format";
 export type { FormatOptions } from "./number-format";
 
+
+export { squarifyTreemap } from "./treemap-layout";
+export type { TreemapItem, TreemapRect, Bounds } from "./treemap-layout";
+
