@@ -8,6 +8,7 @@ import { initRouter, onRouteChange, type RouteName } from "./ui/router";
 import { initTheme } from "./ui/theme";
 import { renderWatchlist } from "./ui/watchlist";
 import { loadCard, type CardHandle, type CardContext } from "./cards/registry";
+import { showToast } from "./ui/toast";
 
 const cardHandles = new Map<RouteName, CardHandle>();
 const cardContainers: Partial<Record<RouteName, string>> = {
@@ -61,13 +62,21 @@ function main(): void {
   const addInput = document.getElementById("add-ticker") as HTMLInputElement | null;
   addInput?.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
-      const ticker = addInput.value.trim();
-      if (ticker) {
-        config = addTicker(config, ticker);
-        saveConfig(config);
-        renderWatchlist(config, new Map());
-        addInput.value = "";
+      const ticker = addInput.value.trim().toUpperCase();
+      if (!ticker) return;
+      if (!/^[A-Z][A-Z0-9.-]{0,9}$/.test(ticker)) {
+        showToast({ message: `Invalid ticker: ${ticker}`, type: "error" });
+        return;
       }
+      if (config.watchlist.some((e) => e.ticker === ticker)) {
+        showToast({ message: `${ticker} already in watchlist`, type: "warning" });
+        return;
+      }
+      config = addTicker(config, ticker);
+      saveConfig(config);
+      renderWatchlist(config, new Map());
+      addInput.value = "";
+      showToast({ message: `Added ${ticker}`, type: "success" });
     }
   });
 
@@ -81,6 +90,7 @@ function main(): void {
         config = removeTicker(config, ticker);
         saveConfig(config);
         renderWatchlist(config, new Map());
+        showToast({ message: `Removed ${ticker}`, type: "info" });
       }
     }
   });
@@ -108,14 +118,17 @@ function main(): void {
 
   // Clear all
   document.getElementById("btn-clear")?.addEventListener("click", () => {
+    if (config.watchlist.length === 0) return;
     config = { ...config, watchlist: [] };
     saveConfig(config);
     renderWatchlist(config, new Map());
+    showToast({ message: "Watchlist cleared", type: "warning" });
   });
 
   // Clear cache
   document.getElementById("btn-clear-cache")?.addEventListener("click", () => {
     localStorage.removeItem("crosstide-cache");
+    showToast({ message: "Cache cleared", type: "info" });
   });
 }
 
