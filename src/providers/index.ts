@@ -9,3 +9,12 @@ export { createTwelveDataProvider } from "./twelve-data-provider";
 export { createPolygonProvider } from "./polygon-provider";
 export { createCoinGeckoProvider } from "./coingecko-provider";
 export { createProviderChain } from "./provider-chain";
+export {
+  CircuitBreaker,
+  CircuitOpenError,
+} from "./circuit-breaker";
+export type {
+  CircuitState,
+  CircuitBreakerOptions,
+  CircuitBreakerSnapshot,
+} from "./circuit-breaker";
