@@ -250,3 +250,7 @@ export { computeMomentum } from "./momentum";
 
 export { computeRoc } from "./roc";
 
+
+export { computeStdDev } from "./standard-deviation";
+export type { StdDevOptions } from "./standard-deviation";
+
