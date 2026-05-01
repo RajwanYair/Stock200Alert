@@ -102,6 +102,12 @@ const REGISTRY: readonly CardEntry[] = [
     viewId: "view-backtest",
     load: () => import("./backtest-card").then((m) => m.default),
   },
+  {
+    route: "consensus-timeline",
+    title: "Consensus Timeline",
+    viewId: "view-consensus-timeline",
+    load: () => import("./consensus-timeline-card").then((m) => m.default),
+  },
 ];
 
 const cache = new Map<RouteName, Promise<CardModule>>();

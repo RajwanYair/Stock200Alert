@@ -657,4 +657,60 @@
     flex-direction: column;
     gap: var(--sp-sm);
   }
+
+  /* ── Consensus timeline card ─────────────────────────────────────────── */
+  .timeline-card-layout {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-lg);
+  }
+
+  .timeline-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-md);
+    align-items: flex-end;
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: var(--sp-md);
+  }
+
+  .timeline-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+
+  .timeline-multi-item {
+    margin-bottom: var(--sp-md);
+    padding-bottom: var(--sp-md);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .timeline-multi-item:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  /* timeline-dot styles are in consensus.css; provide fallbacks here */
+  .timeline-track {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    margin: var(--sp-xs) 0;
+  }
+
+  .timeline-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    cursor: default;
+  }
+
+  .dot-buy    { background: var(--positive, #3fb950); }
+  .dot-sell   { background: var(--negative, #f85149); }
+  .dot-neutral { background: var(--text-secondary, #8b949e); }
 }
