@@ -13,7 +13,7 @@
   "scripts": {
     "dev": "vite",
     "dev:components": "vite dev/components.html",
-    "build": "tsc --noEmit && tsc --project tsconfig.sw.json --noEmit && vite build",
+    "build": "tsc --noEmit && tsc --project tsconfig.sw.json --noEmit && vite build && node scripts/workbox-inject.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -56,7 +56,14 @@
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.58.2",
     "vite": "^8.0.10",
-    "vitest": "^4.1.4"
+    "vitest": "^4.1.4",
+    "workbox-background-sync": "^7.4.0",
+    "workbox-build": "^7.4.0",
+    "workbox-expiration": "^7.4.0",
+    "workbox-navigation-preload": "^7.4.0",
+    "workbox-precaching": "^7.4.0",
+    "workbox-routing": "^7.4.0",
+    "workbox-strategies": "^7.4.0"
   },
   "dependencies": {
     "lightweight-charts": "^5.2.0",

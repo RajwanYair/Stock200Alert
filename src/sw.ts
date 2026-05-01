@@ -1,50 +1,77 @@
 /**
- * Service Worker — app shell precache + stale-while-revalidate for API.
+ * Service Worker — Workbox-powered precache + runtime caching.
+ *
+ * Strategies:
+ *  - App shell:   precacheAndRoute() — hash-versioned via workbox-inject post-build
+ *  - /api/*:      NetworkFirst (10 s timeout, 5-min IDB expiry)
+ *  - JS/CSS/SW:   StaleWhileRevalidate (7-day expiry)
+ *  - Images:      CacheFirst (30-day expiry)
+ *
+ * Background sync (offline mutations) is handled by core/sync-queue.ts
+ * at the application layer, not in the SW layer.
  */
+import { precacheAndRoute, cleanupOutdatedCaches } from "workbox-precaching";
+import type { PrecacheEntry } from "workbox-precaching";
+import { registerRoute } from "workbox-routing";
+import { NetworkFirst, StaleWhileRevalidate, CacheFirst } from "workbox-strategies";
+import { ExpirationPlugin } from "workbox-expiration";
+import { enable as enableNavigationPreload } from "workbox-navigation-preload";
+import {
+  CACHE_NAMES,
+  NETWORK_TIMEOUT_SECONDS,
+  getExpirationConfig,
+} from "./core/sw-cache-config";
 
-const CACHE_NAME = "crosstide-v1";
-const APP_SHELL = ["/", "/index.html"];
+declare const self: ServiceWorkerGlobalScope;
 
-self.addEventListener("install", (event) => {
-  const e = event as ExtendableEvent;
-  e.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
-});
+// Navigation Preload speeds up navigations when SW is active
+enableNavigationPreload();
 
-self.addEventListener("activate", (event) => {
-  const e = event as ExtendableEvent;
-  e.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))),
-      ),
-  );
-});
+// Remove caches left by previous SW versions
+cleanupOutdatedCaches();
 
-self.addEventListener("fetch", (event) => {
-  const e = event as FetchEvent;
-  const url = new URL(e.request.url);
+// Precache app shell with hash-versioned entries (injected by workbox-inject.mjs).
+// Falls back to a minimal set when the manifest hasn't been injected yet (dev).
+precacheAndRoute(
+  (self as unknown as { __WB_MANIFEST?: PrecacheEntry[] }).__WB_MANIFEST ?? [
+    { url: "./", revision: null },
+    { url: "./index.html", revision: null },
+  ],
+);
 
-  // API: stale-while-revalidate
-  if (url.pathname.startsWith("/api/")) {
-    e.respondWith(staleWhileRevalidate(e.request));
-    return;
-  }
+// ─── Runtime caching ──────────────────────────────────────────────────────────
 
-  // App shell: cache-first
-  e.respondWith(caches.match(e.request).then((cached) => cached ?? fetch(e.request)));
-});
+// /api/* — NetworkFirst: fresh data preferred, stale on timeout/offline
+registerRoute(
+  ({ url }: { url: URL }) => url.pathname.startsWith("/api/"),
+  new NetworkFirst({
+    cacheName: CACHE_NAMES.api,
+    networkTimeoutSeconds: NETWORK_TIMEOUT_SECONDS,
+    // Workbox types predate exactOptionalPropertyTypes — safe cast
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    plugins: [new ExpirationPlugin(getExpirationConfig("api")) as any],
+  }),
+);
 
-async function staleWhileRevalidate(request: Request): Promise<Response> {
-  const cache = await caches.open(CACHE_NAME);
-  const cached = await cache.match(request);
+// JS/CSS/Worker scripts — StaleWhileRevalidate: fast load, refresh in background
+registerRoute(
+  ({ request }: { request: Request }) =>
+    request.destination === "style" ||
+    request.destination === "script" ||
+    request.destination === "worker",
+  new StaleWhileRevalidate({
+    cacheName: CACHE_NAMES.static,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    plugins: [new ExpirationPlugin(getExpirationConfig("static")) as any],
+  }),
+);
 
-  const fetchPromise = fetch(request)
-    .then((response) => {
-      if (response.ok) void cache.put(request, response.clone());
-      return response;
-    })
-    .catch(() => cached ?? new Response("Offline", { status: 503 }));
-
-  return cached ?? fetchPromise;
-}
+// Images — CacheFirst: long-lived assets
+registerRoute(
+  ({ request }: { request: Request }) => request.destination === "image",
+  new CacheFirst({
+    cacheName: CACHE_NAMES.images,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    plugins: [new ExpirationPlugin(getExpirationConfig("images")) as any],
+  }),
+);

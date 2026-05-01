@@ -37,6 +37,19 @@ export type { ErrorRecord, ErrorHandler } from "./error-boundary";
 export { registerServiceWorker } from "./sw-register";
 export { watchServiceWorkerUpdates } from "./sw-update";
 export type { SwUpdateHandle, SwUpdateOptions } from "./sw-update";
+export {
+  CACHE_VERSION,
+  CACHE_NAMES,
+  EXPIRATION_CONFIGS,
+  NETWORK_TIMEOUT_SECONDS,
+  BG_SYNC_QUEUE_NAME,
+  BG_SYNC_MAX_RETENTION_MINUTES,
+  shouldUseNetworkFirst,
+  shouldUseStaleWhileRevalidate,
+  shouldUseCacheFirst,
+  getExpirationConfig,
+} from "./sw-cache-config";
+export type { CacheType, ExpirationConfig } from "./sw-cache-config";
 export { createSyncQueue } from "./sync-queue";
 export type { QueuedRequest, SyncQueue, SyncQueueOptions } from "./sync-queue";
 export {
