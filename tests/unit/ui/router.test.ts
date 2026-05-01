@@ -199,6 +199,38 @@ describe("onRouteChange", () => {
   });
 });
 
+describe("View Transitions (C5)", () => {
+  beforeEach(() => {
+    _resetRouterForTests();
+    setupDOM();
+  });
+
+  it("calls document.startViewTransition when available", () => {
+    const calls: unknown[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (document as any).startViewTransition = (cb: () => void): void => {
+      calls.push(cb);
+      cb(); // execute immediately so activation happens
+    };
+    initRouter();
+    const countAfterInit = calls.length;
+    navigateTo("alerts");
+    // One more call for the navigation (may also have one from initRouter)
+    expect(calls.length).toBe(countAfterInit + 1);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (document as any).startViewTransition;
+  });
+
+  it("falls back gracefully when startViewTransition is absent", () => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    delete (document as any).startViewTransition;
+    initRouter();
+    expect(() => navigateTo("settings")).not.toThrow();
+    const active = document.getElementById("view-settings");
+    expect(active?.classList.contains("active")).toBe(true);
+  });
+});
+
 describe("link interception", () => {
   beforeEach(() => {
     _resetRouterForTests();

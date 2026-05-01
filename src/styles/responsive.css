@@ -103,4 +103,63 @@
       min-width: 44px;
     }
   }
+
+  /* ── Mobile: hide less-important watchlist columns (C5) ── */
+  @media (max-width: 639px) {
+    /* Hide sparkline, 52W Range, volume bar on small screens */
+    #watchlist-table th:nth-child(5),
+    #watchlist-table td:nth-child(5),
+    #watchlist-table th:nth-child(7),
+    #watchlist-table td:nth-child(7) {
+      display: none;
+    }
+
+    /* Compact nav: wrap to two rows with smaller font */
+    #app-nav .nav-links {
+      gap: 2px;
+    }
+
+    #app-nav .nav-link {
+      font-size: 0.75rem;
+      padding: var(--sp-xs) var(--sp-sm);
+    }
+
+    /* Full-width filter bar */
+    .instrument-filter-bar {
+      flex-wrap: wrap;
+    }
+
+    /* Sector header spans full row */
+    .sector-header td {
+      font-size: var(--font-size-sm);
+    }
+  }
+}
+
+/* ── View Transitions (C5) ─────────────────────────────────────────────────── */
+/* Fade + slight upward slide for route changes */
+@keyframes vt-fade-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes vt-fade-out {
+  from { opacity: 1; transform: translateY(0); }
+  to   { opacity: 0; transform: translateY(-4px); }
+}
+
+::view-transition-old(root) {
+  animation: 120ms ease-in both vt-fade-out;
+}
+
+::view-transition-new(root) {
+  animation: 160ms ease-out both vt-fade-in;
+}
+
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
 }

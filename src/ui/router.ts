@@ -193,7 +193,7 @@ export function onRouteChange(handler: RouteChangeHandler): () => void {
 
 function handleRoute(): void {
   const info = getCurrentRouteInfo();
-  activateView(info.name);
+  activateViewWithTransition(info.name);
   for (const fn of listeners) fn(info.name, info);
 }
 
@@ -204,6 +204,20 @@ function activateView(route: RouteName): void {
   document.querySelectorAll<HTMLElement>(".view").forEach((view) => {
     view.classList.toggle("active", view.id === `view-${route}`);
   });
+}
+
+/**
+ * Activate a view, wrapped in View Transitions API if available.
+ * Falls back to synchronous activation in browsers without the API.
+ */
+function activateViewWithTransition(route: RouteName): void {
+  // View Transitions API (C5) — Chrome 111+, Firefox 129+, Safari 18+
+  if (typeof document !== "undefined" && "startViewTransition" in document) {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
+    (document as any).startViewTransition(() => activateView(route));
+  } else {
+    activateView(route);
+  }
 }
 
 function onLinkClick(e: MouseEvent): void {
