@@ -6,6 +6,39 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [6.1.0-rc.9] - 2026
+
+### Added — Sprints 101–110 (more indicators + core/UI utilities)
+
+- **Stochastic RSI** (`domain/stochastic-rsi`) — Chande & Kroll's
+  stochastic applied to Wilder RSI, with %K and %D smoothing.
+- **True Strength Index** (`domain/tsi`) — Blau's double-smoothed
+  momentum oscillator with optional signal EMA.
+- **Weighted Moving Average** (`domain/wma`) — linearly weighted MA
+  with O(period) sliding sum.
+- **Chaikin Oscillator** (`domain/chaikin-oscillator`) — MACD applied
+  to the Accumulation/Distribution Line (default 3/10).
+- **Elder Impulse System** (`domain/elder-impulse`) — discrete
+  GREEN/RED/BLUE bar classification from EMA13 slope and MACD
+  histogram slope.
+- **deep-clone** (`core/deep-clone`) — `structuredClone` wrapper with
+  a recursive fallback covering objects, arrays, `Date`, `RegExp`,
+  `Map`, `Set` and cycles.
+- **chunk + window + zip** (`core/chunk-array`) — array partitioning
+  helpers with optional padding and configurable step.
+- **pick + omit + pickBy** (`core/pick-omit`) — type-safe object
+  subset utilities.
+- **color-blend** (`ui/color-blend`) — hex parse/format, linear
+  `blend`, plus `lighten` / `darken` shortcuts.
+- **abort-helpers** (`ui/abort-helpers`) — `combineSignals`,
+  `withTimeout`, `isAbortError` for cancellation plumbing.
+
+### Tests
+
+- 1648 unit tests (was 1573).
+
+---
+
 ## [6.1.0-rc.8] - 2026
 
 ### Added — Sprints 91–100 (more indicators + core/UI utilities)

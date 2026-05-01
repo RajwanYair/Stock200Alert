@@ -130,3 +130,6 @@ export type { FocusableElement, FocusableHost } from "./focus-trap";
 export { parseHex, toHex, blend, lighten, darken } from "./color-blend";
 export type { Rgba } from "./color-blend";
 
+
+export { combineSignals, withTimeout, isAbortError } from "./abort-helpers";
+
