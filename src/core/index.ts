@@ -148,3 +148,7 @@ export type { CircuitBreaker, BreakerState, BreakerConfig, BreakerSnapshot } fro
 export { createTokenBucket } from "./token-bucket";
 export type { TokenBucket, TokenBucketConfig } from "./token-bucket";
 
+
+export { nextDelay, retry } from "./retry-backoff";
+export type { BackoffPolicy, RetryOptions, Jitter } from "./retry-backoff";
+
