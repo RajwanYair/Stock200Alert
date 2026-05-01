@@ -1,4 +1,10 @@
 {
-  "extends": "../tooling/markdownlint.base.json",
-  "no-inline-html": { "allowed_elements": ["details", "summary", "br", "img", "picture", "source"] }
+  "default": true,
+  "MD013": false,
+  "MD024": { "siblings_only": true },
+  "MD033": {
+    "allowed_elements": ["details", "summary", "br", "kbd", "img", "picture", "source"]
+  },
+  "MD041": true,
+  "MD046": { "style": "fenced" }
 }

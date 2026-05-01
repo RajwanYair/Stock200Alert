@@ -33,13 +33,23 @@ npm run dev        # http://localhost:5173
 
 ## Tech Stack
 
-- **TypeScript 5.8+** strict mode
-- **Vite 6.3+** build tool
-- **Vitest 3.1+** testing (happy-dom, v8 coverage, 90% thresholds)
-- **ESLint 9+** flat config with typescript-eslint
-- **Prettier** code formatting
-- **Vanilla CSS** with custom properties (dark/light themes)
-- **No framework** — pure TypeScript + DOM APIs
+- **TypeScript 5.9** strict mode (`exactOptionalPropertyTypes`, `noUncheckedIndexedAccess`,
+  `forceConsistentCasingInFileNames`, `verbatimModuleSyntax`).
+- **Vite 8** build tool (oxc minifier, ES2022 target).
+- **Vitest 4.1** testing — happy-dom environment, v8 coverage, 90% statement / 80% branch / 90% function / 90% line thresholds.
+- **ESLint 10** flat config + **typescript-eslint 8**.
+- **Prettier 3** code formatting (single source of truth in `.prettierrc`).
+- **Stylelint 17**, **HTMLHint 1.9**, **markdownlint-cli2** for non-TS assets.
+- **Vanilla CSS** with custom properties (dark/light themes), no UI framework — pure TypeScript + DOM APIs.
+
+## Release & Deployment
+
+- Tag `vX.Y.Z` on `main` triggers `.github/workflows/release.yml`, which:
+  1. Re-runs typecheck, lint, tests, and build.
+  2. Zips `dist/` into `crosstide-vX.Y.Z.zip` plus a SHA-256 sidecar.
+  3. Publishes a GitHub Release with auto-generated notes and the artifacts attached.
+- Push to `main` also triggers `.github/workflows/pages.yml`, deploying the
+  current build to GitHub Pages.
 
 ## Architecture
 

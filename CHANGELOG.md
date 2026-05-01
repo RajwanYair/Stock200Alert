@@ -6,6 +6,48 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [6.2.0] - 2026
+
+### Sprint — self-contained repo + CI hardening
+
+- **Self-contained repo.** All build/lint/test configs are now repo-local. Removed every
+  `extends: "../tooling/..."` reference (TypeScript, Vite, Vitest, ESLint, Stylelint,
+  markdownlint, Prettier). The repo no longer depends on the parent `MyScripts/tooling/`
+  folder or the parent `node_modules/`.
+- **`package-lock.json`.** Added `devDependencies` for every tool actually used
+  (typescript, vite, vitest, @vitest/coverage-v8, eslint, @eslint/js, typescript-eslint,
+  prettier, stylelint, stylelint-config-standard, htmlhint, markdownlint-cli2, happy-dom)
+  and committed `package-lock.json` so `npm ci` works on a clean checkout. This unblocks
+  GitHub Actions CI, which had been failing with
+  _"Dependencies lock file is not found"_ on every run since v6.1.0-rc.1.
+- **Scope lock — web only.** Deleted `worker/` (Cloudflare Workers BFF scaffolding that
+  was never wired into the front-end). The repo now ships a single deployable: the Vite
+  production build in `dist/`.
+- **CI workflow** now drives every gate via `npm run ...` scripts (single source of
+  truth) instead of duplicating CLI flags.
+- **Release workflow** unchanged in behaviour but tightened: re-uses the same scripts
+  and uploads `crosstide-vX.Y.Z.zip` plus a SHA-256 sidecar to the GitHub Release.
+- **`vite.config.ts`** uses Vite 8's `oxc` minifier (matches what the repo actually
+  has installed; the previous `esbuild` setting required an extra dependency).
+- **README.md / ARCHITECTURE.md** rewritten to match reality:
+  - Mermaid diagrams for layered architecture and runtime data flow.
+  - Tech-stack versions corrected (TS 5.9, Vite 8, Vitest 4, ESLint 10).
+  - Documented release artifacts and Pages deployment.
+
+### Removed
+
+- `worker/` (`worker/src/index.ts`, `routes/`, `middleware/`) — 5 files, ~7 KB.
+- All references to `../tooling/*` from build/lint/test/format configs.
+
+### Verified locally
+
+- `npm ci` (clean install): 338 packages, 0 vulnerabilities.
+- `npm run ci`: typecheck → lint (TS + CSS + HTML + MD + Prettier) → 1772 tests / 215
+  files pass → vite build → bundle check **PASS at 21.2 KB gzipped** (89 % under the
+  200 KB budget).
+
+---
+
 ## [6.1.0] - 2026
 
 ### Added — Production-readiness pass

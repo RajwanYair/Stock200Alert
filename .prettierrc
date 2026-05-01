@@ -12,6 +12,9 @@
   "endOfLine": "lf",
   "overrides": [
     { "files": ["*.json", "*.jsonc"], "options": { "trailingComma": "none" } },
-    { "files": ["*.md"], "options": { "printWidth": 120, "proseWrap": "preserve" } }
+    {
+      "files": ["*.md"],
+      "options": { "printWidth": 120, "proseWrap": "preserve" }
+    }
   ]
 }

@@ -25,19 +25,19 @@ jobs:
         run: npm ci
 
       - name: TypeScript check
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: ESLint
-        run: npx eslint . --max-warnings 0
+        run: npm run lint
 
       - name: Unit tests
-        run: npx vitest run
+        run: npm test
 
       - name: Build production
         run: npx vite build
 
       - name: Bundle size check
-        run: node scripts/check-bundle-size.mjs
+        run: npm run check:bundle
 
       - name: Package build output
         run: |

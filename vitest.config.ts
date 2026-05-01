@@ -1,9 +1,12 @@
 import { defineConfig } from "vitest/config";
-import { happyDomVitestConfig } from "../tooling/vitest/happy-dom.mjs";
 
 export default defineConfig({
   test: {
-    ...happyDomVitestConfig,
+    environment: "happy-dom",
+    globals: true,
+    pool: "forks",
+    testTimeout: 10000,
+    hookTimeout: 10000,
     include: ["tests/**/*.test.ts"],
     coverage: {
       provider: "v8",

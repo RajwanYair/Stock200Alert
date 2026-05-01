@@ -1,1 +1,35 @@
-{ "extends": ["../tooling/stylelint/base.json"] }
+{
+  "rules": {
+    "block-no-empty": true,
+    "color-no-invalid-hex": true,
+    "declaration-block-no-duplicate-properties": [
+      true,
+      {
+        "ignore": [
+          "consecutive-duplicates-with-different-values",
+          "consecutive-duplicates-with-different-syntaxes"
+        ]
+      }
+    ],
+    "font-family-no-duplicate-names": true,
+    "no-duplicate-at-import-rules": true,
+    "selector-pseudo-class-no-unknown": [true, { "ignorePseudoClasses": ["global"] }],
+    "selector-pseudo-element-no-unknown": true,
+    "unit-no-unknown": true,
+    "no-descending-specificity": null,
+    "no-duplicate-selectors": null,
+    "selector-class-pattern": null,
+    "keyframes-name-pattern": null,
+    "custom-property-pattern": null,
+    "value-keyword-case": ["lower", { "camelCaseSvgKeywords": true }],
+    "alpha-value-notation": "number",
+    "color-function-notation": "legacy",
+    "import-notation": "string",
+    "rule-empty-line-before": null,
+    "at-rule-empty-line-before": null,
+    "comment-empty-line-before": null,
+    "declaration-block-single-line-max-declarations": null,
+    "color-function-alias-notation": null,
+    "media-feature-range-notation": null
+  }
+}

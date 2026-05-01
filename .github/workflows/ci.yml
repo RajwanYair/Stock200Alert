@@ -38,28 +38,31 @@ jobs:
         run: npm ci
 
       - name: TypeScript check
-        run: npx tsc --noEmit
+        run: npm run typecheck
 
       - name: ESLint
-        run: npx eslint . --max-warnings 0
+        run: npm run lint
 
       - name: Stylelint
-        run: npx stylelint "src/**/*.css" --max-warnings 0
+        run: npm run lint:css
 
       - name: HTMLHint
-        run: npx htmlhint index.html
+        run: npm run lint:html
+
+      - name: Markdownlint
+        run: npm run lint:md
 
       - name: Prettier check
-        run: npx prettier --check .
+        run: npm run format:check
 
       - name: Unit tests
-        run: npx vitest run --coverage
+        run: npm run test:coverage
 
       - name: Build
         run: npx vite build
 
       - name: Bundle size check
-        run: node scripts/check-bundle-size.mjs
+        run: npm run check:bundle
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v4

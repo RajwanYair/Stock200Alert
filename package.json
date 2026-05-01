@@ -1,9 +1,15 @@
 {
   "name": "crosstide",
-  "version": "6.1.0",
-  "description": "CrossTide Web — Browser-based stock monitoring dashboard with 12-method consensus signals, interactive charting, and offline-first PWA.",
+  "version": "6.2.0",
+  "description": "CrossTide Web — browser-based stock monitoring dashboard with 12-method consensus signals, interactive charting, and offline-first PWA.",
   "type": "module",
   "private": true,
+  "homepage": "https://github.com/RajwanYair/CrossTide",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RajwanYair/CrossTide.git"
+  },
+  "license": "SEE LICENSE IN LICENSE",
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
@@ -24,6 +30,21 @@
     "clean": "node scripts/clean.mjs"
   },
   "engines": {
-    "node": "^20.19.0 || ^22.13.0 || >=24.0.0"
+    "node": ">=20.19.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@vitest/coverage-v8": "^4.1.4",
+    "eslint": "^10.2.1",
+    "happy-dom": "^20.9.0",
+    "htmlhint": "^1.9.2",
+    "markdownlint-cli2": "^0.22.0",
+    "prettier": "^3.8.3",
+    "stylelint": "^17.7.0",
+    "stylelint-config-standard": "^40.0.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.58.2",
+    "vite": "^8.0.10",
+    "vitest": "^4.1.4"
   }
 }
