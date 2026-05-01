@@ -164,3 +164,7 @@ export type { PromisePoolOptions, SettledResult } from "./promise-pool";
 export { createEventBus } from "./event-bus";
 export type { EventBus, EventBusOptions, EventMap } from "./event-bus";
 
+
+export { urlBuilder } from "./url-builder";
+export type { UrlBuilder, QueryValue } from "./url-builder";
+
