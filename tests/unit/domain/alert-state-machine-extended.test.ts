@@ -90,4 +90,31 @@ describe("alert-state-machine extended", () => {
     const rsiBuy = secondAlerts.filter((a) => a.alertType === "rsiMethodBuy");
     expect(rsiBuy.length).toBe(0);
   });
+
+  it("fires consensusSell alert when consensus direction is SELL", () => {
+    const s1 = createAlertState("AAPL");
+    const { alerts, nextState } = evaluateAlerts(s1, [], consensus("SELL"), DEFAULT_ENABLED_ALERTS);
+    const sellAlerts = alerts.filter((a) => a.alertType === "consensusSell");
+    expect(sellAlerts.length).toBe(1);
+    expect(sellAlerts[0]?.direction).toBe("SELL");
+    expect(nextState.firedAlerts.has("consensusSell")).toBe(true);
+  });
+
+  it("does not refire consensusSell on consecutive SELL evaluations", () => {
+    const s1 = createAlertState("AAPL");
+    const { nextState: s2 } = evaluateAlerts(s1, [], consensus("SELL"), DEFAULT_ENABLED_ALERTS);
+    const { alerts } = evaluateAlerts(s2, [], consensus("SELL"), DEFAULT_ENABLED_ALERTS);
+    expect(alerts.filter((a) => a.alertType === "consensusSell").length).toBe(0);
+  });
+
+  it("consensus NEUTRAL clears firedAlerts for consensusBuy and consensusSell", () => {
+    const s1 = createAlertState("AAPL");
+    // Fire a consensusBuy first
+    const { nextState: s2 } = evaluateAlerts(s1, [], consensus("BUY"), DEFAULT_ENABLED_ALERTS);
+    expect(s2.firedAlerts.has("consensusBuy")).toBe(true);
+    // NEUTRAL should clear it
+    const { nextState: s3 } = evaluateAlerts(s2, [], consensus("NEUTRAL"), DEFAULT_ENABLED_ALERTS);
+    expect(s3.firedAlerts.has("consensusBuy")).toBe(false);
+    expect(s3.firedAlerts.has("consensusSell")).toBe(false);
+  });
 });

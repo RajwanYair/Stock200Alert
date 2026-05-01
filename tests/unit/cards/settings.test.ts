@@ -76,4 +76,38 @@ describe("renderSettings", () => {
     (container.querySelector("#btn-clear-cache") as HTMLButtonElement).click();
     expect(callbacks.onClearCache).toHaveBeenCalled();
   });
+
+  describe("Finnhub API key inputs", () => {
+    it("calls onFinnhubKeyChange with key when Save is clicked with valid input", () => {
+      const onFinnhubKeyChange = vi.fn();
+      renderSettings(container, makeConfig(), { ...callbacks, onFinnhubKeyChange });
+      const keyInput = container.querySelector("#finnhub-key-input") as HTMLInputElement;
+      const saveBtn = container.querySelector("#btn-finnhub-save") as HTMLButtonElement;
+      keyInput.value = "test-api-key-123";
+      saveBtn.click();
+      expect(onFinnhubKeyChange).toHaveBeenCalledWith("test-api-key-123");
+    });
+
+    it("does not call onFinnhubKeyChange when Save is clicked with empty key", () => {
+      const onFinnhubKeyChange = vi.fn();
+      renderSettings(container, makeConfig(), { ...callbacks, onFinnhubKeyChange });
+      const keyInput = container.querySelector("#finnhub-key-input") as HTMLInputElement;
+      keyInput.value = "";
+      (container.querySelector("#btn-finnhub-save") as HTMLButtonElement).click();
+      expect(onFinnhubKeyChange).not.toHaveBeenCalled();
+    });
+
+    it("calls onFinnhubKeyChange(null) and resets input when Clear is clicked", () => {
+      const onFinnhubKeyChange = vi.fn();
+      renderSettings(container, makeConfig(), { ...callbacks, onFinnhubKeyChange });
+      const keyInput = container.querySelector("#finnhub-key-input") as HTMLInputElement;
+      const clearBtn = container.querySelector("#btn-finnhub-clear") as HTMLButtonElement;
+      keyInput.value = "existing-key";
+      clearBtn.removeAttribute("disabled");
+      clearBtn.click();
+      expect(onFinnhubKeyChange).toHaveBeenCalledWith(null);
+      expect(keyInput.value).toBe("");
+      expect(clearBtn.disabled).toBe(true);
+    });
+  });
 });
