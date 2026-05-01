@@ -86,4 +86,57 @@ describe("error-boundary", () => {
     window.dispatchEvent(new ErrorEvent("error", { message: "after", error: new Error("after") }));
     expect(getErrorLog()).toHaveLength(0);
   });
+
+  it("records error without stack when event.error is not an Error instance", () => {
+    teardown = installErrorBoundary();
+    // Dispatch an error event where the `error` property is a non-Error (no stack)
+    const event = new ErrorEvent("error", {
+      message: "primitive error",
+      filename: "app.js",
+      error: "a string, not an Error",
+    });
+    window.dispatchEvent(event);
+    const log = getErrorLog();
+    expect(log).toHaveLength(1);
+    expect(log[0]!.message).toBe("primitive error");
+    expect(log[0]!.stack).toBeUndefined();
+  });
+
+  it("records unhandled rejection with string reason (no stack)", () => {
+    if (typeof PromiseRejectionEvent === "undefined") return;
+
+    teardown = installErrorBoundary();
+    const event = new PromiseRejectionEvent("unhandledrejection", {
+      promise: Promise.resolve(),
+      reason: "simple string reason",
+    });
+    window.dispatchEvent(event);
+    const log = getErrorLog();
+    expect(log).toHaveLength(1);
+    expect(log[0]!.message).toBe("simple string reason");
+    expect(log[0]!.stack).toBeUndefined();
+  });
+
+  it("max log size is capped at 100 entries", () => {
+    teardown = installErrorBoundary();
+    // Dispatch 105 error events
+    for (let i = 0; i < 105; i++) {
+      window.dispatchEvent(
+        new ErrorEvent("error", { message: `err-${i}`, error: new Error(`err-${i}`) }),
+      );
+    }
+    const log = getErrorLog();
+    // Should be capped at 100 (oldest entries evicted)
+    expect(log.length).toBe(100);
+    // Oldest messages were removed; last message should be err-104
+    expect(log[log.length - 1]!.message).toBe("err-104");
+  });
+
+  it("installErrorBoundary with no handler still records errors", () => {
+    teardown = installErrorBoundary();
+    window.dispatchEvent(
+      new ErrorEvent("error", { message: "silent", error: new Error("silent") }),
+    );
+    expect(getErrorLog()).toHaveLength(1);
+  });
 });
