@@ -97,7 +97,15 @@ describe("loadCard", () => {
   });
 
   it("resolves for all routes", async () => {
-    const routes = ["watchlist", "consensus", "chart", "alerts", "heatmap", "screener", "settings"] as const;
+    const routes = [
+      "watchlist",
+      "consensus",
+      "chart",
+      "alerts",
+      "heatmap",
+      "screener",
+      "settings",
+    ] as const;
     await Promise.all(routes.map((r) => loadCard(r)));
   });
 

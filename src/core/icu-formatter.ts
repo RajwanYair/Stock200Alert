@@ -36,11 +36,7 @@ export type MessageDict = Record<string, string>;
  * @param values   - Substitution values; missing keys are replaced with the key name
  * @param locale   - BCP 47 locale tag used for plural rules (defaults to 'en')
  */
-export function format(
-  template: string,
-  values: MessageValues = {},
-  locale = "en",
-): string {
+export function format(template: string, values: MessageValues = {}, locale = "en"): string {
   return parseSegment(template, values, locale);
 }
 

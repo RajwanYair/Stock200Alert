@@ -28,7 +28,10 @@ const DEMO_HOLDINGS: readonly Holding[] = [
 ];
 
 function fmt(n: number, decimals = 2): string {
-  return n.toLocaleString("en-US", { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+  return n.toLocaleString("en-US", {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+  });
 }
 
 function fmtPct(n: number): string {

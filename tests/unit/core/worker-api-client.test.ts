@@ -97,7 +97,9 @@ describe("WorkerApiClient", () => {
 
   describe("search", () => {
     it("returns SearchResponse on 200", async () => {
-      const payload = { results: [{ ticker: "AAPL", name: "Apple Inc.", exchange: "NASDAQ", type: "equity" }] };
+      const payload = {
+        results: [{ ticker: "AAPL", name: "Apple Inc.", exchange: "NASDAQ", type: "equity" }],
+      };
       const client = createApiClient(BASE, { fetchFn: mockFetch(200, payload) });
       const result = await client.search({ q: "apple", limit: 5 });
       expect(result.ok).toBe(true);
@@ -137,10 +139,7 @@ describe("WorkerApiClient", () => {
       }
 
       // Verify POST method + Content-Type
-      const [, init] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0] as [
-        string,
-        RequestInit,
-      ];
+      const [, init] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit];
       expect(init.method).toBe("POST");
       expect((init.headers as Record<string, string>)["Content-Type"]).toBe("application/json");
     });

@@ -22,11 +22,7 @@ export interface PushSubscriptionPayload {
 
 /** Returns true when the browser has everything needed for Web Push. */
 export function isPushSupported(): boolean {
-  return (
-    "serviceWorker" in navigator &&
-    "PushManager" in self &&
-    "Notification" in self
-  );
+  return "serviceWorker" in navigator && "PushManager" in self && "Notification" in self;
 }
 
 // ──────────────────────────────────────────────────────────────
@@ -91,9 +87,7 @@ export async function subscribeToPush(
 // ──────────────────────────────────────────────────────────────
 
 /** Remove any existing push subscription. Returns true when successfully removed. */
-export async function unsubscribePush(): Promise<
-  { ok: true } | { ok: false; error: string }
-> {
+export async function unsubscribePush(): Promise<{ ok: true } | { ok: false; error: string }> {
   if (!isPushSupported()) {
     return { ok: false, error: "Push not supported" };
   }

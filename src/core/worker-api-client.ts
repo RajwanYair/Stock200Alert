@@ -113,11 +113,7 @@ function buildUrl(base: string, path: string, query?: Record<string, string>): s
   return url.toString();
 }
 
-async function getJson<T>(
-  fetchFn: FetchFn,
-  url: string,
-  signal?: AbortSignal,
-): Promise<Result<T>> {
+async function getJson<T>(fetchFn: FetchFn, url: string, signal?: AbortSignal): Promise<Result<T>> {
   try {
     const res = await fetchFn(url, { signal: signal ?? null });
     if (!res.ok) {

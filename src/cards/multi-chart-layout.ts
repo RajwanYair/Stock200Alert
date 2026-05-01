@@ -91,11 +91,7 @@ function loadCachedPrices(ticker: string): PanelDataPoint[] {
 
 // ── SVG sparkline renderer ──────────────────────────────────────────────────
 
-function renderSparklineSvg(
-  points: PanelDataPoint[],
-  width: number,
-  height: number,
-): string {
+function renderSparklineSvg(points: PanelDataPoint[], width: number, height: number): string {
   if (points.length < 2) {
     return `<svg viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg">
       <text x="${width / 2}" y="${height / 2}" text-anchor="middle" fill="var(--color-text-muted)" font-size="12">No data</text>
@@ -150,10 +146,7 @@ function buildPanelHtml(
 
   const isLarge = layout === "1+3" && panelIndex === 0;
   const options = availableTickers
-    .map(
-      (t) =>
-        `<option value="${t}"${t === ticker ? " selected" : ""}>${t}</option>`,
-    )
+    .map((t) => `<option value="${t}"${t === ticker ? " selected" : ""}>${t}</option>`)
     .join("");
 
   return `

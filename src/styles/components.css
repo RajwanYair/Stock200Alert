@@ -9,9 +9,18 @@
   }
 
   /* aria-sort visual chevrons (B14) */
-  .sortable[aria-sort="ascending"]::after  { content: " ↑"; font-size: 0.75em; }
-  .sortable[aria-sort="descending"]::after { content: " ↓"; font-size: 0.75em; }
-  .sortable:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .sortable[aria-sort="ascending"]::after {
+    content: " ↑";
+    font-size: 0.75em;
+  }
+  .sortable[aria-sort="descending"]::after {
+    content: " ↓";
+    font-size: 0.75em;
+  }
+  .sortable:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
 
   .card {
     background: var(--bg-card);
@@ -272,7 +281,7 @@
     border-radius: var(--radius-lg);
     background: var(--bg-card);
     color: var(--text);
-    box-shadow: 0 16px 48px rgb(0 0 0 / 0.4);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4);
     padding: 0;
     width: min(560px, 90vw);
     max-height: min(420px, 70vh);
@@ -280,7 +289,7 @@
   }
 
   .palette-overlay::backdrop {
-    background: rgb(0 0 0 / 0.5);
+    background: rgba(0, 0, 0, 0.5);
   }
 
   .palette-content {
@@ -363,19 +372,29 @@
     font-size: var(--font-size-sm);
     font-weight: 600;
     color: #fff;
-    text-shadow: 0 1px 2px rgb(0 0 0 / 40%);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
   }
 
   .heatmap-pct {
     font-size: 0.7rem;
-    color: rgb(255 255 255 / 90%);
+    color: rgba(255, 255, 255, 0.9);
   }
 
-  .heatmap-strong-up { background: #0f9d58; }
-  .heatmap-up { background: #4caf50; }
-  .heatmap-flat { background: #616161; }
-  .heatmap-down { background: #e53935; }
-  .heatmap-strong-down { background: #b71c1c; }
+  .heatmap-strong-up {
+    background: #0f9d58;
+  }
+  .heatmap-up {
+    background: #4caf50;
+  }
+  .heatmap-flat {
+    background: #616161;
+  }
+  .heatmap-down {
+    background: #e53935;
+  }
+  .heatmap-strong-down {
+    background: #b71c1c;
+  }
 
   /* Screener */
   .screener-controls {
@@ -462,8 +481,12 @@
     gap: var(--sp-xs);
   }
 
-  .text-positive { color: var(--positive); }
-  .text-negative { color: var(--negative); }
+  .text-positive {
+    color: var(--positive);
+  }
+  .text-negative {
+    color: var(--negative);
+  }
 
   .portfolio-columns {
     display: grid;
@@ -607,8 +630,12 @@
     transition: width 0.5s ease;
   }
 
-  .risk-gauge-fill.text-positive { background: var(--positive); }
-  .risk-gauge-fill.text-negative { background: var(--negative); }
+  .risk-gauge-fill.text-positive {
+    background: var(--positive);
+  }
+  .risk-gauge-fill.text-negative {
+    background: var(--negative);
+  }
 
   .risk-hint {
     font-size: var(--font-size-xs);
@@ -715,9 +742,15 @@
     cursor: default;
   }
 
-  .dot-buy    { background: var(--positive, #3fb950); }
-  .dot-sell   { background: var(--negative, #f85149); }
-  .dot-neutral { background: var(--text-secondary, #8b949e); }
+  .dot-buy {
+    background: var(--positive, #3fb950);
+  }
+  .dot-sell {
+    background: var(--negative, #f85149);
+  }
+  .dot-neutral {
+    background: var(--text-secondary, #8b949e);
+  }
 
   /* ── Instrument filter chips (B12) ───────────────────────────────── */
   .instrument-filter-bar {
@@ -736,7 +769,9 @@
     color: var(--text-secondary);
     font-size: var(--font-size-sm);
     cursor: pointer;
-    transition: background var(--transition-fast), color var(--transition-fast),
+    transition:
+      background var(--transition-fast),
+      color var(--transition-fast),
       border-color var(--transition-fast);
   }
 
@@ -764,10 +799,22 @@
     line-height: 1.4;
   }
 
-  .instrument-badge-stock { background: #1d3c6e; color: #58a6ff; }
-  .instrument-badge-etf   { background: #0f3b2b; color: #3fb950; }
-  .instrument-badge-crypto { background: #3b2a00; color: #f0a400; }
-  .instrument-badge-other { background: #2a2a2a; color: #8b949e; }
+  .instrument-badge-stock {
+    background: #1d3c6e;
+    color: #58a6ff;
+  }
+  .instrument-badge-etf {
+    background: #0f3b2b;
+    color: #3fb950;
+  }
+  .instrument-badge-crypto {
+    background: #3b2a00;
+    color: #f0a400;
+  }
+  .instrument-badge-other {
+    background: #2a2a2a;
+    color: #8b949e;
+  }
 
   /* ── Sector grouping rows (B13) ───────────────────────────────────── */
   .sector-header {
@@ -777,7 +824,9 @@
     border-top: 1px solid var(--border);
   }
 
-  .sector-header:hover td { color: var(--accent); }
+  .sector-header:hover td {
+    color: var(--accent);
+  }
 
   .sector-header td {
     padding: var(--sp-xs) var(--sp-md);
@@ -793,7 +842,9 @@
     transition: transform var(--transition-fast);
   }
 
-  .sector-name { margin-right: var(--sp-xs); }
+  .sector-name {
+    margin-right: var(--sp-xs);
+  }
 
   .sector-count {
     margin-right: var(--sp-sm);
@@ -811,7 +862,7 @@
     background: var(--color-surface, #1e1e2e);
     border: 1px solid var(--color-border, #3a3a5c);
     border-radius: var(--radius, 8px);
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
     color: var(--color-text, #e2e8f0);
     max-width: 320px;
     min-width: 240px;

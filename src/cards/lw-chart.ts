@@ -60,13 +60,8 @@ export async function attachLwChart(
   const border = dark ? "#30363d" : "#d0d7de";
 
   // Dynamic import — loads only when chart is viewed
-  const {
-    createChart,
-    CandlestickSeries,
-    LineSeries,
-    HistogramSeries,
-    createSeriesMarkers,
-  } = await import("lightweight-charts");
+  const { createChart, CandlestickSeries, LineSeries, HistogramSeries, createSeriesMarkers } =
+    await import("lightweight-charts");
 
   const chart = createChart(container, {
     layout: { background: { color: bg }, textColor: text },

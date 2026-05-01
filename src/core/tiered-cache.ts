@@ -88,8 +88,7 @@ export class TieredCache {
    */
   evictOldest(count: number): number {
     let evicted = 0;
-    const entries = [...this.l1.entries()]
-      .sort(([, a], [, b]) => a.expiresAt - b.expiresAt);
+    const entries = [...this.l1.entries()].sort(([, a], [, b]) => a.expiresAt - b.expiresAt);
 
     for (const [key] of entries) {
       if (evicted >= count) break;

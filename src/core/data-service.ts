@@ -24,8 +24,7 @@ const YAHOO_DIRECT = "https://query1.finance.yahoo.com";
 
 // import.meta.env.DEV is true only during `vite dev`/`vite preview`; it is
 // replaced by the literal `false` in production builds by Vite.
-const USE_DEV_PROXY: boolean =
-  (import.meta.env.DEV as boolean | undefined) === true;
+const USE_DEV_PROXY: boolean = (import.meta.env.DEV as boolean | undefined) === true;
 
 const YAHOO_BASE: string = USE_DEV_PROXY ? "/api/yahoo" : YAHOO_DIRECT;
 
@@ -143,7 +142,11 @@ async function fetchCandles(ticker: string): Promise<CandleResult> {
     });
   }
 
-  return { candles, instrumentType: parseInstrumentType(result.meta?.instrumentType), sector: result.meta?.sector };
+  return {
+    candles,
+    instrumentType: parseInstrumentType(result.meta?.instrumentType),
+    sector: result.meta?.sector,
+  };
 }
 
 /**

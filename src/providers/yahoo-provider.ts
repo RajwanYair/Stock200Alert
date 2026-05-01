@@ -8,11 +8,7 @@
 import type { DailyCandle } from "../types/domain";
 import type { MarketDataProvider, Quote, SearchResult, ProviderHealth } from "./types";
 import { fetchWithRetry, FetchError } from "../core/fetch";
-import {
-  safeParse,
-  YahooChartSchema,
-  YahooSearchSchema,
-} from "../types/valibot-schemas";
+import { safeParse, YahooChartSchema, YahooSearchSchema } from "../types/valibot-schemas";
 
 const DEFAULT_BASE_URL = "https://query1.finance.yahoo.com";
 

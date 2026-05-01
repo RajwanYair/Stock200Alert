@@ -10,7 +10,14 @@ import { watchServiceWorkerUpdates } from "./core/sw-update";
 import { createShortcutManager } from "./core/keyboard";
 import { initRouter, navigateTo, onRouteChange, type RouteName } from "./ui/router";
 import { initTheme } from "./ui/theme";
-import { renderWatchlist as renderWatchlistCore, setSortColumn, setSectorGrouping, isSectorGroupingEnabled, getSortConfig, type WatchlistQuote } from "./ui/watchlist";
+import {
+  renderWatchlist as renderWatchlistCore,
+  setSortColumn,
+  setSectorGrouping,
+  isSectorGroupingEnabled,
+  getSortConfig,
+  type WatchlistQuote,
+} from "./ui/watchlist";
 import { loadCard, type CardHandle, type CardContext } from "./cards/registry";
 import { showToast } from "./ui/toast";
 import { openPalette, isPaletteOpen } from "./ui/palette-overlay";
@@ -24,9 +31,18 @@ import { computeRsiSeries } from "./domain/rsi-calculator";
 import { computeSma } from "./domain/sma-calculator";
 import type { ScreenerInput } from "./cards/screener";
 import { buildShareUrl, readShareUrl } from "./core/share-state";
-import { mountInstrumentFilterBar, applyInstrumentFilter, getInstrumentFilter } from "./ui/instrument-filter";
+import {
+  mountInstrumentFilterBar,
+  applyInstrumentFilter,
+  getInstrumentFilter,
+} from "./ui/instrument-filter";
 import { bindSortableTable } from "./ui/sortable";
-import { loadPersistedPalette, applyPalette, VALID_PALETTES, type ExtendedPaletteName } from "./ui/palette-switcher";
+import {
+  loadPersistedPalette,
+  applyPalette,
+  VALID_PALETTES,
+  type ExtendedPaletteName,
+} from "./ui/palette-switcher";
 import { exportFullDataJson, exportFullDataCsv } from "./core/data-export";
 import { downloadFile } from "./core/export-import";
 import { createPwaInstallManager } from "./ui/pwa-install";

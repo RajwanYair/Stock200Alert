@@ -9,7 +9,10 @@ import { PRESET_FILTERS, type PresetFilter } from "./preset-filters";
 import { applyFilters, renderScreenerResults } from "./screener";
 import { getScreenerData } from "./screener-data";
 
-function renderPresetButtons(container: HTMLElement, onSelect: (preset: PresetFilter) => void): void {
+function renderPresetButtons(
+  container: HTMLElement,
+  onSelect: (preset: PresetFilter) => void,
+): void {
   const wrapper = document.createElement("div");
   wrapper.className = "screener-presets";
   for (const preset of PRESET_FILTERS) {

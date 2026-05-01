@@ -84,7 +84,8 @@ export function createFinnhubProvider(
       const h = data.h;
       const l = data.l;
       const c = data.c;
-      if (!t || !o || !h || !l || !c) throw new FetchError(`Finnhub: incomplete candle data for ${ticker}`);
+      if (!t || !o || !h || !l || !c)
+        throw new FetchError(`Finnhub: incomplete candle data for ${ticker}`);
 
       const out: DailyCandle[] = [];
       for (let i = 0; i < t.length; i++) {
@@ -94,7 +95,14 @@ export function createFinnhubProvider(
         const lv = l[i];
         const cv = c[i];
         const v = data.v?.[i] ?? 0;
-        if (ts === undefined || ov === undefined || hv === undefined || lv === undefined || cv === undefined) continue;
+        if (
+          ts === undefined ||
+          ov === undefined ||
+          hv === undefined ||
+          lv === undefined ||
+          cv === undefined
+        )
+          continue;
         out.push({
           date: new Date(ts * 1000).toISOString().slice(0, 10),
           open: ov,

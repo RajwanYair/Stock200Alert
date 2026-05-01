@@ -16,11 +16,7 @@ import { registerRoute } from "workbox-routing";
 import { NetworkFirst, StaleWhileRevalidate, CacheFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
 import { enable as enableNavigationPreload } from "workbox-navigation-preload";
-import {
-  CACHE_NAMES,
-  NETWORK_TIMEOUT_SECONDS,
-  getExpirationConfig,
-} from "./core/sw-cache-config";
+import { CACHE_NAMES, NETWORK_TIMEOUT_SECONDS, getExpirationConfig } from "./core/sw-cache-config";
 
 declare const self: ServiceWorkerGlobalScope;
 
@@ -116,15 +112,14 @@ self.addEventListener("push", (event: PushEvent) => {
 
 self.addEventListener("notificationclick", (event: NotificationEvent) => {
   event.notification.close();
-  const url: string =
-    (event.notification.data as { url?: string } | undefined)?.url ?? "/";
+  const url: string = (event.notification.data as { url?: string } | undefined)?.url ?? "/";
   event.waitUntil(
     self.clients
       .matchAll({ type: "window", includeUncontrolled: true })
       .then((clientList): Promise<void> => {
         for (const client of clientList) {
           if (client.url === url && "focus" in client) {
-            return (client).focus().then(() => undefined);
+            return client.focus().then(() => undefined);
           }
         }
         if (self.clients.openWindow) {

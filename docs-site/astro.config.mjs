@@ -7,8 +7,7 @@ export default defineConfig({
   integrations: [
     starlight({
       title: "CrossTide",
-      description:
-        "CrossTide — multi-method consensus trading indicator library for TypeScript.",
+      description: "CrossTide — multi-method consensus trading indicator library for TypeScript.",
       logo: {
         alt: "CrossTide",
         src: "./src/assets/logo.svg",

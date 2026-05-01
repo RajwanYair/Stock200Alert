@@ -8,7 +8,7 @@ describe("generateOgImageSvg", () => {
   it("returns a string starting with SVG header", () => {
     const svg = generateOgImageSvg({ ticker: "AAPL" });
     expect(svg).toContain("<svg");
-    expect(svg).toContain("xmlns=\"http://www.w3.org/2000/svg\"");
+    expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"');
   });
 
   it("includes the ticker in the SVG", () => {

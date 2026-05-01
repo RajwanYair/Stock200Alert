@@ -26,7 +26,9 @@ import { computeMacd } from "./src/domain/macd-calculator";
 import { aggregateConsensus } from "./src/domain/consensus";
 import type { DailyCandle } from "./src/types/domain";
 
-const candles: DailyCandle[] = [ /* your OHLCV data */ ];
+const candles: DailyCandle[] = [
+  /* your OHLCV data */
+];
 
 // Single indicator
 const rsiValues = computeRsi(candles, { period: 14 });
@@ -43,7 +45,7 @@ All domain functions operate on `DailyCandle[]`:
 
 ```ts
 interface DailyCandle {
-  date: string;    // ISO-8601: "2024-01-15"
+  date: string; // ISO-8601: "2024-01-15"
   open: number;
   high: number;
   low: number;

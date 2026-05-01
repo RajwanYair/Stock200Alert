@@ -5,7 +5,7 @@
 > **Actual maturity:** v6.0-rc — toolchain migrated, domain layer complete (~40 modules,
 > ~98% coverage), feature cards mostly scaffolded but not wired, Worker proxy authored
 > but not deployed.
-> **Next target:** v6.1 *Best-in-Class Web Dashboard* — every decision below has been
+> **Next target:** v6.1 _Best-in-Class Web Dashboard_ — every decision below has been
 > re-examined and is either reaffirmed, refined, or replaced.
 
 This document supersedes the previous roadmap. It is the result of a deep rethink of
@@ -39,16 +39,16 @@ This document supersedes the previous roadmap. It is the result of a deep rethin
 
 ### 1.1 What is genuinely done
 
-| Area | Status | Notes |
-|------|--------|-------|
-| Domain layer (12 calculators + 12 methods + consensus + alerts + backtest) | ✅ Ported | `src/domain/*` — pure, tested |
-| Unit tests (~40 files, ~500+ tests) | ✅ | 98%+ statements on covered modules |
-| Toolchain shared with `MyScripts/tooling/*` | ✅ | TS 6, Vite 8, Vitest 4, ESLint 10 (per CHANGELOG) |
-| Cloudflare Worker source (Yahoo / Twelve / CoinGecko / Polygon) | ✅ Authored | Not yet deployed; no integration tests |
-| PWA scaffold (manifest + `sw.ts`) | ✅ Scaffold | SW is minimal precache + SWR; no Workbox/Background Sync |
-| IndexedDB tier (`core/idb.ts`, `core/tiered-cache.ts`) | ✅ | Used internally; no LRU eviction yet |
-| Card scaffolds (15 in `src/cards/*`) | ⚠️ Skeleton | Render summaries, not real charts/tables |
-| `main.ts` bootstrap | ⚠️ Minimal | Only watchlist + theme + add/remove are wired |
+| Area                                                                       | Status      | Notes                                                    |
+| -------------------------------------------------------------------------- | ----------- | -------------------------------------------------------- |
+| Domain layer (12 calculators + 12 methods + consensus + alerts + backtest) | ✅ Ported   | `src/domain/*` — pure, tested                            |
+| Unit tests (~40 files, ~500+ tests)                                        | ✅          | 98%+ statements on covered modules                       |
+| Toolchain shared with `MyScripts/tooling/*`                                | ✅          | TS 6, Vite 8, Vitest 4, ESLint 10 (per CHANGELOG)        |
+| Cloudflare Worker source (Yahoo / Twelve / CoinGecko / Polygon)            | ✅ Authored | Not yet deployed; no integration tests                   |
+| PWA scaffold (manifest + `sw.ts`)                                          | ✅ Scaffold | SW is minimal precache + SWR; no Workbox/Background Sync |
+| IndexedDB tier (`core/idb.ts`, `core/tiered-cache.ts`)                     | ✅          | Used internally; no LRU eviction yet                     |
+| Card scaffolds (15 in `src/cards/*`)                                       | ⚠️ Skeleton | Render summaries, not real charts/tables                 |
+| `main.ts` bootstrap                                                        | ⚠️ Minimal  | Only watchlist + theme + add/remove are wired            |
 
 ### 1.2 What is missing or weak
 
@@ -79,38 +79,38 @@ This audit is the basis for everything below.
 
 Every prior decision is re-examined. **Verdict** = `Keep` / `Refine` / `Replace`.
 
-| # | Decision (current) | Verdict | Rationale & Action |
-|---|--------------------|---------|---------------------|
-| D1 | **Vanilla TS, no UI framework** | **Refine** | Keep zero-framework core, but adopt **Preact Signals** (`@preact/signals-core`, ~1.4 KB) for fine-grained reactivity instead of hand-rolled `EventTarget` pub/sub. Optional **Lit** (~5 KB) only for complex, reusable cards (chart toolbar, screener filter builder). Vanilla wins for cards that are mostly pure DOM. |
-| D2 | **Hash-based router** | **Replace** | Move to **History API** with a fallback for GH Pages 404 (`404.html` redirect trick) or — better — host on **Cloudflare Pages** which supports SPA fallback natively. Enables real share URLs, OG previews, and clean deep links. |
-| D3 | **EventTarget reactive store** | **Replace** | Replace with a thin `signal()`/`computed()`/`effect()` layer. Same DX, fine-grained DOM updates, no manual diffing. Wrap `localStorage` and `IndexedDB` as persistent signals. |
-| D4 | **Vanilla CSS + tokens + `@layer`** | **Keep + Augment** | Tokens are correct. Add **OpenProps**-style scale, container queries, `:has()` patterns, and a **design-token export** (`tokens.json`) usable by the docs site. Reject Tailwind/UnoCSS — adds toolchain cost without payoff for our card system. |
-| D5 | **Lightweight Charts (TradingView OSS)** | **Keep** | 40 KB, OHLC native, MIT. Confirmed best fit. Action: actually integrate it (currently absent from deps). Lazy-load via `import()`. Reject ECharts (250 KB) and D3 (own everything). |
-| D6 | **Cloudflare Workers proxy** | **Keep + Extend** | Add **Durable Objects** for per-symbol WebSocket fan-out; add **R2** for cold history (>1 yr OHLC). Reject Vercel Edge (worse free tier for this use case). |
-| D7 | **Yahoo Finance v8 (unofficial)** | **Refine** | Keep as primary for free tier, but add **Finnhub** (60 req/min free) as 2nd-tier and **Alpha Vantage** as 3rd. Polygon stays as paid escape hatch. Treat Yahoo as best-effort — never a contract. |
-| D8 | **No backend / no auth (v6.0)** | **Refine** | Keep "no account required" as default. Add **optional Passkeys-only auth** in Phase 4 backed by Cloudflare Workers + KV — no passwords, no email required. Cloud sync is opt-in. |
-| D9 | **GitHub Pages deploy** | **Replace** | Move to **Cloudflare Pages** + Workers. Same `$0/mo`, but native SPA fallback, instant rollback, preview deploys per PR, edge functions co-located with the proxy. |
-| D10 | **Service Worker hand-rolled** | **Refine** | Replace ad-hoc `sw.ts` with **Workbox** (precache, runtime caching, Background Sync queue for failed POSTs, Navigation Preload). Adds ~10 KB but eliminates a class of bugs. |
-| D11 | **Polling-only data** | **Extend** | Add **WebSocket streaming** (Finnhub or Polygon) behind a feature flag. Fall back to polling on disconnect. |
-| D12 | **No Web Workers** | **Replace** | Move backtest engine, full-history indicator scans, and screener evaluation into a **dedicated Web Worker** with `comlink` (~1 KB). Keeps UI at 60 fps even on 5y daily backtests. |
-| D13 | **`localStorage` + raw IndexedDB** | **Refine** | Keep tiered cache, but wrap IndexedDB with **`idb-keyval`** (~600 B) or our existing `idb.ts` only — reject Dexie (15 KB) for our schema. Add **LRU eviction** + storage-pressure handling (`navigator.storage.estimate()`). |
-| D14 | **No runtime validation** | **Add** | Adopt **Zod** at every external boundary (provider responses, config import, URL state). ~12 KB but pays for itself in correctness. Branded types for `Ticker`, `ISODate`, `Price`. |
-| D15 | **No error tracking** | **Add** | Self-hosted **GlitchTip** (Sentry-compatible, AGPL) on Fly.io or local Worker. Free, privacy-respecting. Sample rate < 100%. |
-| D16 | **No telemetry** | **Add** | **Plausible** or **Umami** (self-hosted, cookieless). Track route changes, card mounts, error rates. No PII. |
-| D17 | **No Lighthouse CI** | **Add** | `lhci autorun` in GH Actions with budgets file; fail PR on regression. |
-| D18 | **No E2E tests** | **Add** | **Playwright** for 8–10 critical flows (add ticker, view chart, run backtest, toggle theme, offline mode). |
-| D19 | **No a11y tests** | **Add** | `@axe-core/playwright` per E2E run; `vitest-axe` for component-level. WCAG 2.2 AA target. |
-| D20 | **Manual versioning + CHANGELOG** | **Refine** | Adopt **Changesets** — every PR adds a changeset; release PR is auto-generated. Keeps SemVer honest. |
-| D21 | **Local devDeps removed; shared MyScripts toolchain** | **Keep** | Reaffirmed — major DX win, single source of truth. Document escape hatch for tools we genuinely need locally. |
-| D22 | **No Storybook / component catalog** | **Add (light)** | A single `/dev/components.html` page that mounts every card with mock data. Cheaper than Storybook, sufficient for vanilla TS. |
-| D23 | **No CSP / SRI / supply-chain checks** | **Add** | CSP via Worker headers, SRI for any third-party CDN asset, **`socket.dev`** or `npm audit signatures` in CI. |
-| D24 | **No i18n** | **Add (Phase 4)** | **`@formatjs/intl`** + ICU messages. English + Hebrew with RTL. Tokens already direction-agnostic. |
-| D25 | **Markdown-only docs** | **Refine** | Add a tiny **Astro Starlight** docs site at `/docs/` deployed alongside app, with searchable indicator reference + API contracts. |
-| D26 | **Single-tenant browser app** | **Keep** | No multi-user features in core. Cloud sync is per-user, opt-in, isolated. |
-| D27 | **TypeScript strict** | **Keep + Tighten** | Enable `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noPropertyAccessFromIndexSignature` if not already. Add `tsd` for public-API type tests. |
-| D28 | **Vitest only** | **Keep** | + `vitest-axe`, `vitest-fetch-mock`, `@vitest/browser` for the 5% of tests that need a real browser. |
-| D29 | **Manual provider health tracking** | **Refine** | Move to a tiny **circuit breaker** (closed/open/half-open) per provider, persisted in IndexedDB. Surface in Provider Health card. |
-| D30 | **No docs for indicators** | **Add** | Per-indicator MDX in docs site: formula (KaTeX), defaults, references, test vectors. |
+| #   | Decision (current)                                    | Verdict            | Rationale & Action                                                                                                                                                                                                                                                                                                      |
+| --- | ----------------------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | **Vanilla TS, no UI framework**                       | **Refine**         | Keep zero-framework core, but adopt **Preact Signals** (`@preact/signals-core`, ~1.4 KB) for fine-grained reactivity instead of hand-rolled `EventTarget` pub/sub. Optional **Lit** (~5 KB) only for complex, reusable cards (chart toolbar, screener filter builder). Vanilla wins for cards that are mostly pure DOM. |
+| D2  | **Hash-based router**                                 | **Replace**        | Move to **History API** with a fallback for GH Pages 404 (`404.html` redirect trick) or — better — host on **Cloudflare Pages** which supports SPA fallback natively. Enables real share URLs, OG previews, and clean deep links.                                                                                       |
+| D3  | **EventTarget reactive store**                        | **Replace**        | Replace with a thin `signal()`/`computed()`/`effect()` layer. Same DX, fine-grained DOM updates, no manual diffing. Wrap `localStorage` and `IndexedDB` as persistent signals.                                                                                                                                          |
+| D4  | **Vanilla CSS + tokens + `@layer`**                   | **Keep + Augment** | Tokens are correct. Add **OpenProps**-style scale, container queries, `:has()` patterns, and a **design-token export** (`tokens.json`) usable by the docs site. Reject Tailwind/UnoCSS — adds toolchain cost without payoff for our card system.                                                                        |
+| D5  | **Lightweight Charts (TradingView OSS)**              | **Keep**           | 40 KB, OHLC native, MIT. Confirmed best fit. Action: actually integrate it (currently absent from deps). Lazy-load via `import()`. Reject ECharts (250 KB) and D3 (own everything).                                                                                                                                     |
+| D6  | **Cloudflare Workers proxy**                          | **Keep + Extend**  | Add **Durable Objects** for per-symbol WebSocket fan-out; add **R2** for cold history (>1 yr OHLC). Reject Vercel Edge (worse free tier for this use case).                                                                                                                                                             |
+| D7  | **Yahoo Finance v8 (unofficial)**                     | **Refine**         | Keep as primary for free tier, but add **Finnhub** (60 req/min free) as 2nd-tier and **Alpha Vantage** as 3rd. Polygon stays as paid escape hatch. Treat Yahoo as best-effort — never a contract.                                                                                                                       |
+| D8  | **No backend / no auth (v6.0)**                       | **Refine**         | Keep "no account required" as default. Add **optional Passkeys-only auth** in Phase 4 backed by Cloudflare Workers + KV — no passwords, no email required. Cloud sync is opt-in.                                                                                                                                        |
+| D9  | **GitHub Pages deploy**                               | **Replace**        | Move to **Cloudflare Pages** + Workers. Same `$0/mo`, but native SPA fallback, instant rollback, preview deploys per PR, edge functions co-located with the proxy.                                                                                                                                                      |
+| D10 | **Service Worker hand-rolled**                        | **Refine**         | Replace ad-hoc `sw.ts` with **Workbox** (precache, runtime caching, Background Sync queue for failed POSTs, Navigation Preload). Adds ~10 KB but eliminates a class of bugs.                                                                                                                                            |
+| D11 | **Polling-only data**                                 | **Extend**         | Add **WebSocket streaming** (Finnhub or Polygon) behind a feature flag. Fall back to polling on disconnect.                                                                                                                                                                                                             |
+| D12 | **No Web Workers**                                    | **Replace**        | Move backtest engine, full-history indicator scans, and screener evaluation into a **dedicated Web Worker** with `comlink` (~1 KB). Keeps UI at 60 fps even on 5y daily backtests.                                                                                                                                      |
+| D13 | **`localStorage` + raw IndexedDB**                    | **Refine**         | Keep tiered cache, but wrap IndexedDB with **`idb-keyval`** (~600 B) or our existing `idb.ts` only — reject Dexie (15 KB) for our schema. Add **LRU eviction** + storage-pressure handling (`navigator.storage.estimate()`).                                                                                            |
+| D14 | **No runtime validation**                             | **Add**            | Adopt **Zod** at every external boundary (provider responses, config import, URL state). ~12 KB but pays for itself in correctness. Branded types for `Ticker`, `ISODate`, `Price`.                                                                                                                                     |
+| D15 | **No error tracking**                                 | **Add**            | Self-hosted **GlitchTip** (Sentry-compatible, AGPL) on Fly.io or local Worker. Free, privacy-respecting. Sample rate < 100%.                                                                                                                                                                                            |
+| D16 | **No telemetry**                                      | **Add**            | **Plausible** or **Umami** (self-hosted, cookieless). Track route changes, card mounts, error rates. No PII.                                                                                                                                                                                                            |
+| D17 | **No Lighthouse CI**                                  | **Add**            | `lhci autorun` in GH Actions with budgets file; fail PR on regression.                                                                                                                                                                                                                                                  |
+| D18 | **No E2E tests**                                      | **Add**            | **Playwright** for 8–10 critical flows (add ticker, view chart, run backtest, toggle theme, offline mode).                                                                                                                                                                                                              |
+| D19 | **No a11y tests**                                     | **Add**            | `@axe-core/playwright` per E2E run; `vitest-axe` for component-level. WCAG 2.2 AA target.                                                                                                                                                                                                                               |
+| D20 | **Manual versioning + CHANGELOG**                     | **Refine**         | Adopt **Changesets** — every PR adds a changeset; release PR is auto-generated. Keeps SemVer honest.                                                                                                                                                                                                                    |
+| D21 | **Local devDeps removed; shared MyScripts toolchain** | **Keep**           | Reaffirmed — major DX win, single source of truth. Document escape hatch for tools we genuinely need locally.                                                                                                                                                                                                           |
+| D22 | **No Storybook / component catalog**                  | **Add (light)**    | A single `/dev/components.html` page that mounts every card with mock data. Cheaper than Storybook, sufficient for vanilla TS.                                                                                                                                                                                          |
+| D23 | **No CSP / SRI / supply-chain checks**                | **Add**            | CSP via Worker headers, SRI for any third-party CDN asset, **`socket.dev`** or `npm audit signatures` in CI.                                                                                                                                                                                                            |
+| D24 | **No i18n**                                           | **Add (Phase 4)**  | **`@formatjs/intl`** + ICU messages. English + Hebrew with RTL. Tokens already direction-agnostic.                                                                                                                                                                                                                      |
+| D25 | **Markdown-only docs**                                | **Refine**         | Add a tiny **Astro Starlight** docs site at `/docs/` deployed alongside app, with searchable indicator reference + API contracts.                                                                                                                                                                                       |
+| D26 | **Single-tenant browser app**                         | **Keep**           | No multi-user features in core. Cloud sync is per-user, opt-in, isolated.                                                                                                                                                                                                                                               |
+| D27 | **TypeScript strict**                                 | **Keep + Tighten** | Enable `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noPropertyAccessFromIndexSignature` if not already. Add `tsd` for public-API type tests.                                                                                                                                                              |
+| D28 | **Vitest only**                                       | **Keep**           | + `vitest-axe`, `vitest-fetch-mock`, `@vitest/browser` for the 5% of tests that need a real browser.                                                                                                                                                                                                                    |
+| D29 | **Manual provider health tracking**                   | **Refine**         | Move to a tiny **circuit breaker** (closed/open/half-open) per provider, persisted in IndexedDB. Surface in Provider Health card.                                                                                                                                                                                       |
+| D30 | **No docs for indicators**                            | **Add**            | Per-indicator MDX in docs site: formula (KaTeX), defaults, references, test vectors.                                                                                                                                                                                                                                    |
 
 ---
 
@@ -118,28 +118,28 @@ Every prior decision is re-examined. **Verdict** = `Keep` / `Refine` / `Replace`
 
 A focused comparison against the apps users will actually compare us against.
 
-| Capability | **CrossTide (target v6.1)** | TradingView | FinViz | StockAnalysis | Koyfin | thinkorswim | Webull | GhostFolio | Yahoo Finance |
-|---|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|:-:|
-| Cost | Free / OSS | Freemium | Freemium | Freemium | Paid | Free (Schwab) | Free | OSS / Paid | Free |
-| Real-time data | WebSocket (opt-in) | ✅ | Paid | ✅ | ✅ | ✅ | ✅ | EOD | Delayed |
-| Candlestick + overlays | ✅ (LWC) | ✅✅✅ | static | ✅ | ✅✅ | ✅✅ | ✅ | ❌ | ✅ |
-| Indicators | 12 methods + 12 calcs | 100+ | 50+ | 30+ | 80+ | 400+ | 50+ | 0 | ~10 |
-| Multi-method **consensus engine** | ✅ unique | ❌ | ❌ | analyst-only | ❌ | ❌ | ❌ | ❌ | ❌ |
-| Screener | Preset + custom | ✅ | best-in-class | ✅ | ✅ | ✅ | ✅ | ❌ | basic |
-| Sector heatmap | Canvas treemap | ✅ | iconic | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ |
-| Backtest engine | ✅ in-browser (Worker) | Pine Script | ❌ | ❌ | ✅ | thinkScript | ❌ | ❌ | ❌ |
-| Portfolio + risk metrics | Sharpe / Sortino / DD | ❌ | ❌ | ✅ | ✅ | brokerage | brokerage | best-in-class | ✅ |
-| Alerts (price + indicator) | ✅ + browser push | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ | ❌ | ✅ |
-| Offline / PWA | ✅ Workbox | ❌ | ❌ | ❌ | ❌ | desktop | ❌ | ✅ | ❌ |
-| Open source | MIT | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | AGPL | ❌ |
-| Self-hostable | ✅ | ❌ | ❌ | ❌ | ❌ | ❌ | ❌ | Docker | ❌ |
-| No-account default | ✅ | limited | ✅ | ✅ | ❌ | ❌ | ❌ | ❌ | partial |
-| Privacy (no tracking) | ✅ cookieless | ❌ | ads | ads | ❌ | broker | broker | ✅ | ads |
-| Bundle size (initial JS) | <180 KB gz | ~5 MB | server-rendered | ~2 MB | ~3 MB | desktop | ~3 MB | ~500 KB | ~4 MB |
-| Keyboard-first | ✅ (j/k, /, 1-9) | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ | ❌ |
-| Accessible (WCAG AA) | ✅ tested | partial | ❌ | partial | partial | ❌ | partial | ✅ | partial |
-| Multi-provider failover | ✅ circuit breaker | proprietary | proprietary | proprietary | proprietary | broker | broker | varies | proprietary |
-| Per-asset deep-link share | History API + OG | ✅ | ✅ | ✅ | ✅ | ❌ | ❌ | ✅ | ✅ |
+| Capability                        | **CrossTide (target v6.1)** | TradingView |     FinViz      | StockAnalysis |   Koyfin    |  thinkorswim  |  Webull   |  GhostFolio   | Yahoo Finance |
+| --------------------------------- | :-------------------------: | :---------: | :-------------: | :-----------: | :---------: | :-----------: | :-------: | :-----------: | :-----------: |
+| Cost                              |         Free / OSS          |  Freemium   |    Freemium     |   Freemium    |    Paid     | Free (Schwab) |   Free    |  OSS / Paid   |     Free      |
+| Real-time data                    |     WebSocket (opt-in)      |     ✅      |      Paid       |      ✅       |     ✅      |      ✅       |    ✅     |      EOD      |    Delayed    |
+| Candlestick + overlays            |          ✅ (LWC)           |   ✅✅✅    |     static      |      ✅       |    ✅✅     |     ✅✅      |    ✅     |      ❌       |      ✅       |
+| Indicators                        |    12 methods + 12 calcs    |    100+     |       50+       |      30+      |     80+     |     400+      |    50+    |       0       |      ~10      |
+| Multi-method **consensus engine** |          ✅ unique          |     ❌      |       ❌        | analyst-only  |     ❌      |      ❌       |    ❌     |      ❌       |      ❌       |
+| Screener                          |       Preset + custom       |     ✅      |  best-in-class  |      ✅       |     ✅      |      ✅       |    ✅     |      ❌       |     basic     |
+| Sector heatmap                    |       Canvas treemap        |     ✅      |     iconic      |      ✅       |     ✅      |      ❌       |    ❌     |      ❌       |      ❌       |
+| Backtest engine                   |   ✅ in-browser (Worker)    | Pine Script |       ❌        |      ❌       |     ✅      |  thinkScript  |    ❌     |      ❌       |      ❌       |
+| Portfolio + risk metrics          |    Sharpe / Sortino / DD    |     ❌      |       ❌        |      ✅       |     ✅      |   brokerage   | brokerage | best-in-class |      ✅       |
+| Alerts (price + indicator)        |      ✅ + browser push      |     ✅      |       ✅        |      ✅       |     ✅      |      ✅       |    ✅     |      ❌       |      ✅       |
+| Offline / PWA                     |         ✅ Workbox          |     ❌      |       ❌        |      ❌       |     ❌      |    desktop    |    ❌     |      ✅       |      ❌       |
+| Open source                       |             MIT             |     ❌      |       ❌        |      ❌       |     ❌      |      ❌       |    ❌     |     AGPL      |      ❌       |
+| Self-hostable                     |             ✅              |     ❌      |       ❌        |      ❌       |     ❌      |      ❌       |    ❌     |    Docker     |      ❌       |
+| No-account default                |             ✅              |   limited   |       ✅        |      ✅       |     ❌      |      ❌       |    ❌     |      ❌       |    partial    |
+| Privacy (no tracking)             |        ✅ cookieless        |     ❌      |       ads       |      ads      |     ❌      |    broker     |  broker   |      ✅       |      ads      |
+| Bundle size (initial JS)          |         <180 KB gz          |    ~5 MB    | server-rendered |     ~2 MB     |    ~3 MB    |    desktop    |   ~3 MB   |    ~500 KB    |     ~4 MB     |
+| Keyboard-first                    |      ✅ (j/k, /, 1-9)       |     ✅      |       ❌        |      ❌       |     ✅      |      ✅       |    ❌     |      ❌       |      ❌       |
+| Accessible (WCAG AA)              |          ✅ tested          |   partial   |       ❌        |    partial    |   partial   |      ❌       |  partial  |      ✅       |    partial    |
+| Multi-provider failover           |     ✅ circuit breaker      | proprietary |   proprietary   |  proprietary  | proprietary |    broker     |  broker   |    varies     |  proprietary  |
+| Per-asset deep-link share         |      History API + OG       |     ✅      |       ✅        |      ✅       |     ✅      |      ❌       |    ❌     |      ✅       |      ✅       |
 
 **Where we win:** OSS, self-hostable, consensus engine, offline, privacy, cost, bundle.
 **Where we must close gaps:** real-time depth, indicator breadth, screener power,
@@ -149,29 +149,29 @@ charting polish.
 
 ## 4. Best Practices Harvested
 
-| Practice | Source | Action in CrossTide |
-|---|---|---|
-| Treemap heatmap colored by % change | FinViz, TradingView | Canvas treemap card; click → chart |
-| Multi-pane chart (price + sub-indicators) | TradingView, Koyfin | LWC + sub-panes via `chart-panels.ts` |
-| Drawing tools (trendline, fib) | TradingView | Phase 4, optional `lightweight-charts-drawing` plugin |
-| Pine-Script-style custom signals | TradingView | Mini DSL → AST → run in Web Worker (Phase 4 stretch) |
-| 52-week range progress bar | StockAnalysis, Webull | Watchlist column |
-| Sparklines in tables | FinViz, Robinhood | SVG `<path>` per row, no library |
-| Risk dashboard (Sharpe, Sortino, max DD, beta) | GhostFolio, Koyfin | Reuse `analytics.ts`; render in Portfolio card |
-| Benchmark comparison (vs SPY) | GhostFolio | Portfolio card overlay |
-| Dividend projection | StockAnalysis, Webull | Optional Phase 3 |
-| Preset screeners ("oversold", "breakout") | FinViz | `cards/preset-filters.ts` already scaffolded — finish |
-| Keyboard nav: `j/k`, `/` search, `g h` go-home | TradingView, GitHub | Already scaffolded in `core/keyboard.ts` |
-| Command palette (`⌘K`) | Linear, Raycast, GitHub | Add — fuzzy ticker + action search |
-| Stale-while-revalidate caching | Workbox, SWR | Already in SW; tighten with Workbox |
-| Stale-data badge | Robinhood | Already planned — render `(stale 12s)` |
-| Optimistic UI on add/remove | Linear, Notion | Use signals + rollback on error |
-| Cookieless analytics | Plausible, Fathom | Self-host Plausible or Umami |
-| Passkey auth (no passwords) | Apple, GitHub | Phase 4 cloud sync |
-| Background Sync for queued mutations | Workbox | Sync portfolio edits when offline |
-| OG image per share URL | TradingView, Linear | Cloudflare Worker → render PNG of mini chart |
-| Per-PR preview deploys | Vercel, CF Pages | CF Pages handles natively |
-| Changesets-driven releases | npm OSS norm | Adopt |
+| Practice                                       | Source                  | Action in CrossTide                                   |
+| ---------------------------------------------- | ----------------------- | ----------------------------------------------------- |
+| Treemap heatmap colored by % change            | FinViz, TradingView     | Canvas treemap card; click → chart                    |
+| Multi-pane chart (price + sub-indicators)      | TradingView, Koyfin     | LWC + sub-panes via `chart-panels.ts`                 |
+| Drawing tools (trendline, fib)                 | TradingView             | Phase 4, optional `lightweight-charts-drawing` plugin |
+| Pine-Script-style custom signals               | TradingView             | Mini DSL → AST → run in Web Worker (Phase 4 stretch)  |
+| 52-week range progress bar                     | StockAnalysis, Webull   | Watchlist column                                      |
+| Sparklines in tables                           | FinViz, Robinhood       | SVG `<path>` per row, no library                      |
+| Risk dashboard (Sharpe, Sortino, max DD, beta) | GhostFolio, Koyfin      | Reuse `analytics.ts`; render in Portfolio card        |
+| Benchmark comparison (vs SPY)                  | GhostFolio              | Portfolio card overlay                                |
+| Dividend projection                            | StockAnalysis, Webull   | Optional Phase 3                                      |
+| Preset screeners ("oversold", "breakout")      | FinViz                  | `cards/preset-filters.ts` already scaffolded — finish |
+| Keyboard nav: `j/k`, `/` search, `g h` go-home | TradingView, GitHub     | Already scaffolded in `core/keyboard.ts`              |
+| Command palette (`⌘K`)                         | Linear, Raycast, GitHub | Add — fuzzy ticker + action search                    |
+| Stale-while-revalidate caching                 | Workbox, SWR            | Already in SW; tighten with Workbox                   |
+| Stale-data badge                               | Robinhood               | Already planned — render `(stale 12s)`                |
+| Optimistic UI on add/remove                    | Linear, Notion          | Use signals + rollback on error                       |
+| Cookieless analytics                           | Plausible, Fathom       | Self-host Plausible or Umami                          |
+| Passkey auth (no passwords)                    | Apple, GitHub           | Phase 4 cloud sync                                    |
+| Background Sync for queued mutations           | Workbox                 | Sync portfolio edits when offline                     |
+| OG image per share URL                         | TradingView, Linear     | Cloudflare Worker → render PNG of mini chart          |
+| Per-PR preview deploys                         | Vercel, CF Pages        | CF Pages handles natively                             |
+| Changesets-driven releases                     | npm OSS norm            | Adopt                                                 |
 
 ---
 
@@ -257,7 +257,7 @@ worker/     ← independent (own tsconfig)
 ### 6.1 Rendering model
 
 - **Vanilla TS + Preact Signals** as the default (cheap, fine-grained).
-- **Lit components** *only* when a card has nontrivial reusable subcomponents
+- **Lit components** _only_ when a card has nontrivial reusable subcomponents
   (chart toolbar, filter chip group, command palette).
 - **No JSX runtime** in the bundle — Lit uses tagged templates; signals attach via
   small `bind(el, signal)` helpers.
@@ -306,15 +306,15 @@ worker/     ← independent (own tsconfig)
 
 ### 7.1 API surface (Cloudflare Pages Functions)
 
-| Route | Purpose | Cache |
-|---|---|---|
-| `GET /api/health` | Status + provider health | none |
-| `GET /api/quote/:symbol` | Spot quote | KV 60s (open) / 5m (closed) |
-| `GET /api/history/:symbol?range=1y` | Daily OHLCV | KV 24h, R2 cold |
-| `GET /api/search?q=` | Symbol autocomplete | KV 1h |
-| `GET /api/og/:symbol.png` | OG image (mini chart) | edge cache 1h |
-| `WS  /api/stream` | Live quotes (Durable Object) | n/a |
-| `POST /api/errors` | Sampled error ingestion | none |
+| Route                               | Purpose                      | Cache                       |
+| ----------------------------------- | ---------------------------- | --------------------------- |
+| `GET /api/health`                   | Status + provider health     | none                        |
+| `GET /api/quote/:symbol`            | Spot quote                   | KV 60s (open) / 5m (closed) |
+| `GET /api/history/:symbol?range=1y` | Daily OHLCV                  | KV 24h, R2 cold             |
+| `GET /api/search?q=`                | Symbol autocomplete          | KV 1h                       |
+| `GET /api/og/:symbol.png`           | OG image (mini chart)        | edge cache 1h               |
+| `WS  /api/stream`                   | Live quotes (Durable Object) | n/a                         |
+| `POST /api/errors`                  | Sampled error ingestion      | none                        |
 
 ### 7.2 Provider chain
 
@@ -349,14 +349,14 @@ stream:   Finnhub (WS) → Polygon (WS)      (auth headers in Worker only)
 
 ### 8.1 Tiers (refined)
 
-| Tier | Tech | Use | TTL / Cap |
-|---|---|---|---|
-| L1 | `Map` | Hot quotes, computed series | session |
-| L2 | `localStorage` | Config, theme, last route | persistent, ~5 MB |
-| L3 | IndexedDB (`idb.ts`) | Candles, alerts, portfolio, snapshots | LRU 50 MB |
-| L4 | Service Worker Cache | App shell + API responses (SWR) | per-strategy |
-| Edge | KV / R2 | Hot quotes / cold history | TTL / cold |
-| Cloud (opt) | Worker + KV (Phase 4) | Per-passkey-user sync | per-user |
+| Tier        | Tech                  | Use                                   | TTL / Cap         |
+| ----------- | --------------------- | ------------------------------------- | ----------------- |
+| L1          | `Map`                 | Hot quotes, computed series           | session           |
+| L2          | `localStorage`        | Config, theme, last route             | persistent, ~5 MB |
+| L3          | IndexedDB (`idb.ts`)  | Candles, alerts, portfolio, snapshots | LRU 50 MB         |
+| L4          | Service Worker Cache  | App shell + API responses (SWR)       | per-strategy      |
+| Edge        | KV / R2               | Hot quotes / cold history             | TTL / cold        |
+| Cloud (opt) | Worker + KV (Phase 4) | Per-passkey-user sync                 | per-user          |
 
 ### 8.2 Storage pressure
 
@@ -416,20 +416,20 @@ audit                npm audit --omit=dev (no high/critical) + audit-signatures
 
 ## 10. Performance Budget
 
-| Asset | Budget | Gate |
-|---|---|---|
-| HTML | < 8 KB | LH CI |
-| CSS | < 30 KB gz | bundle check |
-| JS initial | < 180 KB gz | `check:bundle` |
-| Lazy card chunk | < 50 KB gz each | per-route |
-| Lightweight Charts chunk | ~40 KB gz | dynamic import |
-| Web Worker bundle | < 60 KB gz | per file |
-| Fonts (subset, woff2) | < 80 KB | self-hosted |
-| **Initial total** | **< 200 KB gz** | CI |
-| LCP (4G, mid Android) | < 1.8 s | LH CI |
-| INP (p75) | < 200 ms | LH CI |
-| CLS | < 0.05 | LH CI |
-| TTI | < 2.5 s | LH CI |
+| Asset                    | Budget          | Gate           |
+| ------------------------ | --------------- | -------------- |
+| HTML                     | < 8 KB          | LH CI          |
+| CSS                      | < 30 KB gz      | bundle check   |
+| JS initial               | < 180 KB gz     | `check:bundle` |
+| Lazy card chunk          | < 50 KB gz each | per-route      |
+| Lightweight Charts chunk | ~40 KB gz       | dynamic import |
+| Web Worker bundle        | < 60 KB gz      | per file       |
+| Fonts (subset, woff2)    | < 80 KB         | self-hosted    |
+| **Initial total**        | **< 200 KB gz** | CI             |
+| LCP (4G, mid Android)    | < 1.8 s         | LH CI          |
+| INP (p75)                | < 200 ms        | LH CI          |
+| CLS                      | < 0.05          | LH CI          |
+| TTI                      | < 2.5 s         | LH CI          |
 
 Tooling: `rollup-plugin-visualizer` artifact uploaded per PR.
 
@@ -437,88 +437,88 @@ Tooling: `rollup-plugin-visualizer` artifact uploaded per PR.
 
 ## 11. Developer Experience
 
-| Area | Decision |
-|---|---|
-| Package manager | npm (shared `MyScripts/node_modules`) — keep |
-| Monorepo | Document `worker/` and `docs-site/` as workspaces in shared root |
-| Git hooks | `simple-git-hooks` + `lint-staged` (no Husky bloat) |
-| Commit style | Conventional Commits, enforced by `commitlint` |
-| Releases | **Changesets** (auto-generated CHANGELOG + version bump PR) |
-| PR previews | Cloudflare Pages auto preview per branch |
-| Local Worker | `wrangler dev` proxied through Vite via `server.proxy` |
-| Mock data | `tests/helpers/fixtures/` with realistic OHLC fixtures |
-| Component dev | `dev/components.html` mounting every card with mock signals |
-| Editor | `.vscode/settings.json` already shared |
-| Docs | Astro Starlight site at `docs-site/`, deployed to `/docs` |
+| Area            | Decision                                                         |
+| --------------- | ---------------------------------------------------------------- |
+| Package manager | npm (shared `MyScripts/node_modules`) — keep                     |
+| Monorepo        | Document `worker/` and `docs-site/` as workspaces in shared root |
+| Git hooks       | `simple-git-hooks` + `lint-staged` (no Husky bloat)              |
+| Commit style    | Conventional Commits, enforced by `commitlint`                   |
+| Releases        | **Changesets** (auto-generated CHANGELOG + version bump PR)      |
+| PR previews     | Cloudflare Pages auto preview per branch                         |
+| Local Worker    | `wrangler dev` proxied through Vite via `server.proxy`           |
+| Mock data       | `tests/helpers/fixtures/` with realistic OHLC fixtures           |
+| Component dev   | `dev/components.html` mounting every card with mock signals      |
+| Editor          | `.vscode/settings.json` already shared                           |
+| Docs            | Astro Starlight site at `docs-site/`, deployed to `/docs`        |
 
 ---
 
 ## 12. Phased Roadmap
 
-### Phase A — v6.1 *Best-in-Class Web Dashboard* (NEXT)
+### Phase A — v6.1 _Best-in-Class Web Dashboard_ (NEXT)
 
 Goal: turn scaffolds into a real product. Every gap in §1.2 closed.
 
-| # | Task | Priority |
-|---|---|:-:|
-| A1 | Add `lightweight-charts` and integrate in `cards/chart.ts` (multi-pane, signal markers) | P0 |
-| A2 | Wire `card-registry` in `main.ts` with lazy `import()` per route | P0 |
-| A3 | Replace hash router with History API + 404 fallback | P0 |
-| A4 | Replace `EventTarget` store with `@preact/signals-core` + `persistedSignal` | P0 |
-| A5 | Move backtest + full-history scan into Web Worker via `comlink` | P0 |
-| A6 | Workbox SW (precache, runtime caching, navigation preload) | P0 |
-| A7 | Deploy Worker to Cloudflare; switch deploy target to Cloudflare Pages | P0 |
-| A8 | Add Finnhub provider + circuit breaker + health surfacing | P0 |
-| A9 | Zod schemas at every provider boundary; branded `Ticker`/`ISODate` | P0 |
-| A10 | Command palette (`⌘K`) + finish keyboard shortcuts (`j/k`, `/`, `g h`) | P0 |
-| A11 | Watchlist polish: sparkline, 52W range, volume vs avg, sort, drag reorder | P0 |
-| A12 | Heatmap card (Canvas treemap) | P1 |
-| A13 | Screener card with preset filters (oversold, breakout, golden cross) | P1 |
-| A14 | Alert history card + browser notifications (with permission flow) | P1 |
-| A15 | Playwright E2E (10 flows) + `@axe-core/playwright` | P0 |
-| A16 | Lighthouse CI with budgets file | P0 |
-| A17 | GlitchTip + Plausible self-host & integration (sampled) | P1 |
-| A18 | Changesets + Conventional Commits + commitlint | P1 |
-| A19 | Component preview page `dev/components.html` | P1 |
-| A20 | CSP, Permissions-Policy, security headers via Worker | P0 |
-| A21 | Storage pressure handling + LRU eviction in IDB | P1 |
+| #   | Task                                                                                    | Priority |
+| --- | --------------------------------------------------------------------------------------- | :------: |
+| A1  | Add `lightweight-charts` and integrate in `cards/chart.ts` (multi-pane, signal markers) |    P0    |
+| A2  | Wire `card-registry` in `main.ts` with lazy `import()` per route                        |    P0    |
+| A3  | Replace hash router with History API + 404 fallback                                     |    P0    |
+| A4  | Replace `EventTarget` store with `@preact/signals-core` + `persistedSignal`             |    P0    |
+| A5  | Move backtest + full-history scan into Web Worker via `comlink`                         |    P0    |
+| A6  | Workbox SW (precache, runtime caching, navigation preload)                              |    P0    |
+| A7  | Deploy Worker to Cloudflare; switch deploy target to Cloudflare Pages                   |    P0    |
+| A8  | Add Finnhub provider + circuit breaker + health surfacing                               |    P0    |
+| A9  | Zod schemas at every provider boundary; branded `Ticker`/`ISODate`                      |    P0    |
+| A10 | Command palette (`⌘K`) + finish keyboard shortcuts (`j/k`, `/`, `g h`)                  |    P0    |
+| A11 | Watchlist polish: sparkline, 52W range, volume vs avg, sort, drag reorder               |    P0    |
+| A12 | Heatmap card (Canvas treemap)                                                           |    P1    |
+| A13 | Screener card with preset filters (oversold, breakout, golden cross)                    |    P1    |
+| A14 | Alert history card + browser notifications (with permission flow)                       |    P1    |
+| A15 | Playwright E2E (10 flows) + `@axe-core/playwright`                                      |    P0    |
+| A16 | Lighthouse CI with budgets file                                                         |    P0    |
+| A17 | GlitchTip + Plausible self-host & integration (sampled)                                 |    P1    |
+| A18 | Changesets + Conventional Commits + commitlint                                          |    P1    |
+| A19 | Component preview page `dev/components.html`                                            |    P1    |
+| A20 | CSP, Permissions-Policy, security headers via Worker                                    |    P0    |
+| A21 | Storage pressure handling + LRU eviction in IDB                                         |    P1    |
 
-### Phase B — v6.2 *Streaming & Portfolio*
+### Phase B — v6.2 _Streaming & Portfolio_
 
-| # | Task | Priority |
-|---|---|:-:|
-| B1 | WebSocket streaming via Finnhub (Durable Object fan-out) | P1 |
-| B2 | Portfolio card: holdings, P/L, sector allocation, benchmark vs SPY | P1 |
-| B3 | Risk metrics card: Sharpe, Sortino, max DD, beta, volatility | P1 |
-| B4 | Backtest UI on top of existing engine (equity curve + perf table) | P1 |
-| B5 | Provider Health card from circuit-breaker stats | P2 |
-| B6 | Consensus history timeline | P2 |
-| B7 | OG image rendering (`/api/og/:symbol.png`) | P2 |
-| B8 | Polygon provider (paid escape hatch) | P2 |
+| #   | Task                                                               | Priority |
+| --- | ------------------------------------------------------------------ | :------: |
+| B1  | WebSocket streaming via Finnhub (Durable Object fan-out)           |    P1    |
+| B2  | Portfolio card: holdings, P/L, sector allocation, benchmark vs SPY |    P1    |
+| B3  | Risk metrics card: Sharpe, Sortino, max DD, beta, volatility       |    P1    |
+| B4  | Backtest UI on top of existing engine (equity curve + perf table)  |    P1    |
+| B5  | Provider Health card from circuit-breaker stats                    |    P2    |
+| B6  | Consensus history timeline                                         |    P2    |
+| B7  | OG image rendering (`/api/og/:symbol.png`)                         |    P2    |
+| B8  | Polygon provider (paid escape hatch)                               |    P2    |
 
-### Phase C — v6.3 *Polish & Reach*
+### Phase C — v6.3 _Polish & Reach_
 
-| # | Task | Priority |
-|---|---|:-:|
-| C1 | i18n (English + Hebrew RTL) | P2 |
-| C2 | High-contrast & color-blind palettes | P2 |
-| C3 | Astro Starlight docs site at `/docs` | P2 |
-| C4 | Per-indicator MDX reference (formula + defaults + tests) | P2 |
-| C5 | Mobile-first layout pass + container queries | P2 |
-| C6 | Dividend projection in Portfolio | P3 |
-| C7 | CSV/JSON full-data export with schema versioning | P2 |
+| #   | Task                                                     | Priority |
+| --- | -------------------------------------------------------- | :------: |
+| C1  | i18n (English + Hebrew RTL)                              |    P2    |
+| C2  | High-contrast & color-blind palettes                     |    P2    |
+| C3  | Astro Starlight docs site at `/docs`                     |    P2    |
+| C4  | Per-indicator MDX reference (formula + defaults + tests) |    P2    |
+| C5  | Mobile-first layout pass + container queries             |    P2    |
+| C6  | Dividend projection in Portfolio                         |    P3    |
+| C7  | CSV/JSON full-data export with schema versioning         |    P2    |
 
-### Phase D — v7.0 *Optional Cloud + Power Tools*
+### Phase D — v7.0 _Optional Cloud + Power Tools_
 
-| # | Task | Priority |
-|---|---|:-:|
-| D1 | Passkey auth (WebAuthn) + opt-in cloud sync (E2E encrypted) | P3 |
-| D2 | Multi-chart layout (2×2, 1+3) with synced crosshair | P3 |
-| D3 | Drawing tools (trendline, fib retracement) | P3 |
-| D4 | Custom-signal mini-DSL (JSON-AST → Web Worker) | P3 |
-| D5 | Shared watchlist URLs (read-only encoded state) | P3 |
-| D6 | Optional Supabase backend (self-host) for multi-device families | P4 |
-| D7 | Native push via VAPID + Web Push | P3 |
+| #   | Task                                                            | Priority |
+| --- | --------------------------------------------------------------- | :------: |
+| D1  | Passkey auth (WebAuthn) + opt-in cloud sync (E2E encrypted)     |    P3    |
+| D2  | Multi-chart layout (2×2, 1+3) with synced crosshair             |    P3    |
+| D3  | Drawing tools (trendline, fib retracement)                      |    P3    |
+| D4  | Custom-signal mini-DSL (JSON-AST → Web Worker)                  |    P3    |
+| D5  | Shared watchlist URLs (read-only encoded state)                 |    P3    |
+| D6  | Optional Supabase backend (self-host) for multi-device families |    P4    |
+| D7  | Native push via VAPID + Web Push                                |    P3    |
 
 ---
 
@@ -630,5 +630,5 @@ test vectors (same inputs/outputs), `sp500_tickers.json`, `sector_map.json`.
 
 ---
 
-*This roadmap is the single source of truth. Any change to architecture, tooling,
-or scope is reflected here first via a Changeset-tracked PR.*
+_This roadmap is the single source of truth. Any change to architecture, tooling,
+or scope is reflected here first via a Changeset-tracked PR._

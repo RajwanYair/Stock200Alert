@@ -10,12 +10,24 @@ import {
 function storageMock(): Storage {
   const store = new Map<string, string>();
   return {
-    get length() { return store.size; },
-    key(i: number) { return [...store.keys()][i] ?? null; },
-    getItem(k: string) { return store.get(k) ?? null; },
-    setItem(k: string, v: string) { store.set(k, v); },
-    removeItem(k: string) { store.delete(k); },
-    clear() { store.clear(); },
+    get length() {
+      return store.size;
+    },
+    key(i: number) {
+      return [...store.keys()][i] ?? null;
+    },
+    getItem(k: string) {
+      return store.get(k) ?? null;
+    },
+    setItem(k: string, v: string) {
+      store.set(k, v);
+    },
+    removeItem(k: string) {
+      store.delete(k);
+    },
+    clear() {
+      store.clear();
+    },
   };
 }
 

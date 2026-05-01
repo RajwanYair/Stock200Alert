@@ -67,7 +67,10 @@ function renderBacktestUI(container: HTMLElement, ticker: string): void {
             <tr><td>Computed in</td><td>${elapsed} ms (Worker)</td></tr>
           </table>
         `;
-        showToast({ message: `Backtest done: ${result.trades.length} trades in ${elapsed}ms`, type: "success" });
+        showToast({
+          message: `Backtest done: ${result.trades.length} trades in ${elapsed}ms`,
+          type: "success",
+        });
       } catch (err) {
         resultDiv.textContent = `Error: ${(err as Error).message}`;
         showToast({ message: "Backtest failed", type: "error" });

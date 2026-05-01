@@ -24,12 +24,9 @@ declare const __PLAUSIBLE_URL__: string;
 declare const __PLAUSIBLE_SITE__: string;
 declare const __GLITCHTIP_DSN__: string;
 
-const plausibleUrl: string =
-  typeof __PLAUSIBLE_URL__ !== "undefined" ? __PLAUSIBLE_URL__ : "";
-const plausibleSite: string =
-  typeof __PLAUSIBLE_SITE__ !== "undefined" ? __PLAUSIBLE_SITE__ : "";
-const glitchtipDsn: string =
-  typeof __GLITCHTIP_DSN__ !== "undefined" ? __GLITCHTIP_DSN__ : "";
+const plausibleUrl: string = typeof __PLAUSIBLE_URL__ !== "undefined" ? __PLAUSIBLE_URL__ : "";
+const plausibleSite: string = typeof __PLAUSIBLE_SITE__ !== "undefined" ? __PLAUSIBLE_SITE__ : "";
+const glitchtipDsn: string = typeof __GLITCHTIP_DSN__ !== "undefined" ? __GLITCHTIP_DSN__ : "";
 
 export interface TelemetryHandle {
   /** Log a named analytics event. */

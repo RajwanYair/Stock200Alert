@@ -28,10 +28,17 @@ vi.mock("lightweight-charts", () => {
 });
 
 // Also mock ResizeObserver (not available in happy-dom)
-vi.stubGlobal("ResizeObserver", class {
-  observe(): void { /* noop */ }
-  disconnect(): void { /* noop */ }
-});
+vi.stubGlobal(
+  "ResizeObserver",
+  class {
+    observe(): void {
+      /* noop */
+    }
+    disconnect(): void {
+      /* noop */
+    }
+  },
+);
 
 import { attachLwChart } from "../../../src/cards/lw-chart";
 

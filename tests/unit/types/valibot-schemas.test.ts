@@ -120,7 +120,9 @@ describe("YahooChartSchema", () => {
           {
             meta: {},
             timestamp: [1700000000],
-            indicators: { quote: [{ open: [null], high: [null], low: [null], close: [null], volume: [null] }] },
+            indicators: {
+              quote: [{ open: [null], high: [null], low: [null], close: [null], volume: [null] }],
+            },
           },
         ],
       },
@@ -138,12 +140,21 @@ describe("YahooChartSchema", () => {
 // ---------------------------------------------------------------------------
 describe("FinnhubQuoteSchema", () => {
   it("accepts a valid Finnhub quote", () => {
-    const r = safeParse(FinnhubQuoteSchema, { c: 150, o: 148, h: 152, l: 147, pc: 148, t: 1700000000 });
+    const r = safeParse(FinnhubQuoteSchema, {
+      c: 150,
+      o: 148,
+      h: 152,
+      l: 147,
+      pc: 148,
+      t: 1700000000,
+    });
     expect(r.success).toBe(true);
   });
 
   it("accepts quote without optional timestamp", () => {
-    expect(safeParse(FinnhubQuoteSchema, { c: 150, o: 148, h: 152, l: 147, pc: 148 }).success).toBe(true);
+    expect(safeParse(FinnhubQuoteSchema, { c: 150, o: 148, h: 152, l: 147, pc: 148 }).success).toBe(
+      true,
+    );
   });
 
   it("rejects missing required fields", () => {
@@ -151,7 +162,9 @@ describe("FinnhubQuoteSchema", () => {
   });
 
   it("rejects string price", () => {
-    expect(safeParse(FinnhubQuoteSchema, { c: "150", o: 148, h: 152, l: 147, pc: 148 }).success).toBe(false);
+    expect(
+      safeParse(FinnhubQuoteSchema, { c: "150", o: 148, h: 152, l: 147, pc: 148 }).success,
+    ).toBe(false);
   });
 });
 

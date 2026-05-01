@@ -21,25 +21,24 @@ $$
 
 ## Parameters
 
-| Parameter | Default | Notes |
-|---|---|---|
-| `fastPeriod` | 12 | Short EMA window |
-| `slowPeriod` | 26 | Long EMA window |
-| `signalPeriod` | 9 | Signal line smoothing |
+| Parameter      | Default | Notes                 |
+| -------------- | ------- | --------------------- |
+| `fastPeriod`   | 12      | Short EMA window      |
+| `slowPeriod`   | 26      | Long EMA window       |
+| `signalPeriod` | 9       | Signal line smoothing |
 
 ## Interpretation
 
-| Condition | Signal |
-|---|---|
-| MACD crosses above Signal | Bullish crossover → **BUY** |
+| Condition                 | Signal                       |
+| ------------------------- | ---------------------------- |
+| MACD crosses above Signal | Bullish crossover → **BUY**  |
 | MACD crosses below Signal | Bearish crossover → **SELL** |
-| Histogram flips positive | Momentum building upward |
-| Divergence with price | Potential reversal warning |
+| Histogram flips positive  | Momentum building upward     |
+| Divergence with price     | Potential reversal warning   |
 
 <Aside type="tip">
-  CrossTide's MACD method fires a **BUY** on a bullish MACD/Signal crossover
-  when both lines are below zero (classic trend reversal), and **SELL** on
-  bearish crossover when both are above zero.
+  CrossTide's MACD method fires a **BUY** on a bullish MACD/Signal crossover when both lines are
+  below zero (classic trend reversal), and **SELL** on bearish crossover when both are above zero.
 </Aside>
 
 ## Usage
@@ -48,7 +47,9 @@ $$
 import { computeMacd } from "../../src/domain/macd-calculator";
 import type { DailyCandle } from "../../src/types/domain";
 
-const candles: DailyCandle[] = [ /* OHLCV data */ ];
+const candles: DailyCandle[] = [
+  /* OHLCV data */
+];
 const result = computeMacd(candles, {
   fastPeriod: 12,
   slowPeriod: 26,
@@ -62,5 +63,5 @@ console.log("Histogram:", result.histogram.at(-1));
 
 ## References
 
-- Appel, G. (1979). *The Moving Average Convergence-Divergence Method.*
+- Appel, G. (1979). _The Moving Average Convergence-Divergence Method._
 - [MACD on Investopedia](https://www.investopedia.com/terms/m/macd.asp)

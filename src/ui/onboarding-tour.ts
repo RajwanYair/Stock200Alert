@@ -157,8 +157,7 @@ export function createOnboardingTour(steps: readonly TourStep[]): OnboardingTour
     // Semi-transparent backdrop
     const overlay = document.createElement("div");
     overlay.id = OVERLAY_ID;
-    overlay.style.cssText =
-      "position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9998;";
+    overlay.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:9998;";
     overlay.addEventListener("click", () => skip());
     document.body.appendChild(overlay);
 

@@ -112,8 +112,6 @@ export function exportFullDataCsv(domains: FullExportDomains): string {
   return sections.join("\n");
 }
 
-
-
 /**
  * Export alert records as CSV.
  */

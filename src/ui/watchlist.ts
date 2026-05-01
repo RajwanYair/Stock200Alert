@@ -72,8 +72,7 @@ function sortEntries(
       case "change":
         return dir * ((qa?.changePercent ?? 0) - (qb?.changePercent ?? 0));
       case "consensus": {
-        const rank = (d: string | undefined): number =>
-          d === "BUY" ? 2 : d === "SELL" ? 0 : 1;
+        const rank = (d: string | undefined): number => (d === "BUY" ? 2 : d === "SELL" ? 0 : 1);
         return dir * (rank(qa?.consensus?.direction) - rank(qb?.consensus?.direction));
       }
       case "volume":

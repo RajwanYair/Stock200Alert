@@ -99,7 +99,8 @@ export function encodeWatchlistUrl(tickers: readonly string[], base?: string): s
     .filter((t) => t.length > 0)
     .slice(0, WATCHLIST_MAX_TICKERS);
   const state: ShareState = { watchlist: normalised };
-  const resolvedBase = base ?? (typeof location !== "undefined" ? location.href : "http://localhost/");
+  const resolvedBase =
+    base ?? (typeof location !== "undefined" ? location.href : "http://localhost/");
   return buildShareUrl(resolvedBase, state);
 }
 

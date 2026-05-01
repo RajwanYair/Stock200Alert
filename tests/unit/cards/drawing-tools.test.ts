@@ -52,7 +52,12 @@ describe("drawTrendline", () => {
 
   it("saves and restores context state", () => {
     const ctx = makeCtx();
-    const d: TrendlineDrawing = { kind: "trendline", p1: { x: 0, y: 0 }, p2: { x: 1, y: 1 }, color: "#fff" };
+    const d: TrendlineDrawing = {
+      kind: "trendline",
+      p1: { x: 0, y: 0 },
+      p2: { x: 1, y: 1 },
+      color: "#fff",
+    };
     drawTrendline(ctx, d);
     expect(ctx.save).toHaveBeenCalledOnce();
     expect(ctx.restore).toHaveBeenCalledOnce();
@@ -90,13 +95,18 @@ describe("drawFib", () => {
     drawFib(ctx, d, 400);
     // First lineTo call should be at y=50 (0%), last at y=300 (100%)
     const calls = (ctx.moveTo as ReturnType<typeof vi.fn>).mock.calls;
-    expect(calls[0]?.[1]).toBe(50);  // 0% → y = high.y
+    expect(calls[0]?.[1]).toBe(50); // 0% → y = high.y
     expect(calls[calls.length - 1]?.[1]).toBe(300); // 100% → y = low.y
   });
 
   it("saves and restores context state", () => {
     const ctx = makeCtx();
-    const d: FibDrawing = { kind: "fib", high: { x: 0, y: 0 }, low: { x: 0, y: 100 }, color: "#fff" };
+    const d: FibDrawing = {
+      kind: "fib",
+      high: { x: 0, y: 0 },
+      low: { x: 0, y: 100 },
+      color: "#fff",
+    };
     drawFib(ctx, d, 100);
     expect(ctx.save).toHaveBeenCalledOnce();
     expect(ctx.restore).toHaveBeenCalledOnce();

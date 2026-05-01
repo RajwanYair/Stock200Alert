@@ -25,7 +25,13 @@ let activeFilter: InstrumentFilter = "all";
 export function loadInstrumentFilter(): InstrumentFilter {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved === "all" || saved === "stock" || saved === "etf" || saved === "crypto" || saved === "other") {
+    if (
+      saved === "all" ||
+      saved === "stock" ||
+      saved === "etf" ||
+      saved === "crypto" ||
+      saved === "other"
+    ) {
       activeFilter = saved;
     }
   } catch {

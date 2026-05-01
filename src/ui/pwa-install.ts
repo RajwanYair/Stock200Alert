@@ -70,9 +70,9 @@ export function createPwaInstallManager(): PwaInstallManager {
 
     async prompt(): Promise<"accepted" | "dismissed" | "unavailable"> {
       if (!deferredPrompt) return "unavailable";
-       
+
       await deferredPrompt.prompt();
-       
+
       const { outcome } = await deferredPrompt.userChoice;
       deferredPrompt = null;
       return outcome === "accepted" ? "accepted" : "dismissed";

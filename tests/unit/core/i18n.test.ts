@@ -41,11 +41,23 @@ describe("formatNumber", () => {
   });
 
   it("respects custom fractionDigits", () => {
-    expect(formatNumber(1.2345, { locale: TEST_LOCALE, minimumFractionDigits: 4, maximumFractionDigits: 4 })).toBe("1.2345");
+    expect(
+      formatNumber(1.2345, {
+        locale: TEST_LOCALE,
+        minimumFractionDigits: 4,
+        maximumFractionDigits: 4,
+      }),
+    ).toBe("1.2345");
   });
 
   it("compact notation abbreviates large numbers", () => {
-    expect(formatNumber(1_500_000, { locale: TEST_LOCALE, notation: "compact", maximumFractionDigits: 1 })).toBe("1.5M");
+    expect(
+      formatNumber(1_500_000, {
+        locale: TEST_LOCALE,
+        notation: "compact",
+        maximumFractionDigits: 1,
+      }),
+    ).toBe("1.5M");
   });
 });
 

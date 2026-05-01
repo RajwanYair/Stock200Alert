@@ -76,9 +76,8 @@ describe("provider registry", () => {
   });
 
   it("configureFinnhub adds a finnhub entry", async () => {
-    const { configureFinnhub, getHealthSnapshot } = await import(
-      "../../../src/providers/provider-registry"
-    );
+    const { configureFinnhub, getHealthSnapshot } =
+      await import("../../../src/providers/provider-registry");
     configureFinnhub("test-api-key");
     const snap = getHealthSnapshot();
     const hasFinnnhub = snap.entries.some((e) => e.name === "finnhub");
@@ -86,9 +85,8 @@ describe("provider registry", () => {
   });
 
   it("calling configureFinnhub twice does not duplicate the entry", async () => {
-    const { configureFinnhub, getHealthSnapshot } = await import(
-      "../../../src/providers/provider-registry"
-    );
+    const { configureFinnhub, getHealthSnapshot } =
+      await import("../../../src/providers/provider-registry");
     configureFinnhub("key-1");
     configureFinnhub("key-2");
     const snap = getHealthSnapshot();
@@ -105,9 +103,7 @@ describe("provider registry", () => {
   });
 
   it("chain is rebuilt after configureFinnhub", async () => {
-    const { configureFinnhub, getChain } = await import(
-      "../../../src/providers/provider-registry"
-    );
+    const { configureFinnhub, getChain } = await import("../../../src/providers/provider-registry");
     const chainBefore = getChain();
     configureFinnhub("some-key");
     const chainAfter = getChain();

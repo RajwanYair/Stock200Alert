@@ -33,18 +33,18 @@ Smoothing uses Wilder's EMA: $\text{Smooth}(x) = \text{prev} - \frac{\text{prev}
 
 ## Parameters
 
-| Parameter | Default | Notes |
-|---|---|---|
-| `period` | 14 | Smoothing window |
+| Parameter | Default | Notes            |
+| --------- | ------- | ---------------- |
+| `period`  | 14      | Smoothing window |
 
 ## Interpretation
 
-| ADX Value | Trend Strength |
-|---|---|
-| < 20 | Weak / absent trend |
-| 20–25 | Developing trend |
-| 25–50 | Strong trend |
-| > 50 | Very strong trend |
+| ADX Value | Trend Strength      |
+| --------- | ------------------- |
+| < 20      | Weak / absent trend |
+| 20–25     | Developing trend    |
+| 25–50     | Strong trend        |
+| > 50      | Very strong trend   |
 
 <Aside type="tip">
   ADX tells you **how strong** a trend is — not its direction. Use +DI vs -DI
@@ -58,7 +58,9 @@ Smoothing uses Wilder's EMA: $\text{Smooth}(x) = \text{prev} - \frac{\text{prev}
 import { computeAdx } from "../../src/domain/adx-calculator";
 import type { DailyCandle } from "../../src/types/domain";
 
-const candles: DailyCandle[] = [ /* OHLCV data */ ];
+const candles: DailyCandle[] = [
+  /* OHLCV data */
+];
 const result = computeAdx(candles, { period: 14 });
 
 console.log("ADX:", result.adx.at(-1));
@@ -68,5 +70,5 @@ console.log("-DI:", result.minusDI.at(-1));
 
 ## References
 
-- Wilder, J. W. (1978). *New Concepts in Technical Trading Systems.*
+- Wilder, J. W. (1978). _New Concepts in Technical Trading Systems._
 - [ADX on Investopedia](https://www.investopedia.com/terms/a/adx.asp)

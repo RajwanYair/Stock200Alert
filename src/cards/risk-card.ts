@@ -64,14 +64,17 @@ function renderRiskCard(container: HTMLElement): void {
   const yRange = yMax - yMin || 1;
   const yScale = (v: number): number => h - ((v - yMin) / yRange) * (h - 4) - 2;
 
-  const points = normalized.map((v, i) => `${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`).join(" ");
+  const points = normalized
+    .map((v, i) => `${xScale(i).toFixed(1)},${yScale(v).toFixed(1)}`)
+    .join(" ");
   const polyline = `<polyline fill="none" stroke="var(--color-accent, #58a6ff)" stroke-width="1.5" points="${points}" />`;
   const equitySVG = `<svg viewBox="0 0 ${w} ${h}" width="${w}" height="${h}" aria-hidden="true">${polyline}</svg>`;
 
   // Color coding
   const sortinoClass = sortino >= 1.5 ? "text-positive" : sortino >= 0.5 ? "" : "text-negative";
   const ddClass = dd <= 0.1 ? "text-positive" : dd <= 0.25 ? "" : "text-negative";
-  const cagrClass = annualizedReturn >= 0.1 ? "text-positive" : annualizedReturn >= 0 ? "" : "text-negative";
+  const cagrClass =
+    annualizedReturn >= 0.1 ? "text-positive" : annualizedReturn >= 0 ? "" : "text-negative";
   const calmarClass = calmar >= 1 ? "text-positive" : calmar >= 0.5 ? "" : "text-negative";
 
   container.innerHTML = `

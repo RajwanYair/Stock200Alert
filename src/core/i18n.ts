@@ -15,10 +15,7 @@
 
 /** Returns the active locale (browser navigator.language → fallback "en"). */
 export function getLocale(): string {
-  return (
-    (typeof navigator !== "undefined" && navigator.language) ||
-    "en"
-  );
+  return (typeof navigator !== "undefined" && navigator.language) || "en";
 }
 
 // ── Number ────────────────────────────────────────────────────────────────────
@@ -34,10 +31,7 @@ export interface NumberFormatOptions {
  * Format a number with locale-appropriate grouping and fraction digits.
  * Defaults: 0 – 2 fraction digits; "standard" notation.
  */
-export function formatNumber(
-  value: number,
-  opts: NumberFormatOptions = {},
-): string {
+export function formatNumber(value: number, opts: NumberFormatOptions = {}): string {
   const locale = opts.locale ?? getLocale();
   return new Intl.NumberFormat(locale, {
     notation: opts.notation ?? "standard",
@@ -101,10 +95,7 @@ export interface PercentFormatOptions {
  * Format a fraction as a percentage.
  * @param value  Ratio (0.0512) or percent value if alreadyPercent is true.
  */
-export function formatPercent(
-  value: number,
-  opts: PercentFormatOptions = {},
-): string {
+export function formatPercent(value: number, opts: PercentFormatOptions = {}): string {
   const locale = opts.locale ?? getLocale();
   const ratio = opts.alreadyPercent ? value / 100 : value;
   return new Intl.NumberFormat(locale, {
@@ -194,10 +185,7 @@ export function formatRelativeTime(
  * Format a timestamp as "time ago" by computing the best unit automatically.
  * Returns e.g. "3 minutes ago", "yesterday", "2 hours ago".
  */
-export function formatTimeAgo(
-  value: Date | number,
-  opts: RelativeTimeOptions = {},
-): string {
+export function formatTimeAgo(value: Date | number, opts: RelativeTimeOptions = {}): string {
   const then = typeof value === "number" ? value : value.getTime();
   const diffMs = then - Date.now();
   const diffSecs = diffMs / 1000;

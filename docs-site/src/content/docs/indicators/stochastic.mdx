@@ -17,25 +17,24 @@ $$
 
 ## Parameters
 
-| Parameter | Default | Notes |
-|---|---|---|
-| `kPeriod` | 14 | %K look-back window |
-| `dPeriod` | 3 | %D smoothing period |
-| `smooth` | 3 | Slowing period (Fast=1, Slow=3) |
+| Parameter | Default | Notes                           |
+| --------- | ------- | ------------------------------- |
+| `kPeriod` | 14      | %K look-back window             |
+| `dPeriod` | 3       | %D smoothing period             |
+| `smooth`  | 3       | Slowing period (Fast=1, Slow=3) |
 
 ## Interpretation
 
-| %K Value | Signal |
-|---|---|
-| > 80 | Overbought zone |
-| < 20 | Oversold zone |
-| %K crosses above %D in oversold | **BUY** signal |
+| %K Value                          | Signal          |
+| --------------------------------- | --------------- |
+| > 80                              | Overbought zone |
+| < 20                              | Oversold zone   |
+| %K crosses above %D in oversold   | **BUY** signal  |
 | %K crosses below %D in overbought | **SELL** signal |
 
 <Aside type="tip">
-  CrossTide uses the **Slow Stochastic** (smooth=3) for its consensus method.
-  Signal fires only when both %K and %D are in the extreme zone at the time
-  of the crossover, reducing false signals.
+  CrossTide uses the **Slow Stochastic** (smooth=3) for its consensus method. Signal fires only when
+  both %K and %D are in the extreme zone at the time of the crossover, reducing false signals.
 </Aside>
 
 ## Usage
@@ -44,7 +43,9 @@ $$
 import { computeStochastic } from "../../src/domain/stochastic-calculator";
 import type { DailyCandle } from "../../src/types/domain";
 
-const candles: DailyCandle[] = [ /* OHLCV data */ ];
+const candles: DailyCandle[] = [
+  /* OHLCV data */
+];
 const result = computeStochastic(candles, {
   kPeriod: 14,
   dPeriod: 3,
@@ -69,5 +70,5 @@ For a monotonically rising series:
 
 ## References
 
-- Lane, G. C. (1984). Lane's Stochastics. *Technical Analysis of Stocks and Commodities.*
+- Lane, G. C. (1984). Lane's Stochastics. _Technical Analysis of Stocks and Commodities._
 - [Stochastic Oscillator on Investopedia](https://www.investopedia.com/terms/s/stochasticoscillator.asp)

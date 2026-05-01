@@ -207,7 +207,7 @@ describe("View Transitions (C5)", () => {
 
   it("calls document.startViewTransition when available", () => {
     const calls: unknown[] = [];
-     
+
     (document as any).startViewTransition = (cb: () => void): void => {
       calls.push(cb);
       cb(); // execute immediately so activation happens
@@ -217,12 +217,11 @@ describe("View Transitions (C5)", () => {
     navigateTo("alerts");
     // One more call for the navigation (may also have one from initRouter)
     expect(calls.length).toBe(countAfterInit + 1);
-     
+
     delete (document as any).startViewTransition;
   });
 
   it("falls back gracefully when startViewTransition is absent", () => {
-     
     delete (document as any).startViewTransition;
     initRouter();
     expect(() => navigateTo("settings")).not.toThrow();

@@ -89,10 +89,10 @@ export function wireCrosshairSync(
   let isSyncing = false;
 
   // When this chart's crosshair moves, publish to bus
-   
+
   const unsubLwc = chart.subscribeCrosshairMove((param: unknown) => {
     if (isSyncing) return;
-     
+
     const time = (param as { time?: CrosshairTime } | null)?.time ?? null;
     bus.publish(chartId, time ?? null);
   });
@@ -103,10 +103,8 @@ export function wireCrosshairSync(
       isSyncing = true;
       try {
         if (time === null) {
-           
           chart.clearCrosshairPosition();
         } else {
-           
           chart.setCrosshairPosition(0, time, series);
         }
       } catch {
@@ -120,7 +118,7 @@ export function wireCrosshairSync(
 
   return () => {
     bus.unsubscribe(chartId);
-     
+
     unsubLwc?.();
   };
 }

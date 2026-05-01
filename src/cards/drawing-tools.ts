@@ -56,10 +56,7 @@ const FONT = `${FONT_SIZE}px Inter, sans-serif`;
 // ──────────────────────────────────────────────────────────────
 
 /** Draw a trendline on a 2D canvas context. */
-export function drawTrendline(
-  ctx: CanvasRenderingContext2D,
-  d: TrendlineDrawing,
-): void {
+export function drawTrendline(ctx: CanvasRenderingContext2D, d: TrendlineDrawing): void {
   ctx.save();
   ctx.strokeStyle = d.color;
   ctx.lineWidth = 1.5;

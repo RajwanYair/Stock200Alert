@@ -118,11 +118,7 @@ export function createFinnhubStream(opts: FinnhubStreamOptions = {}): FinnhubStr
     } catch {
       return;
     }
-    if (
-      !msg ||
-      typeof msg !== "object" ||
-      (msg as Record<string, unknown>)["type"] !== "trade"
-    ) {
+    if (!msg || typeof msg !== "object" || (msg as Record<string, unknown>)["type"] !== "trade") {
       return; // ping or unknown
     }
     const trades = (msg as Record<string, unknown>)["data"];

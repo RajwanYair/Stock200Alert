@@ -137,9 +137,7 @@ describe("createOnboardingTour", () => {
   });
 
   it("'Get started' on last step completes the tour", () => {
-    const singleStep: TourStep[] = [
-      { target: "#step1", title: "Only Step", body: "Done" },
-    ];
+    const singleStep: TourStep[] = [{ target: "#step1", title: "Only Step", body: "Done" }];
     const tour = createOnboardingTour(singleStep);
     tour.start();
     document.querySelector<HTMLButtonElement>(".tour-next")?.click();

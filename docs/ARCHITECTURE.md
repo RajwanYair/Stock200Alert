@@ -28,14 +28,14 @@ flowchart TD
 
 **Dependency rule (enforced by ESLint `import/no-restricted-paths`):**
 
-| Layer | May import from |
-|---|---|
-| `types/` | nothing |
-| `domain/` | `types/` |
-| `core/` | `types/`, `domain/` |
-| `providers/` | `types/`, `core/` |
-| `ui/` | `types/`, `core/` |
-| `cards/` | `types/`, `domain/`, `core/`, `providers/`, `ui/` |
+| Layer        | May import from                                   |
+| ------------ | ------------------------------------------------- |
+| `types/`     | nothing                                           |
+| `domain/`    | `types/`                                          |
+| `core/`      | `types/`, `domain/`                               |
+| `providers/` | `types/`, `core/`                                 |
+| `ui/`        | `types/`, `core/`                                 |
+| `cards/`     | `types/`, `domain/`, `core/`, `providers/`, `ui/` |
 
 Violations fail CI.
 
@@ -94,20 +94,20 @@ src/
 Routes use the **History API** (`src/ui/router.ts`).
 Every route maps to a card module loaded via lazy `import()`:
 
-| Route | Card module |
-|---|---|
-| `/watchlist` | built-in (watchlist table in `main.ts`) |
-| `/consensus` | `cards/consensus-card.ts` |
-| `/chart` | `cards/chart-card.ts` |
-| `/alerts` | `cards/alerts-card.ts` |
-| `/heatmap` | `cards/heatmap.ts` |
-| `/screener` | `cards/screener.ts` |
-| `/portfolio` | `cards/portfolio.ts` |
-| `/risk` | `cards/risk-card.ts` (Sortino, max DD, CAGR, Calmar) |
-| `/backtest` | `cards/backtest-card.ts` (MA crossover, equity curve) |
-| `/consensus-timeline` | `cards/consensus-timeline.ts` |
-| `/provider-health` | `cards/provider-health.ts` |
-| `/settings` | `cards/settings-card.ts` |
+| Route                 | Card module                                           |
+| --------------------- | ----------------------------------------------------- |
+| `/watchlist`          | built-in (watchlist table in `main.ts`)               |
+| `/consensus`          | `cards/consensus-card.ts`                             |
+| `/chart`              | `cards/chart-card.ts`                                 |
+| `/alerts`             | `cards/alerts-card.ts`                                |
+| `/heatmap`            | `cards/heatmap.ts`                                    |
+| `/screener`           | `cards/screener.ts`                                   |
+| `/portfolio`          | `cards/portfolio.ts`                                  |
+| `/risk`               | `cards/risk-card.ts` (Sortino, max DD, CAGR, Calmar)  |
+| `/backtest`           | `cards/backtest-card.ts` (MA crossover, equity curve) |
+| `/consensus-timeline` | `cards/consensus-timeline.ts`                         |
+| `/provider-health`    | `cards/provider-health.ts`                            |
+| `/settings`           | `cards/settings-card.ts`                              |
 
 The registry (`cards/registry.ts`) returns `{ mount(el, ctx) }` for each entry.
 Cards are never destroyed on route change — they are hidden/shown via CSS.
@@ -119,16 +119,16 @@ Cards are never destroyed on route change — they are hidden/shown via CSS.
 All responses (CF Pages HTTP headers, dev server, preview server) enforce the same policy.
 **Source of truth: `src/core/csp-builder.ts`** — regenerate with `node scripts/gen-csp.mjs`.
 
-| Header | Value summary |
-|---|---|
+| Header                    | Value summary                                                               |
+| ------------------------- | --------------------------------------------------------------------------- |
 | `Content-Security-Policy` | `default-src 'self'`; no inline scripts; `wasm-unsafe-eval` for future WASM |
-| `Permissions-Policy` | camera, geolocation, mic, payment all `()` |
-| `X-Content-Type-Options` | `nosniff` |
-| `X-Frame-Options` | `DENY` |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` |
-| `COEP` | `same-origin` |
-| `COOP` | `same-origin` |
-| `HSTS` | `max-age=31536000; includeSubDomains` |
+| `Permissions-Policy`      | camera, geolocation, mic, payment all `()`                                  |
+| `X-Content-Type-Options`  | `nosniff`                                                                   |
+| `X-Frame-Options`         | `DENY`                                                                      |
+| `Referrer-Policy`         | `strict-origin-when-cross-origin`                                           |
+| `COEP`                    | `same-origin`                                                               |
+| `COOP`                    | `same-origin`                                                               |
+| `HSTS`                    | `max-age=31536000; includeSubDomains`                                       |
 
 The `<meta http-equiv="Content-Security-Policy">` in `index.html` mirrors the same policy as
 a defence-in-depth fallback for GitHub Pages (which cannot serve HTTP headers).
@@ -137,12 +137,12 @@ a defence-in-depth fallback for GitHub Pages (which cannot serve HTTP headers).
 
 ## 6. Storage strategy
 
-| Tier | Tech | Use | TTL |
-|---|---|---|---|
-| L1 | `Map` + `TieredCache` L1 | Hot quotes, computed series | Session |
-| L2 | `localStorage` (via `TieredCache`) | Config, theme, last route | Persistent |
-| L3 | `IndexedDB` (`core/idb.ts`) | Candle history, alerts, portfolio | LRU 50 MB |
-| L4 | Service Worker Cache API | App shell + API SWR responses | Per-strategy |
+| Tier | Tech                               | Use                               | TTL          |
+| ---- | ---------------------------------- | --------------------------------- | ------------ |
+| L1   | `Map` + `TieredCache` L1           | Hot quotes, computed series       | Session      |
+| L2   | `localStorage` (via `TieredCache`) | Config, theme, last route         | Persistent   |
+| L3   | `IndexedDB` (`core/idb.ts`)        | Candle history, alerts, portfolio | LRU 50 MB    |
+| L4   | Service Worker Cache API           | App shell + API SWR responses     | Per-strategy |
 
 `createStoragePressureMonitor()` polls `navigator.storage.estimate()` every 60 s.
 When usage exceeds **80%**, it evicts the oldest 20 `TieredCache` entries and shows
@@ -172,27 +172,27 @@ restored automatically on next page load.
 
 ## 9. Tooling
 
-| Concern | File | Notes |
-|---|---|---|
-| TypeScript | `tsconfig.json` | strict + `exactOptionalPropertyTypes` + `noUncheckedIndexedAccess` + `verbatimModuleSyntax` |
-| SW TypeScript | `tsconfig.sw.json` | Separate, `lib: ["WebWorker"]` |
-| Bundler | `vite.config.ts` | Vite 8, oxc minifier, ES2022 |
-| Tests | `vitest.config.ts` | happy-dom, v8 coverage, ≥90% thresholds |
-| Linting (TS) | `eslint.config.mjs` | ESLint 10 flat + typescript-eslint 8, `--max-warnings 0` |
-| Linting (CSS) | `.stylelintrc.json` | Stylelint 16 |
-| Linting (HTML) | `.htmlhintrc` | HTMLHint |
-| Linting (MD) | `.markdownlint.json` | markdownlint-cli2 |
-| Format | `.prettierrc` | `npm run format:check` is CI gate |
-| Bundle budget | `scripts/check-bundle-size.mjs` | ≤ 200 KB gz initial JS |
-| Security headers | `scripts/gen-csp.mjs` | Regenerates `public/_headers` from source of truth |
-| Commits | `commitlint.config.mjs` | Conventional Commits enforced in CI |
-| Changelog | `.changeset/` | Changesets-based version bumps |
+| Concern          | File                            | Notes                                                                                       |
+| ---------------- | ------------------------------- | ------------------------------------------------------------------------------------------- |
+| TypeScript       | `tsconfig.json`                 | strict + `exactOptionalPropertyTypes` + `noUncheckedIndexedAccess` + `verbatimModuleSyntax` |
+| SW TypeScript    | `tsconfig.sw.json`              | Separate, `lib: ["WebWorker"]`                                                              |
+| Bundler          | `vite.config.ts`                | Vite 8, oxc minifier, ES2022                                                                |
+| Tests            | `vitest.config.ts`              | happy-dom, v8 coverage, ≥90% thresholds                                                     |
+| Linting (TS)     | `eslint.config.mjs`             | ESLint 10 flat + typescript-eslint 8, `--max-warnings 0`                                    |
+| Linting (CSS)    | `.stylelintrc.json`             | Stylelint 16                                                                                |
+| Linting (HTML)   | `.htmlhintrc`                   | HTMLHint                                                                                    |
+| Linting (MD)     | `.markdownlint.json`            | markdownlint-cli2                                                                           |
+| Format           | `.prettierrc`                   | `npm run format:check` is CI gate                                                           |
+| Bundle budget    | `scripts/check-bundle-size.mjs` | ≤ 200 KB gz initial JS                                                                      |
+| Security headers | `scripts/gen-csp.mjs`           | Regenerates `public/_headers` from source of truth                                          |
+| Commits          | `commitlint.config.mjs`         | Conventional Commits enforced in CI                                                         |
+| Changelog        | `.changeset/`                   | Changesets-based version bumps                                                              |
 
 ---
 
 ## 10. CI / CD
 
-```
+```text
 ci.yml
   commitlint        → verifies commit message format
   typecheck         → tsc --noEmit (main + sw tsconfigs)
@@ -224,11 +224,11 @@ pages.yml    → on push main → deploy dist/ to GitHub Pages
 
 ## 12. Performance budget
 
-| Asset | Budget | Gate |
-|---|---|---|
-| JS initial | ≤ 180 KB gz | `check:bundle` |
-| Lazy card chunk | ≤ 50 KB gz each | build |
-| CSS | ≤ 30 KB gz | build |
-| LCP (4G mid Android) | ≤ 1.8 s | Lighthouse CI |
-| INP p75 | ≤ 200 ms | Lighthouse CI |
-| CLS | ≤ 0.05 | Lighthouse CI |
+| Asset                | Budget          | Gate           |
+| -------------------- | --------------- | -------------- |
+| JS initial           | ≤ 180 KB gz     | `check:bundle` |
+| Lazy card chunk      | ≤ 50 KB gz each | build          |
+| CSS                  | ≤ 30 KB gz      | build          |
+| LCP (4G mid Android) | ≤ 1.8 s         | Lighthouse CI  |
+| INP p75              | ≤ 200 ms        | Lighthouse CI  |
+| CLS                  | ≤ 0.05          | Lighthouse CI  |

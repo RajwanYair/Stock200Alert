@@ -88,7 +88,13 @@ describe("portfolio card", () => {
     });
 
     it("computes projected income for a single holding with yield", () => {
-      const h: Holding = { ticker: "JNJ", shares: 100, avgCost: 150, currentPrice: 160, dividendYield: 0.025 };
+      const h: Holding = {
+        ticker: "JNJ",
+        shares: 100,
+        avgCost: 150,
+        currentPrice: 160,
+        dividendYield: 0.025,
+      };
       const s = computePortfolioSummary([h]);
       // income = 100 * 160 * 0.025 = 400
       expect(s.projectedAnnualIncome).toBeCloseTo(400, 5);

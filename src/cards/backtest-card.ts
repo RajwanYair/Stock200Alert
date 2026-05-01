@@ -290,7 +290,10 @@ function renderBacktestCard(container: HTMLElement): void {
 
   const onRun = (): void => {
     fastPeriod = Math.max(2, Math.min(50, parseInt(fastInput.value, 10) || fastPeriod));
-    slowPeriod = Math.max(fastPeriod + 1, Math.min(200, parseInt(slowInput.value, 10) || slowPeriod));
+    slowPeriod = Math.max(
+      fastPeriod + 1,
+      Math.min(200, parseInt(slowInput.value, 10) || slowPeriod),
+    );
     // Clamp slow > fast
     if (slowPeriod <= fastPeriod) {
       slowPeriod = fastPeriod + 1;

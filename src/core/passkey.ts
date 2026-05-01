@@ -94,10 +94,7 @@ export interface AuthenticatePasskeyResult {
  */
 export async function registerPasskey(
   opts: RegisterPasskeyOptions,
-): Promise<
-  | { ok: true; value: RegisterPasskeyResult }
-  | { ok: false; error: string }
-> {
+): Promise<{ ok: true; value: RegisterPasskeyResult } | { ok: false; error: string }> {
   if (!isPasskeySupported()) {
     return { ok: false, error: "WebAuthn not supported in this browser" };
   }
@@ -114,7 +111,7 @@ export async function registerPasskey(
           displayName: opts.userDisplayName ?? opts.userName,
         },
         pubKeyCredParams: [
-          { type: "public-key", alg: -7 },  // ES256
+          { type: "public-key", alg: -7 }, // ES256
           { type: "public-key", alg: -257 }, // RS256
         ],
         authenticatorSelection: {
@@ -159,19 +156,17 @@ export async function registerPasskey(
  */
 export async function authenticatePasskey(
   opts: AuthenticatePasskeyOptions,
-): Promise<
-  | { ok: true; value: AuthenticatePasskeyResult }
-  | { ok: false; error: string }
-> {
+): Promise<{ ok: true; value: AuthenticatePasskeyResult } | { ok: false; error: string }> {
   if (!isPasskeySupported()) {
     return { ok: false, error: "WebAuthn not supported in this browser" };
   }
 
-  const allowCredentials: PublicKeyCredentialDescriptor[] =
-    (opts.allowCredentialIds ?? []).map((id) => ({
+  const allowCredentials: PublicKeyCredentialDescriptor[] = (opts.allowCredentialIds ?? []).map(
+    (id) => ({
       type: "public-key" as const,
       id: base64UrlToBuffer(id),
-    }));
+    }),
+  );
 
   let assertion: Credential | null;
   try {

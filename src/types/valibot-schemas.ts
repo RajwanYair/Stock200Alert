@@ -41,10 +41,7 @@ export const IsoDateSchema = pipe(
 );
 
 /** Non-negative finite number (price, volume, etc.). */
-export const NonNegativeNumberSchema = pipe(
-  number(),
-  minValue(0),
-);
+export const NonNegativeNumberSchema = pipe(number(), minValue(0));
 
 /** Ticker symbol — non-empty string. */
 export const TickerStringSchema = pipe(string(), minLength(1));
@@ -94,7 +91,9 @@ export const YahooChartSchema = object({
   chart: optional(
     object({
       result: optional(array(YahooResultSchema)),
-      error: optional(nullable(object({ code: optional(string()), description: optional(string()) }))),
+      error: optional(
+        nullable(object({ code: optional(string()), description: optional(string()) })),
+      ),
     }),
   ),
 });
@@ -120,11 +119,11 @@ export const YahooSearchSchema = object({
 // ---------------------------------------------------------------------------
 
 export const FinnhubQuoteSchema = object({
-  c: number(),    // current price
-  o: number(),    // open
-  h: number(),    // high
-  l: number(),    // low
-  pc: number(),   // previous close
+  c: number(), // current price
+  o: number(), // open
+  h: number(), // high
+  l: number(), // low
+  pc: number(), // previous close
   t: optional(number()), // unix timestamp
 });
 

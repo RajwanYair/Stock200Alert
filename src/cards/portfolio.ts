@@ -65,8 +65,7 @@ export function renderPortfolio(container: HTMLElement, holdings: readonly Holdi
       const gainPct = cost > 0 ? (gain / cost) * 100 : 0;
       const cls = gain >= 0 ? "signal-buy" : "signal-sell";
       const sign = gain >= 0 ? "+" : "";
-      const annualIncome =
-        h.dividendYield !== undefined ? value * h.dividendYield : null;
+      const annualIncome = h.dividendYield !== undefined ? value * h.dividendYield : null;
       const divCell =
         annualIncome !== null
           ? `$${annualIncome.toFixed(2)}/yr (${(h.dividendYield! * 100).toFixed(2)}%)`
@@ -91,9 +90,13 @@ export function renderPortfolio(container: HTMLElement, holdings: readonly Holdi
       <span class="text-secondary">Total Value:</span>
       <span class="font-mono">$${summary.totalValue.toFixed(2)}</span>
       <span class="${totalCls} font-mono">${totalSign}$${summary.totalGain.toFixed(2)} (${totalSign}${summary.totalGainPercent.toFixed(1)}%)</span>
-      ${summary.projectedAnnualIncome > 0 ? `
+      ${
+        summary.projectedAnnualIncome > 0
+          ? `
       <span class="text-secondary portfolio-div-label">Proj. Annual Income:</span>
-      <span class="font-mono portfolio-div-income">$${summary.projectedAnnualIncome.toFixed(2)}/yr (${(summary.averageDividendYield * 100).toFixed(2)}% avg yield)</span>` : ""}
+      <span class="font-mono portfolio-div-income">$${summary.projectedAnnualIncome.toFixed(2)}/yr (${(summary.averageDividendYield * 100).toFixed(2)}% avg yield)</span>`
+          : ""
+      }
     </div>
     <table class="portfolio-table" role="table" aria-label="Portfolio Holdings">
       <thead>

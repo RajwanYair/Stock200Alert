@@ -41,7 +41,11 @@ function directionColor(direction: string | undefined): string {
 }
 
 function formatPrice(price: number): string {
-  return price.toLocaleString("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 2 });
+  return price.toLocaleString("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 2,
+  });
 }
 
 function formatChangePct(pct: number): string {
@@ -61,14 +65,7 @@ function escapeXml(s: string): string {
  * Generate an OG preview SVG string.
  */
 export function generateOgImageSvg(opts: OgImageOptions): string {
-  const {
-    ticker,
-    price,
-    changePercent,
-    direction,
-    name,
-    accentColor = DEFAULT_ACCENT,
-  } = opts;
+  const { ticker, price, changePercent, direction, name, accentColor = DEFAULT_ACCENT } = opts;
 
   const badgeColor = directionColor(direction);
   const badgeLabel = direction ? escapeXml(direction.replace("_", " ")) : "";
@@ -91,24 +88,40 @@ export function generateOgImageSvg(opts: OgImageOptions): string {
   <text x="80" y="200" font-family="system-ui, -apple-system, sans-serif" font-size="128"
         font-weight="800" fill="#f0f6fc" letter-spacing="-2">${tickerSafe}</text>
 
-  ${nameSafe ? `<!-- Company name -->
+  ${
+    nameSafe
+      ? `<!-- Company name -->
   <text x="82" y="260" font-family="system-ui, -apple-system, sans-serif" font-size="36"
-        font-weight="400" fill="#8b949e">${nameSafe}</text>` : ""}
+        font-weight="400" fill="#8b949e">${nameSafe}</text>`
+      : ""
+  }
 
-  ${priceText ? `<!-- Price -->
+  ${
+    priceText
+      ? `<!-- Price -->
   <text x="82" y="370" font-family="system-ui, -apple-system, sans-serif" font-size="72"
-        font-weight="700" fill="#f0f6fc">${escapeXml(priceText)}</text>` : ""}
+        font-weight="700" fill="#f0f6fc">${escapeXml(priceText)}</text>`
+      : ""
+  }
 
-  ${changePctText ? `<!-- Change percent -->
+  ${
+    changePctText
+      ? `<!-- Change percent -->
   <text x="82" y="450" font-family="system-ui, -apple-system, sans-serif" font-size="48"
-        font-weight="600" fill="${changeColor}">${escapeXml(changePctText)}</text>` : ""}
+        font-weight="600" fill="${changeColor}">${escapeXml(changePctText)}</text>`
+      : ""
+  }
 
-  ${badgeLabel ? `<!-- Consensus badge background -->
+  ${
+    badgeLabel
+      ? `<!-- Consensus badge background -->
   <rect x="820" y="180" width="300" height="100" rx="16" fill="${badgeColor}" opacity="0.15"/>
   <rect x="820" y="180" width="300" height="100" rx="16" fill="none" stroke="${badgeColor}" stroke-width="2"/>
   <!-- Consensus badge label -->
   <text x="970" y="245" font-family="system-ui, -apple-system, sans-serif" font-size="44"
-        font-weight="700" fill="${badgeColor}" text-anchor="middle">${badgeLabel}</text>` : ""}
+        font-weight="700" fill="${badgeColor}" text-anchor="middle">${badgeLabel}</text>`
+      : ""
+  }
 
   <!-- CrossTide branding -->
   <text x="${OG_WIDTH - 40}" y="${OG_HEIGHT - 30}" font-family="system-ui, -apple-system, sans-serif"

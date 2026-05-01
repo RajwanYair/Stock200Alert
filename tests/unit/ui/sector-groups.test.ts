@@ -9,12 +9,24 @@ import type { WatchlistEntry } from "../../../src/types/domain";
 function createStorageMock(): Storage {
   const store = new Map<string, string>();
   return {
-    get length() { return store.size; },
-    key(i: number) { return [...store.keys()][i] ?? null; },
-    getItem(k: string) { return store.get(k) ?? null; },
-    setItem(k: string, v: string) { store.set(k, v); },
-    removeItem(k: string) { store.delete(k); },
-    clear() { store.clear(); },
+    get length() {
+      return store.size;
+    },
+    key(i: number) {
+      return [...store.keys()][i] ?? null;
+    },
+    getItem(k: string) {
+      return store.get(k) ?? null;
+    },
+    setItem(k: string, v: string) {
+      store.set(k, v);
+    },
+    removeItem(k: string) {
+      store.delete(k);
+    },
+    clear() {
+      store.clear();
+    },
   };
 }
 
@@ -72,9 +84,7 @@ describe("sector-groups", () => {
 
     it("named sectors are sorted alphabetically", () => {
       const groups = groupBySector(ENTRIES, SECTOR_MAP);
-      const namedGroups = groups.filter(
-        (g) => !g.name.startsWith("—"),
-      );
+      const namedGroups = groups.filter((g) => !g.name.startsWith("—"));
       const names = namedGroups.map((g) => g.name);
       expect(names).toEqual([...names].sort());
     });

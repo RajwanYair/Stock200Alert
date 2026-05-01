@@ -233,6 +233,9 @@ describe("showLocalNotification", () => {
     });
     const result = await showLocalNotification("Hello", { body: "World" });
     expect(result.ok).toBe(true);
-    expect(reg.showNotification).toHaveBeenCalledWith("Hello", expect.objectContaining({ body: "World" }));
+    expect(reg.showNotification).toHaveBeenCalledWith(
+      "Hello",
+      expect.objectContaining({ body: "World" }),
+    );
   });
 });
