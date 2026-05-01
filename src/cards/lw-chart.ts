@@ -10,6 +10,7 @@
  */
 import type { DailyCandle } from "../types/domain";
 import { computeSmaSeries } from "../domain/sma-calculator";
+import { wireCrosshairSync, getGlobalChartSyncBus } from "../ui/chart-sync";
 
 /** A consensus buy/sell signal to render as a marker on the chart. */
 export interface LwChartSignal {
@@ -21,6 +22,8 @@ export interface LwChartOptions {
   readonly ticker: string;
   readonly candles: readonly DailyCandle[];
   readonly signals?: readonly LwChartSignal[];
+  /** When true, wires crosshair to the global sync bus (B9). Default true. */
+  readonly syncCrosshair?: boolean;
 }
 
 export interface LwChartHandle {
@@ -43,7 +46,7 @@ export async function attachLwChart(
   container: HTMLElement,
   options: LwChartOptions,
 ): Promise<LwChartHandle> {
-  const { ticker, candles, signals = [] } = options;
+  const { ticker, candles, signals = [], syncCrosshair = true } = options;
 
   if (candles.length === 0) {
     container.textContent = `No chart data for ${ticker}.`;
@@ -182,6 +185,13 @@ export async function attachLwChart(
 
   chart.timeScale().fitContent();
 
+  // ── B9: Synced crosshair — wire to global bus ──────────────────────────────
+  let unsubCrosshair: (() => void) | null = null;
+  if (syncCrosshair) {
+    const chartId = `${ticker}-${Date.now()}`;
+    unsubCrosshair = wireCrosshairSync(chartId, chart, candleSeries, getGlobalChartSyncBus());
+  }
+
   // Keep chart in sync with container size
   const ro = new ResizeObserver(() => {
     chart.applyOptions({ width: container.clientWidth });
@@ -190,6 +200,7 @@ export async function attachLwChart(
 
   return {
     dispose() {
+      unsubCrosshair?.();
       ro.disconnect();
       chart.remove();
     },
