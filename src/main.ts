@@ -3,6 +3,8 @@
  *
  * Bootstrap: load config, initialize UI, set up event listeners.
  */
+// G16: self-hosted Inter variable font (replaces system fallback)
+import "@fontsource-variable/inter";
 import { loadConfig, saveConfig, addTicker, removeTicker, reorderWatchlist } from "./core/config";
 import { createCrossTabSync } from "./core/broadcast-channel";
 import { registerServiceWorker } from "./core/sw-register";

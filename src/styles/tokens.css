@@ -27,9 +27,9 @@
     --sp-lg: 24px;
     --sp-xl: 32px;
 
-    /* Typography */
+    /* Typography — G16: Inter Variable font (self-hosted via @fontsource-variable/inter) */
     --font-mono: "JetBrains Mono", "Fira Code", ui-monospace, monospace;
-    --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+    --font-sans: "Inter Variable", "Inter", system-ui, -apple-system, sans-serif;
     --font-size-sm: 0.8125rem;
     --font-size-base: 0.875rem;
     --font-size-lg: 1rem;
