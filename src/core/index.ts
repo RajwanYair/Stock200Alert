@@ -207,3 +207,6 @@ export type { Rng } from "./seedrandom";
 export { linear, easeInQuad, easeOutQuad, easeInOutQuad, easeInCubic, easeOutCubic, easeInOutCubic, cubicBezier } from "./easing";
 export type { EasingFn } from "./easing";
 
+
+export { uuidV4, isUuidV4, nanoId } from "./uuid";
+
