@@ -185,6 +185,81 @@ export const CoinGeckoMarketDataSchema = object({
 export const CoinGeckoMarketsSchema = array(CoinGeckoMarketDataSchema);
 
 // ---------------------------------------------------------------------------
+// CoinGecko simple/price schema (for getQuote)
+// ---------------------------------------------------------------------------
+
+/** CoinGecko /simple/price response: { [coinId]: { usd, usd_24h_change, ... } } */
+export const CoinGeckoSimplePriceEntrySchema = object({
+  usd: optional(number()),
+  usd_24h_change: optional(number()),
+  usd_24h_vol: optional(number()),
+  last_updated_at: optional(number()),
+});
+
+/** CoinGecko /coins/:id/ohlc response — array of [timestamp, o, h, l, c] tuples. */
+export const CoinGeckoOhlcSchema = array(array(number()));
+
+/** CoinGecko /search response. */
+export const CoinGeckoSearchSchema = object({
+  coins: optional(
+    array(
+      object({
+        id: string(),
+        name: string(),
+        symbol: string(),
+      }),
+    ),
+  ),
+});
+
+// ---------------------------------------------------------------------------
+// Polygon.io schemas
+// ---------------------------------------------------------------------------
+
+const PolygonAggBarSchema = object({
+  T: optional(string()),
+  o: number(),
+  h: number(),
+  l: number(),
+  c: number(),
+  v: number(),
+  t: number(),
+});
+
+export const PolygonPrevCloseSchema = object({
+  results: optional(array(PolygonAggBarSchema)),
+  status: optional(string()),
+});
+
+export const PolygonAggsSchema = object({
+  results: optional(
+    array(
+      object({
+        o: number(),
+        h: number(),
+        l: number(),
+        c: number(),
+        v: number(),
+        t: number(),
+      }),
+    ),
+  ),
+  status: optional(string()),
+});
+
+const PolygonTickerItemSchema = object({
+  ticker: string(),
+  name: string(),
+  primary_exchange: optional(string()),
+  type: optional(string()),
+});
+
+export const PolygonTickersSchema = object({
+  results: optional(array(PolygonTickerItemSchema)),
+  status: optional(string()),
+});
+
+// ---------------------------------------------------------------------------
 // Re-export inferred output types for use in providers
 // ---------------------------------------------------------------------------
 export type { InferOutput } from "valibot";

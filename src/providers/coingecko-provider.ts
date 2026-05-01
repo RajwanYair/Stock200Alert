@@ -6,25 +6,18 @@
 import type { DailyCandle } from "../types/domain";
 import type { MarketDataProvider, Quote, SearchResult, ProviderHealth } from "./types";
 import { fetchWithRetry, FetchError } from "../core/fetch";
+import {
+  safeParse,
+  CoinGeckoSimplePriceEntrySchema,
+  CoinGeckoOhlcSchema,
+  CoinGeckoSearchSchema,
+} from "../types/valibot-schemas";
+import { record, string } from "valibot";
 
 const DEFAULT_BASE_URL = "https://api.coingecko.com/api/v3";
 
-interface CoinGeckoSimplePrice {
-  [id: string]: {
-    usd?: number;
-    usd_24h_change?: number;
-    usd_24h_vol?: number;
-    last_updated_at?: number;
-  };
-}
-
-interface CoinGeckoSearch {
-  coins?: Array<{
-    id: string;
-    name: string;
-    symbol: string;
-  }>;
-}
+/** Simple/price response schema — record of coin IDs to price data. */
+const CoinGeckoSimplePriceSchema = record(string(), CoinGeckoSimplePriceEntrySchema);
 
 export function createCoinGeckoProvider(baseUrl: string = DEFAULT_BASE_URL): MarketDataProvider {
   let lastSuccessAt: number | null = null;
@@ -58,8 +51,10 @@ export function createCoinGeckoProvider(baseUrl: string = DEFAULT_BASE_URL): Mar
     const url = `${baseUrl}/simple/price?${params.toString()}`;
     try {
       const res = await fetchWithRetry(url, {}, 2, 500);
-      const data = (await res.json()) as CoinGeckoSimplePrice;
-      const coinData = data[id];
+      const raw: unknown = await res.json();
+      const parsed = safeParse(CoinGeckoSimplePriceSchema, raw);
+      if (!parsed.success) throw new FetchError(`Invalid CoinGecko response for ${ticker}`);
+      const coinData = parsed.output[id];
       if (!coinData?.usd) throw new FetchError(`No price data from CoinGecko for ${ticker}`);
 
       const price = coinData.usd;
@@ -89,15 +84,16 @@ export function createCoinGeckoProvider(baseUrl: string = DEFAULT_BASE_URL): Mar
     const url = `${baseUrl}/coins/${encodeURIComponent(id)}/ohlc?vs_currency=usd&days=${days}`;
     try {
       const res = await fetchWithRetry(url, {}, 2, 500);
-      const data = (await res.json()) as number[][];
-      if (!Array.isArray(data) || data.length === 0) {
+      const raw: unknown = await res.json();
+      const parsed = safeParse(CoinGeckoOhlcSchema, raw);
+      if (!parsed.success || parsed.output.length === 0) {
         throw new FetchError(`No OHLC history from CoinGecko for ${ticker}`);
       }
 
       recordSuccess();
       // CoinGecko returns [timestamp_ms, open, high, low, close]; deduplicate to daily last entry
       const dayMap = new Map<string, DailyCandle>();
-      for (const entry of data) {
+      for (const entry of parsed.output) {
         const [ts, open, high, low, close] = entry as [number, number, number, number, number];
         const date = new Date(ts).toISOString().slice(0, 10);
         dayMap.set(date, { date, open, high, low, close, volume: 0 });
@@ -113,9 +109,14 @@ export function createCoinGeckoProvider(baseUrl: string = DEFAULT_BASE_URL): Mar
     const url = `${baseUrl}/search?query=${encodeURIComponent(query)}`;
     try {
       const res = await fetchWithRetry(url, {}, 1, 500);
-      const data = (await res.json()) as CoinGeckoSearch;
+      const raw: unknown = await res.json();
+      const parsed = safeParse(CoinGeckoSearchSchema, raw);
+      if (!parsed.success) {
+        recordError();
+        return [];
+      }
       recordSuccess();
-      return (data.coins ?? []).slice(0, 10).map((c) => ({
+      return (parsed.output.coins ?? []).slice(0, 10).map((c) => ({
         symbol: c.symbol.toUpperCase(),
         name: c.name,
         exchange: "CoinGecko",
