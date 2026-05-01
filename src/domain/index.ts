@@ -175,3 +175,6 @@ export type { ElderRayPoint } from "./elder-ray";
 export { computeTrix } from "./trix";
 export type { TrixPoint } from "./trix";
 
+
+export { computeUlcerIndex } from "./ulcer-index";
+
