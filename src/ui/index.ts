@@ -111,3 +111,7 @@ export type { Point as SvgPoint, SvgPathOptions } from "./svg-path";
 export { createLinearScale, niceTicks } from "./scale-linear";
 export type { LinearScale, LinearScaleOptions } from "./scale-linear";
 
+
+export { buildSparkbar } from "./sparkbar";
+export type { SparkbarOptions } from "./sparkbar";
+
