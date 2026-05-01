@@ -723,7 +723,7 @@ Everything else is hand-written or zero-dep.
 | A7  | Deploy Worker to Cloudflare; switch deploy target to Cloudflare Pages with preview-per-PR                                                                               |    P0    | Requires Cloudflare account + DNS        |
 | A8  | Add Finnhub provider + circuit-breaker activation + Provider Health card surfacing                                                                                      |    P0    | Existing `circuit-breaker.ts` activation |
 | A9  | Adopt **Valibot** schemas at every provider boundary; brand `Ticker`/`ISODate`/`Price` everywhere (already in `branded.ts`)                                             |    P0    | Replace any leftover `as` casts          |
-| A10 | Activate command palette (`⌘K`) + finish keyboard shortcuts (`j/k`, `/`, `g h`) — wires existing `ui/command-palette.ts` + `core/keyboard.ts`                           |    P0    |                                          |
+| A10 | Activate command palette (`⌘K`) + finish keyboard shortcuts (`j/k`, `/`, `g h`) — wires existing `ui/command-palette.ts` + `core/keyboard.ts`                           |    P0    | ✅ Done (v7.3.0)                         |
 | A11 | Watchlist polish: sparkline, 52W range, volume vs avg, sort, drag reorder — wires existing `ui/sparkline.ts` + `ui/sortable.ts` + `ui/reorder.ts`                       |    P0    |                                          |
 | A12 | Heatmap card activation (existing `cards/heatmap.ts` + `core/treemap-layout.ts`)                                                                                        |    P1    |                                          |
 | A13 | Screener card activation: preset filters (oversold, breakout, golden cross) + custom builder                                                                            |    P1    |                                          |
@@ -732,7 +732,7 @@ Everything else is hand-written or zero-dep.
 | A16 | **Lighthouse CI** (`lhci autorun`) + budgets file                                                                                                                       |    P0    |                                          |
 | A17 | Self-host GlitchTip + Plausible on Fly.io; integrate sampled error/analytics ingestion                                                                                  |    P1    |                                          |
 | A18 | Adopt **Changesets** + `commitlint` Conventional Commits                                                                                                                |    P1    | ✅ Done (v7.2.0)                         |
-| A19 | Component preview page `dev/components.html` mounting every card with mock signals                                                                                      |    P1    |                                          |
+| A19 | Component preview page `dev/components.html` mounting every card with mock signals                                                                                      |    P1    | ✅ Done (v7.3.0)                         |
 | A20 | CSP, Permissions-Policy, security headers via Worker (wires existing `csp-builder.ts`)                                                                                  |    P0    | ✅ Done (v7.2.0)                         |
 | A21 | Storage pressure handling + LRU eviction in IDB (wires existing `lru-cache.ts` + `storage-pressure.ts`)                                                                 |    P1    | ✅ Done (v7.2.0)                         |
 | A22 | Rewrite `ARCHITECTURE.md` to match v6.2 reality                                                                                                                         |    P1    | ✅ Done (v7.2.0)                         |
@@ -748,22 +748,22 @@ Everything else is hand-written or zero-dep.
 
 ### Phase B — v6.3 _Streaming, Portfolio & Polish_
 
-| #   | Task                                                                                                 | Priority | Notes                               |
-| --- | ---------------------------------------------------------------------------------------------------- | :------: | ----------------------------------- |
-| B1  | WebSocket streaming via Finnhub (Durable Object fan-out)                                             |    P1    |                                     |
-| B2  | Portfolio card: holdings, P/L, sector allocation (wires `portfolio-analytics.ts`), benchmark vs SPY  |    P1    |                                     |
-| B3  | Risk metrics card: Sharpe, Sortino, max DD, beta, volatility (wires `risk-ratios.ts`)                |    P1    |                                     |
-| B4  | Backtest UI on top of existing engine (equity curve via `equity-curve.ts` + perf table)              |    P1    |                                     |
-| B5  | Provider Health card from circuit-breaker stats                                                      |    P2    |                                     |
-| B6  | Consensus history timeline (wires `cards/consensus-timeline.ts`)                                     |    P2    |                                     |
-| B7  | OG image rendering (`/api/og/:symbol.png`)                                                           |    P2    |                                     |
-| B8  | Polygon provider (paid escape hatch)                                                                 |    P2    |                                     |
-| B9  | Synced crosshair across multi-pane chart                                                             |    P2    |                                     |
-| B10 | URL state encoder/decoder activation (wires `share-state.ts`)                                        |    P2    | ✅ Done (v7.2.0)                    |
-| B11 | Cross-tab sync via BroadcastChannel                                                                  |    P2    | ✅ Done (v7.2.0)                    |
-| B12 | **Instrument-type views — Stocks / ETFs / Crypto** (see detail below)                                |    P1    | Requested by user                   |
-| B13 | **Sector grouping** - collapsible sector rows with per-sector consensus aggregate (see detail below) |    P1    | Requested by user                   |
-| B14 | **Universal sortable column headers** across all data tables (see detail below)                      |    P1    | Requested by user; extends A11 sort |
+| #   | Task                                                                                                 | Priority | Notes                                                 |
+| --- | ---------------------------------------------------------------------------------------------------- | :------: | ----------------------------------------------------- |
+| B1  | WebSocket streaming via Finnhub (Durable Object fan-out)                                             |    P1    |                                                       |
+| B2  | Portfolio card: holdings, P/L, sector allocation (wires `portfolio-analytics.ts`), benchmark vs SPY  |    P1    |                                                       |
+| B3  | Risk metrics card: Sharpe, Sortino, max DD, beta, volatility (wires `risk-ratios.ts`)                |    P1    |                                                       |
+| B4  | Backtest UI on top of existing engine (equity curve via `equity-curve.ts` + perf table)              |    P1    |                                                       |
+| B5  | Provider Health card from circuit-breaker stats                                                      |    P2    |                                                       |
+| B6  | Consensus history timeline (wires `cards/consensus-timeline.ts`)                                     |    P2    |                                                       |
+| B7  | OG image rendering (`/api/og/:symbol.png`)                                                           |    P2    |                                                       |
+| B8  | Polygon provider (paid escape hatch)                                                                 |    P2    |                                                       |
+| B9  | Synced crosshair across multi-pane chart                                                             |    P2    | ✅ Done (v7.3.0)                                      |
+| B10 | URL state encoder/decoder activation (wires `share-state.ts`)                                        |    P2    | ✅ Done (v7.2.0)                                      |
+| B11 | Cross-tab sync via BroadcastChannel                                                                  |    P2    | ✅ Done (v7.2.0)                                      |
+| B12 | **Instrument-type views — Stocks / ETFs / Crypto** (see detail below)                                |    P1    | ✅ Done (v7.3.0); Requested by user                   |
+| B13 | **Sector grouping** - collapsible sector rows with per-sector consensus aggregate (see detail below) |    P1    | ✅ Done (v7.3.0); Requested by user                   |
+| B14 | **Universal sortable column headers** across all data tables (see detail below)                      |    P1    | ✅ Done (v7.3.0); Requested by user; extends A11 sort |
 
 #### B12 — Instrument-type views (Stocks / ETFs / Crypto)
 
@@ -803,9 +803,9 @@ reimplementation allowed. Covers both numeric and string columns with locale-awa
 ### Phase C — v6.4 _Reach, Polish, A11y+_
 
 | #   | Task                                                                |     Priority     |
-| --- | ------------------------------------------------------------------- | :--------------: |
+| --- | ------------------------------------------------------------------- | :--------------: | ---------------- |
 | C1  | i18n (English + Hebrew RTL) via `@formatjs/intl`                    |        P2        |
-| C2  | High-contrast & color-blind palettes (wires `palettes.ts`)          |        P2        |
+| C2  | High-contrast & color-blind palettes (wires `palettes.ts`)          |        P2        | ✅ Done (v7.3.0) |
 | C3  | Astro Starlight docs site at `/docs`                                |        P2        |
 | C4  | Per-indicator MDX reference (formula + defaults + tests)            |     ✅ Done      |
 | C5  | Mobile-first layout pass + container queries + View Transitions API |        P2        |
