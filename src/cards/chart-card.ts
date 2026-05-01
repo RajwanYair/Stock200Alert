@@ -1,10 +1,13 @@
 /**
  * Chart card adapter — CardModule wrapper for the chart view.
  *
- * Renders OHLC table and provides a "Run Backtest" action
- * that executes off the main thread via compute Worker.
+ * Renders the HTML summary header via `renderChart`, then progressively
+ * enhances the chart area with a full Lightweight Charts candlestick chart
+ * (multi-pane: price + SMA + signal markers | volume) loaded via dynamic
+ * import so the ~40 KB gz LWC bundle only lands in this route's chunk.
  */
 import { renderChart } from "./chart";
+import { attachLwChart, type LwChartHandle } from "./lw-chart";
 import { runBacktestAsync } from "../core/backtest-worker";
 import { fetchTickerData } from "../core/data-service";
 import { showToast } from "../ui/toast";
@@ -76,16 +79,61 @@ function renderBacktestUI(container: HTMLElement, ticker: string): void {
   });
 }
 
+/** Fetch data, render HTML summary, then enhance with a real LWC chart. */
+async function renderChartWithData(
+  container: HTMLElement,
+  ticker: string,
+  lwHandle: { current: LwChartHandle | null },
+): Promise<void> {
+  // Dispose previous LWC instance before re-rendering
+  lwHandle.current?.dispose();
+  lwHandle.current = null;
+
+  if (!ticker) {
+    renderChart(container, { ticker: "", candles: [] });
+    return;
+  }
+
+  // Show a quick skeleton while fetching
+  renderChart(container, { ticker, candles: [] });
+
+  try {
+    const data = await fetchTickerData(ticker);
+    const candles = data.candles ?? [];
+
+    // Re-render the HTML header with real data
+    renderChart(container, { ticker, candles });
+
+    // Replace the static OHLC table with a real interactive LWC chart
+    const canvasEl = container.querySelector<HTMLElement>(".chart-canvas");
+    if (canvasEl && candles.length > 0) {
+      canvasEl.innerHTML = "";
+      canvasEl.style.height = "400px";
+      lwHandle.current = await attachLwChart(canvasEl, { ticker, candles });
+    }
+  } catch (err) {
+    // Leave the HTML header visible; log the error
+    console.warn("Chart data fetch failed:", err);
+  }
+}
+
 const chartCard: CardModule = {
   mount(container, ctx) {
     const ticker = ctx.params["symbol"] ?? "";
-    renderChart(container, { ticker, candles: [] });
+    const lwHandle: { current: LwChartHandle | null } = { current: null };
+
+    void renderChartWithData(container, ticker, lwHandle);
     renderBacktestUI(container, ticker);
+
     return {
       update(newCtx: CardContext): void {
         const t = newCtx.params["symbol"] ?? "";
-        renderChart(container, { ticker: t, candles: [] });
+        void renderChartWithData(container, t, lwHandle);
         renderBacktestUI(container, t);
+      },
+      dispose(): void {
+        lwHandle.current?.dispose();
+        lwHandle.current = null;
       },
     };
   },

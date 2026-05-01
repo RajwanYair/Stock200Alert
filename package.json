@@ -48,6 +48,7 @@
     "vitest": "^4.1.4"
   },
   "dependencies": {
+    "lightweight-charts": "^5.2.0",
     "zod": "^4.4.1"
   }
 }
