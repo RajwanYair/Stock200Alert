@@ -187,3 +187,6 @@ export { computeDema, computeTema } from "./dema-tema";
 
 export { computeHullMA } from "./hull-ma";
 
+
+export { percentile, percentRank, rollingPercentRank } from "./percentile-rank";
+
