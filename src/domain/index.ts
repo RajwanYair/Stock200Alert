@@ -101,3 +101,7 @@ export type { DonchianPoint } from "./donchian";
 export { computeKeltner } from "./keltner";
 export type { KeltnerPoint, KeltnerOptions } from "./keltner";
 
+
+export { computeIchimoku } from "./ichimoku";
+export type { IchimokuPoint, IchimokuOptions } from "./ichimoku";
+
