@@ -1,4 +1,13 @@
 @layer components {
+  .sortable {
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .sortable:hover {
+    color: var(--accent);
+  }
+
   .card {
     background: var(--bg-card);
     border: 1px solid var(--border);

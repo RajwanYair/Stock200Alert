@@ -49,16 +49,16 @@
           </div>
           <div id="watchlist-table-container">
             <table id="watchlist-table">
-              <thead>
+              <thead id="watchlist-head">
                 <tr>
-                  <th>Symbol</th>
-                  <th>Price</th>
-                  <th>Change</th>
-                  <th>Consensus</th>
-                  <th>30D</th>
-                  <th>Volume</th>
+                  <th data-sort="ticker" class="sortable">Ticker</th>
+                  <th data-sort="price" class="sortable">Price</th>
+                  <th data-sort="change" class="sortable">Change</th>
+                  <th data-sort="consensus" class="sortable">Signal</th>
+                  <th>Sparkline</th>
+                  <th data-sort="volume" class="sortable">Volume</th>
                   <th>52W Range</th>
-                  <th>Actions</th>
+                  <th></th>
                 </tr>
               </thead>
               <tbody id="watchlist-body"></tbody>

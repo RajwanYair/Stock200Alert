@@ -1,5 +1,6 @@
 /**
  * Watchlist renderer — renders the watchlist table from state.
+ * Supports column sorting by clicking table headers.
  */
 import type { AppConfig, ConsensusResult, SignalDirection } from "../types/domain";
 import { formatCompact } from "./number-format";
@@ -18,10 +19,76 @@ interface TickerQuote {
   consensus: ConsensusResult | null;
 }
 
+type SortColumn = "ticker" | "price" | "change" | "consensus" | "volume";
+type SortDirection = "asc" | "desc";
+
+let currentSort: { column: SortColumn; direction: SortDirection } = {
+  column: "ticker",
+  direction: "asc",
+};
+
+export function setSortColumn(column: SortColumn): void {
+  if (currentSort.column === column) {
+    currentSort.direction = currentSort.direction === "asc" ? "desc" : "asc";
+  } else {
+    currentSort = { column, direction: column === "ticker" ? "asc" : "desc" };
+  }
+}
+
+function sortEntries(
+  entries: readonly { ticker: string }[],
+  quotes: Map<string, TickerQuote>,
+): { ticker: string }[] {
+  const sorted = [...entries];
+  const dir = currentSort.direction === "asc" ? 1 : -1;
+  sorted.sort((a, b) => {
+    const qa = quotes.get(a.ticker);
+    const qb = quotes.get(b.ticker);
+    switch (currentSort.column) {
+      case "ticker":
+        return dir * a.ticker.localeCompare(b.ticker);
+      case "price":
+        return dir * ((qa?.price ?? 0) - (qb?.price ?? 0));
+      case "change":
+        return dir * ((qa?.changePercent ?? 0) - (qb?.changePercent ?? 0));
+      case "consensus": {
+        const rank = (d: string | undefined): number =>
+          d === "BUY" ? 2 : d === "SELL" ? 0 : 1;
+        return dir * (rank(qa?.consensus?.direction) - rank(qb?.consensus?.direction));
+      }
+      case "volume":
+        return dir * ((qa?.volume ?? 0) - (qb?.volume ?? 0));
+      default:
+        return 0;
+    }
+  });
+  return sorted;
+}
+
+function renderSortIndicator(column: SortColumn): string {
+  if (currentSort.column !== column) return "";
+  return currentSort.direction === "asc" ? " ↑" : " ↓";
+}
+
 export function renderWatchlist(config: AppConfig, quotes: Map<string, TickerQuote>): void {
   const tbody = document.getElementById("watchlist-body");
   const emptyMsg = document.getElementById("watchlist-empty");
+  const thead = document.getElementById("watchlist-head");
   if (!tbody) return;
+
+  // Render sortable headers
+  if (thead) {
+    thead.innerHTML = `<tr>
+      <th data-sort="ticker" class="sortable">Ticker${renderSortIndicator("ticker")}</th>
+      <th data-sort="price" class="sortable">Price${renderSortIndicator("price")}</th>
+      <th data-sort="change" class="sortable">Change${renderSortIndicator("change")}</th>
+      <th data-sort="consensus" class="sortable">Signal${renderSortIndicator("consensus")}</th>
+      <th>Sparkline</th>
+      <th data-sort="volume" class="sortable">Volume${renderSortIndicator("volume")}</th>
+      <th>52W Range</th>
+      <th></th>
+    </tr>`;
+  }
 
   if (config.watchlist.length === 0) {
     tbody.innerHTML = "";
@@ -31,7 +98,8 @@ export function renderWatchlist(config: AppConfig, quotes: Map<string, TickerQuo
 
   emptyMsg?.classList.add("hidden");
 
-  const rows = config.watchlist
+  const sorted = sortEntries(config.watchlist, quotes);
+  const rows = sorted
     .map((entry) => {
       const q = quotes.get(entry.ticker);
       return renderRow(entry.ticker, q ?? null);

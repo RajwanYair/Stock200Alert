@@ -9,7 +9,7 @@ import { watchServiceWorkerUpdates } from "./core/sw-update";
 import { createShortcutManager } from "./core/keyboard";
 import { initRouter, navigateTo, onRouteChange, type RouteName } from "./ui/router";
 import { initTheme } from "./ui/theme";
-import { renderWatchlist } from "./ui/watchlist";
+import { renderWatchlist, setSortColumn } from "./ui/watchlist";
 import { loadCard, type CardHandle, type CardContext } from "./cards/registry";
 import { showToast } from "./ui/toast";
 import { openPalette, isPaletteOpen } from "./ui/palette-overlay";
@@ -186,6 +186,16 @@ function main(): void {
         showToast({ message: `Removed ${ticker}`, type: "info" });
       }
     }
+  });
+
+  // Column sorting via header click
+  const watchlistTable = document.getElementById("watchlist-table");
+  watchlistTable?.addEventListener("click", (e) => {
+    const th = (e.target as HTMLElement).closest<HTMLElement>("[data-sort]");
+    if (!th) return;
+    const col = th.dataset["sort"] as "ticker" | "price" | "change" | "consensus" | "volume";
+    setSortColumn(col);
+    renderWatchlist(config, tickerDataCache);
   });
 
   // Theme change
