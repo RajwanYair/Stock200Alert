@@ -163,3 +163,7 @@ export type { AoPoint } from "./awesome-oscillator";
 
 export { rollingMean, rollingStdDev, rollingMin, rollingMax, rollingZScore } from "./rolling-stats";
 
+
+export { seasonalityByMonth, seasonalityByDayOfWeek } from "./seasonality";
+export type { SeasonalityBucket, DailyReturn } from "./seasonality";
+
