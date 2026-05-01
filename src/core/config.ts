@@ -1,7 +1,7 @@
 /**
  * Configuration management — load/save/defaults.
  */
-import type { AppConfig, WatchlistEntry } from "../types/domain";
+import type { AppConfig, MethodWeights, WatchlistEntry } from "../types/domain";
 import { AppConfigSchema, safeParse } from "../types/valibot-schemas";
 
 const STORAGE_KEY = "crosstide-config";
@@ -38,7 +38,14 @@ export function loadConfig(): AppConfig {
       const name = typeof rawEntry?.["name"] === "string" ? rawEntry["name"] : undefined;
       return name ? { ...entry, name } : entry;
     });
-    return watchlist === cfg.watchlist ? cfg : { ...cfg, watchlist };
+
+    // G20: AppConfigSchema omits `methodWeights` for the same reason. Parse manually
+    // to keep exactOptionalPropertyTypes clean.
+    const rawWeights = rawCfg["methodWeights"];
+    const methodWeights: MethodWeights | undefined = parseMethodWeights(rawWeights);
+
+    const baseConfig = watchlist === cfg.watchlist ? cfg : { ...cfg, watchlist };
+    return methodWeights !== undefined ? { ...baseConfig, methodWeights } : baseConfig;
   } catch {
     return DEFAULT_CONFIG;
   }
@@ -106,4 +113,30 @@ function isStoredEnvelope(val: unknown): val is StoredConfig {
     "config" in val &&
     typeof (val as StoredConfig).version === "number"
   );
+}
+
+const WEIGHT_KEYS: ReadonlyArray<keyof MethodWeights> = [
+  "Micho", "RSI", "MACD", "Bollinger", "Stochastic", "OBV",
+  "ADX", "CCI", "SAR", "WilliamsR", "MFI", "SuperTrend",
+];
+
+/**
+ * Parse and validate a raw method-weights value from localStorage.
+ * Returns undefined if the input is absent or not a plain object.
+ * Individual keys are validated to be finite numbers in [0, 3].
+ */
+function parseMethodWeights(raw: unknown): MethodWeights | undefined {
+  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const result: MethodWeights = {};
+  const obj = raw as Record<string, unknown>;
+  let hasAny = false;
+  for (const key of WEIGHT_KEYS) {
+    const v = obj[key];
+    if (v === undefined) continue;
+    const n = typeof v === "number" ? v : parseFloat(String(v));
+    if (!isFinite(n)) continue;
+    result[key] = Math.min(3, Math.max(0, n));
+    hasAny = true;
+  }
+  return hasAny ? result : undefined;
 }

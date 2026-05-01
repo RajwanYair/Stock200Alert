@@ -1,8 +1,24 @@
 /**
  * Settings card — renders settings panel and binds change handlers.
  */
-import type { AppConfig } from "../types/domain";
+import type { AppConfig, MethodWeights } from "../types/domain";
+import { DEFAULT_METHOD_WEIGHTS } from "../types/domain";
 import { FINNHUB_KEY_STORAGE } from "../core/finnhub-stream-manager";
+
+const METHOD_NAMES = [
+  "Micho",
+  "RSI",
+  "MACD",
+  "Bollinger",
+  "Stochastic",
+  "OBV",
+  "ADX",
+  "CCI",
+  "SAR",
+  "WilliamsR",
+  "MFI",
+  "SuperTrend",
+] as const;
 
 export interface SettingsCallbacks {
   onThemeChange: (theme: AppConfig["theme"]) => void;
@@ -14,6 +30,8 @@ export interface SettingsCallbacks {
   onClearCache: () => void;
   /** Called when user saves or clears the Finnhub API key. */
   onFinnhubKeyChange?: (apiKey: string | null) => void;
+  /** Called when user changes per-method consensus weights (G20). */
+  onMethodWeightsChange?: (weights: MethodWeights) => void;
 }
 
 export function renderSettings(
@@ -57,6 +75,7 @@ export function renderSettings(
       <label>About</label>
       <span class="text-secondary">CrossTide — 12-method consensus engine</span>
     </div>
+    ${renderWeightsSection(config.methodWeights)}
     <div class="setting-group">
       <label for="finnhub-key-input">
         Finnhub API Key
@@ -110,6 +129,68 @@ export function renderSettings(
     clearBtn.disabled = true;
     callbacks.onFinnhubKeyChange?.(null);
   });
+
+  // G20: consensus weight sliders
+  function readWeights(): MethodWeights {
+    const w: MethodWeights = {};
+    for (const method of METHOD_NAMES) {
+      const slider = container.querySelector<HTMLInputElement>(`#weight-${method}`);
+      if (slider) {
+        const v = parseFloat(slider.value);
+        if (!isNaN(v)) w[method] = Math.min(3, Math.max(0, v));
+      }
+    }
+    return w;
+  }
+
+  for (const method of METHOD_NAMES) {
+    container.querySelector(`#weight-${method}`)?.addEventListener("input", () => {
+      const val = container.querySelector<HTMLInputElement>(`#weight-${method}`)?.value ?? "1";
+      const label = container.querySelector<HTMLOutputElement>(`#weight-${method}-out`);
+      if (label) label.textContent = parseFloat(val).toFixed(1);
+      callbacks.onMethodWeightsChange?.(readWeights());
+    });
+  }
+
+  container.querySelector("#btn-reset-weights")?.addEventListener("click", () => {
+    for (const method of METHOD_NAMES) {
+      const slider = container.querySelector<HTMLInputElement>(`#weight-${method}`);
+      const label = container.querySelector<HTMLOutputElement>(`#weight-${method}-out`);
+      const def = DEFAULT_METHOD_WEIGHTS[method] ?? 1;
+      if (slider) slider.value = String(def);
+      if (label) label.textContent = def.toFixed(1);
+    }
+    callbacks.onMethodWeightsChange?.({ ...DEFAULT_METHOD_WEIGHTS });
+  });
+}
+
+function renderWeightsSection(methodWeights?: MethodWeights): string {
+  const rows = METHOD_NAMES.map((method) => {
+    const defaultVal = DEFAULT_METHOD_WEIGHTS[method] ?? 1;
+    const currentVal = methodWeights?.[method] ?? defaultVal;
+    return `<div class="weight-row">
+      <label for="weight-${method}" class="weight-label">${method}</label>
+      <input
+        id="weight-${method}"
+        type="range"
+        min="0" max="3" step="0.1"
+        value="${currentVal.toFixed(1)}"
+        class="weight-slider"
+        aria-label="${method} weight"
+      />
+      <output id="weight-${method}-out" class="weight-value">${currentVal.toFixed(1)}</output>
+    </div>`;
+  }).join("");
+
+  return `<div class="setting-group">
+    <label>Consensus Weights
+      <span class="text-secondary" style="font-weight:normal;font-size:0.85em">
+        (0 = disabled, 1 = normal, 3 = triple)
+      </span>
+    </label>
+    <div class="weight-grid">${rows}</div>
+    <button id="btn-reset-weights" type="button">Reset to defaults</button>
+  </div>`;
 }
 
 function escapeAttr(s: string): string {

@@ -386,6 +386,26 @@ export const WatchlistEntrySchema = object({
   addedAt: string(),
 });
 
+/**
+ * Per-method weight map schema.
+ * All method keys are optional; values are clamped to [0, 3] at runtime.
+ * The schema accepts any subset of method names — missing keys fall back to defaults.
+ */
+export const MethodWeightsSchema = object({
+  Micho: optional(pipe(number(), minValue(0), maxValue(3))),
+  RSI: optional(pipe(number(), minValue(0), maxValue(3))),
+  MACD: optional(pipe(number(), minValue(0), maxValue(3))),
+  Bollinger: optional(pipe(number(), minValue(0), maxValue(3))),
+  Stochastic: optional(pipe(number(), minValue(0), maxValue(3))),
+  OBV: optional(pipe(number(), minValue(0), maxValue(3))),
+  ADX: optional(pipe(number(), minValue(0), maxValue(3))),
+  CCI: optional(pipe(number(), minValue(0), maxValue(3))),
+  SAR: optional(pipe(number(), minValue(0), maxValue(3))),
+  WilliamsR: optional(pipe(number(), minValue(0), maxValue(3))),
+  MFI: optional(pipe(number(), minValue(0), maxValue(3))),
+  SuperTrend: optional(pipe(number(), minValue(0), maxValue(3))),
+});
+
 export const AppConfigSchema = object({
   theme: ThemeSchema,
   watchlist: array(WatchlistEntrySchema),

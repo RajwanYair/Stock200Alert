@@ -228,6 +228,39 @@
     max-width: 14ch;
   }
 
+  /* G20: per-method consensus weight sliders in Settings card. */
+  .weight-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--sp-xs);
+    margin: var(--sp-sm) 0;
+  }
+
+  .weight-row {
+    display: grid;
+    grid-template-columns: 8ch 1fr 3ch;
+    align-items: center;
+    gap: var(--sp-sm);
+  }
+
+  .weight-label {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    text-align: right;
+  }
+
+  .weight-slider {
+    width: 100%;
+    accent-color: var(--accent);
+  }
+
+  .weight-value {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+  }
+
   .ticker-remove:hover {
     color: var(--danger);
   }

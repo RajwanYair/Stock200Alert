@@ -4,7 +4,7 @@
  * Uses Yahoo Finance v8 chart API with a configurable CORS proxy.
  * Runs the full 12-method consensus engine on fetched candle data.
  */
-import type { DailyCandle, ConsensusResult, InstrumentType } from "../types/domain";
+import type { DailyCandle, ConsensusResult, InstrumentType, MethodWeights } from "../types/domain";
 import { aggregateConsensus } from "../domain/signal-aggregator";
 import { fetchWithTimeout } from "./fetch";
 import { safeParse, YahooChartSchema } from "../types/valibot-schemas";
@@ -139,7 +139,11 @@ async function fetchCandles(ticker: string, signal?: AbortSignal): Promise<Candl
  * Fetch full ticker data: price, change, volume stats, 52W range, and consensus.
  * Pass a navigation `signal` (from `getNavigationSignal()`) to auto-cancel on route change.
  */
-export async function fetchTickerData(ticker: string, signal?: AbortSignal): Promise<TickerData> {
+export async function fetchTickerData(
+  ticker: string,
+  signal?: AbortSignal,
+  weights?: MethodWeights,
+): Promise<TickerData> {
   try {
     const { candles, instrumentType, sector, name } = await fetchCandles(ticker, signal);
 
@@ -172,8 +176,8 @@ export async function fetchTickerData(ticker: string, signal?: AbortSignal): Pro
     // 30-day closes for sparkline
     const closes30d = candles.slice(-30).map((c) => c.close);
 
-    // Run consensus engine (all 12 methods)
-    const consensus = candles.length >= 151 ? aggregateConsensus(ticker, candles) : null;
+    // Run consensus engine (all 12 methods, optional per-method weights)
+    const consensus = candles.length >= 151 ? aggregateConsensus(ticker, candles, weights) : null;
 
     return {
       ticker,
@@ -204,6 +208,7 @@ export async function fetchAllTickers(
   tickers: readonly string[],
   onProgress?: (done: number, total: number) => void,
   signal?: AbortSignal,
+  weights?: MethodWeights,
 ): Promise<Map<string, TickerData>> {
   const results = new Map<string, TickerData>();
   const CONCURRENCY = 3;
@@ -214,7 +219,7 @@ export async function fetchAllTickers(
     while (queue.length > 0) {
       if (signal?.aborted) break;
       const ticker = queue.shift()!;
-      const data = await fetchTickerData(ticker, signal);
+      const data = await fetchTickerData(ticker, signal, weights);
       results.set(ticker, data);
       done++;
       onProgress?.(done, tickers.length);

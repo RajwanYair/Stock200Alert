@@ -75,9 +75,34 @@ export interface WatchlistEntry {
 export type InstrumentType = "stock" | "etf" | "crypto" | "other";
 
 /** User-facing config. */
+export type MethodWeights = Partial<Record<MethodName, number>>;
+
+/**
+ * Default per-method consensus weights.
+ * Micho retains its anchor role (3×); all other methods default to 1×.
+ * A value of 0 disables the method from the consensus tally.
+ */
+export const DEFAULT_METHOD_WEIGHTS: Readonly<MethodWeights> = {
+  Micho: 3,
+  RSI: 1,
+  MACD: 1,
+  Bollinger: 1,
+  Stochastic: 1,
+  OBV: 1,
+  ADX: 1,
+  CCI: 1,
+  SAR: 1,
+  WilliamsR: 1,
+  MFI: 1,
+  SuperTrend: 1,
+} as const;
+
+/** User-facing config. */
 export interface AppConfig {
   readonly theme: "dark" | "light" | "high-contrast";
   readonly watchlist: readonly WatchlistEntry[];
+  /** Per-method consensus weights (0 = disabled, 3 = triple-weighted, default 1). */
+  readonly methodWeights?: MethodWeights;
 }
 
 /** An alert that has been fired and persisted. */

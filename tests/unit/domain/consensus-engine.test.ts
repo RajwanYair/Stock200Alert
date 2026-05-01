@@ -95,3 +95,37 @@ describe("evaluateConsensus", () => {
     expect(result.ticker).toBe("MSFT");
   });
 });
+
+// ── G20: per-method weights ────────────────────────────────────────────────
+describe("evaluateConsensus — per-method weights (G20)", () => {
+  it("disabling Micho (weight=0) prevents BUY consensus", () => {
+    const signals = [makeSignal("Micho", "BUY"), makeSignal("RSI", "BUY")];
+    const result = evaluateConsensus("AAPL", signals, { Micho: 0 });
+    expect(result.direction).toBe("NEUTRAL");
+  });
+
+  it("increasing non-Micho weight raises strength", () => {
+    const signals = [makeSignal("Micho", "BUY"), makeSignal("RSI", "BUY")];
+    const lowWeight = evaluateConsensus("AAPL", signals, { Micho: 3, RSI: 1 });
+    const highWeight = evaluateConsensus("AAPL", signals, { Micho: 3, RSI: 3 });
+    expect(highWeight.strength).toBeGreaterThan(lowWeight.strength);
+  });
+
+  it("equal weights (all=1) still requires Micho BUY for BUY consensus", () => {
+    const signals = [makeSignal("Micho", "BUY"), makeSignal("RSI", "BUY")];
+    const result = evaluateConsensus("AAPL", signals, {
+      Micho: 1, RSI: 1, MACD: 1, Bollinger: 1, Stochastic: 1, OBV: 1,
+      ADX: 1, CCI: 1, SAR: 1, WilliamsR: 1, MFI: 1, SuperTrend: 1,
+    });
+    expect(result.direction).toBe("BUY");
+    // 1 (Micho) + 1 (RSI) = 2 / 12 = 1/6
+    expect(result.strength).toBeCloseTo(2 / 12, 5);
+  });
+
+  it("default weights match original Micho=3 behavior", () => {
+    const signals = [makeSignal("Micho", "BUY"), makeSignal("RSI", "BUY")];
+    const withDefaults = evaluateConsensus("AAPL", signals);
+    // Micho=3 + RSI=1 = 4 / 14
+    expect(withDefaults.strength).toBeCloseTo(4 / 14, 5);
+  });
+});

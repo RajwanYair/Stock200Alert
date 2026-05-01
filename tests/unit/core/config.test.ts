@@ -241,4 +241,43 @@ describe("config", () => {
       expect(config.watchlist[0]?.name).toBeUndefined();
     });
   });
+
+  // G20 — method weights persistence
+  describe("loadConfig methodWeights re-attachment (G20)", () => {
+    it("re-attaches persisted methodWeights after Valibot parse", () => {
+      const raw = {
+        version: 1,
+        config: {
+          theme: "dark",
+          watchlist: [],
+          methodWeights: { Micho: 2, RSI: 0.5 },
+        },
+      };
+      localStorage.setItem("crosstide-config", JSON.stringify(raw));
+      const config = loadConfig();
+      expect(config.methodWeights?.["Micho"]).toBe(2);
+      expect(config.methodWeights?.["RSI"]).toBe(0.5);
+    });
+
+    it("clamps out-of-range weights to [0, 3]", () => {
+      const raw = {
+        version: 1,
+        config: {
+          theme: "dark",
+          watchlist: [],
+          methodWeights: { Micho: 5, RSI: -1 },
+        },
+      };
+      localStorage.setItem("crosstide-config", JSON.stringify(raw));
+      const config = loadConfig();
+      expect(config.methodWeights?.["Micho"]).toBe(3);
+      expect(config.methodWeights?.["RSI"]).toBe(0);
+    });
+
+    it("returns undefined methodWeights when absent", () => {
+      saveConfig({ theme: "dark", watchlist: [] });
+      const config = loadConfig();
+      expect(config.methodWeights).toBeUndefined();
+    });
+  });
 });

@@ -6,10 +6,11 @@
  * Consensus SELL: Micho SELL + at least one other method SELL.
  *
  * Micho method is the "approved" primary method and carries 3× weight in
- * the strength score (e.g. Micho BUY alone contributes 3/14 to strength,
- * reflecting its gatekeeper role).
+ * the strength score by default. Per-method weights (G20) allow users to
+ * override this — a weight of 0 disables a method from the tally.
  */
-import type { ConsensusResult, MethodSignal, SignalDirection } from "../types/domain";
+import type { ConsensusResult, MethodSignal, MethodWeights, SignalDirection } from "../types/domain";
+import { DEFAULT_METHOD_WEIGHTS } from "../types/domain";
 
 const BUY_METHODS = new Set([
   "Micho",
@@ -26,17 +27,28 @@ const BUY_METHODS = new Set([
   "SuperTrend",
 ]);
 
-/** Micho carries 3× weight; other methods carry 1× each. Total weighted = 14. */
-const MICHO_WEIGHT = 3;
-const TOTAL_WEIGHTED = BUY_METHODS.size - 1 + MICHO_WEIGHT; // 11 + 3 = 14
+/**
+ * Resolve the effective weight for a single method.
+ * Uses user-provided weights, falling back to DEFAULT_METHOD_WEIGHTS, then 1.
+ */
+function resolveWeight(method: string, weights?: MethodWeights): number {
+  if (weights && method in weights) {
+    const w = weights[method as keyof MethodWeights];
+    if (w !== undefined) return w;
+  }
+  const d = DEFAULT_METHOD_WEIGHTS[method as keyof MethodWeights];
+  return d !== undefined ? d : 1;
+}
 
 /**
  * Evaluate consensus from a list of method signals for a single ticker.
- * Signals should include Micho and all secondary method signals.
+ * Accepts optional per-method weights (G20); falls back to built-in defaults
+ * (Micho = 3×, all others = 1×) when omitted.
  */
 export function evaluateConsensus(
   ticker: string,
   signals: readonly MethodSignal[],
+  weights?: MethodWeights,
 ): ConsensusResult {
   const buySignals = signals.filter((s) => s.direction === "BUY" && BUY_METHODS.has(s.method));
   const sellSignals = signals.filter((s) => s.direction === "SELL" && BUY_METHODS.has(s.method));
@@ -44,19 +56,34 @@ export function evaluateConsensus(
   const michoBuy = buySignals.some((s) => s.method === "Micho");
   const michoSell = sellSignals.some((s) => s.method === "Micho");
 
-  const otherBuyCount = buySignals.filter((s) => s.method !== "Micho").length;
-  const otherSellCount = sellSignals.filter((s) => s.method !== "Micho").length;
+  // Weighted vote tallies
+  const michoWeight = resolveWeight("Micho", weights);
+  const otherBuyWeight = buySignals
+    .filter((s) => s.method !== "Micho")
+    .reduce((sum, s) => sum + resolveWeight(s.method, weights), 0);
+  const otherSellWeight = sellSignals
+    .filter((s) => s.method !== "Micho")
+    .reduce((sum, s) => sum + resolveWeight(s.method, weights), 0);
+
+  // Total theoretical denominator = sum of all active method weights
+  const totalWeighted = [...BUY_METHODS].reduce(
+    (sum, m) => sum + resolveWeight(m, weights),
+    0,
+  );
 
   let direction: SignalDirection;
   let strength: number;
 
-  if (michoBuy && otherBuyCount >= 1) {
+  const michoEnabled = michoWeight > 0;
+  const otherBuyCount = buySignals.filter((s) => s.method !== "Micho").length;
+  const otherSellCount = sellSignals.filter((s) => s.method !== "Micho").length;
+
+  if (michoEnabled && michoBuy && otherBuyCount >= 1 && otherBuyWeight > 0) {
     direction = "BUY";
-    // Weighted: Micho contributes 3, each other contributes 1
-    strength = (MICHO_WEIGHT + otherBuyCount) / TOTAL_WEIGHTED;
-  } else if (michoSell && otherSellCount >= 1) {
+    strength = totalWeighted > 0 ? (michoWeight + otherBuyWeight) / totalWeighted : 0;
+  } else if (michoEnabled && michoSell && otherSellCount >= 1 && otherSellWeight > 0) {
     direction = "SELL";
-    strength = (MICHO_WEIGHT + otherSellCount) / TOTAL_WEIGHTED;
+    strength = totalWeighted > 0 ? (michoWeight + otherSellWeight) / totalWeighted : 0;
   } else {
     direction = "NEUTRAL";
     strength = 0;

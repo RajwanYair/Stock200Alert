@@ -185,9 +185,12 @@ function main(): void {
 
     updateStatus(`Fetching ${tickers.length} ticker(s)…`);
 
-    const results = await fetchAllTickers(tickers, (done, total) => {
-      updateStatus(`Loading ${done}/${total}…`);
-    });
+    const results = await fetchAllTickers(
+      tickers,
+      (done, total) => { updateStatus(`Loading ${done}/${total}…`); },
+      undefined,
+      config.methodWeights,
+    );
 
     tickerDataCache = results;
 

@@ -6,9 +6,10 @@ export type {
   AppConfig,
   AlertRecord,
   Holding,
+  MethodWeights,
 } from "./domain";
 export type { SignalDirection, MethodName, SmaPeriod } from "./domain";
-export { SMA_PERIODS } from "./domain";
+export { SMA_PERIODS, DEFAULT_METHOD_WEIGHTS } from "./domain";
 
 export {
   Brands,
@@ -49,6 +50,7 @@ export {
   MethodSignalSchema,
   ConsensusResultSchema,
   WatchlistEntrySchema,
+  MethodWeightsSchema,
   ThemeSchema,
   AppConfigSchema,
   YahooChartSchema,

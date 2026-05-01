@@ -43,6 +43,10 @@ const settingsCard: CardModule = {
         }
         void getStoredFinnhubKey(); // side-effect-free read to verify
       },
+      onMethodWeightsChange(weights) {
+        const latest = loadConfig();
+        saveConfig({ ...latest, methodWeights: weights });
+      },
     });
     return {};
   },

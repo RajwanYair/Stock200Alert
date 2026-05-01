@@ -4,7 +4,7 @@
  *
  * Pure domain logic. No side effects.
  */
-import type { ConsensusResult, DailyCandle, MethodSignal } from "../types/domain";
+import type { ConsensusResult, DailyCandle, MethodSignal, MethodWeights } from "../types/domain";
 import { evaluateConsensus } from "./consensus-engine";
 import { evaluate as evaluateMicho } from "./micho-method";
 import { evaluate as evaluateRsi } from "./rsi-method";
@@ -51,10 +51,12 @@ export function aggregateSignals(ticker: string, candles: readonly DailyCandle[]
 
 /**
  * Run all 12 detectors and produce a consensus result.
+ * Pass optional per-method `weights` (G20) to personalise the score.
  */
 export function aggregateConsensus(
   ticker: string,
   candles: readonly DailyCandle[],
+  weights?: MethodWeights,
 ): ConsensusResult {
-  return evaluateConsensus(ticker, aggregateSignals(ticker, candles));
+  return evaluateConsensus(ticker, aggregateSignals(ticker, candles), weights);
 }
