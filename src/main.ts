@@ -10,6 +10,7 @@ import { watchServiceWorkerUpdates } from "./core/sw-update";
 import { createShortcutManager } from "./core/keyboard";
 import { initRouter, navigateTo, onRouteChange, type RouteName } from "./ui/router";
 import { initTheme } from "./ui/theme";
+import { initLocale } from "./core/i18n";
 import {
   renderWatchlist as renderWatchlistCore,
   setSortColumn,
@@ -230,6 +231,7 @@ function main(): void {
   }
 
   // Initialize UI
+  initLocale();           // D7: apply persisted locale & <html dir>
   initTheme(config.theme);
   loadPersistedPalette(); // C2: restore color-blind palette from localStorage
   initRouter();

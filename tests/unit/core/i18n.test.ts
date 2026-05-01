@@ -1,9 +1,13 @@
 /**
  * i18n foundation tests (C1).
  */
-import { describe, it, expect, vi, afterEach } from "vitest";
+import { describe, it, expect, vi, afterEach, beforeEach } from "vitest";
 import {
   getLocale,
+  setLocale,
+  persistLocale,
+  getTextDirection,
+  initLocale,
   formatNumber,
   formatCompact,
   formatCurrency,
@@ -28,6 +32,86 @@ describe("getLocale", () => {
     vi.stubGlobal("navigator", undefined);
     expect(getLocale()).toBe("en");
     vi.unstubAllGlobals();
+  });
+
+  it("prefers localStorage stored locale over navigator.language", () => {
+    const store: Record<string, string> = { crosstide_locale: "de-DE" };
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => store[k] ?? null,
+      setItem: (k: string, v: string) => { store[k] = v; },
+    });
+    vi.stubGlobal("navigator", { language: "fr-FR" });
+    expect(getLocale()).toBe("de-DE");
+    vi.unstubAllGlobals();
+  });
+});
+
+describe("setLocale / persistLocale / getTextDirection / initLocale", () => {
+  beforeEach(() => {
+    vi.stubGlobal("document", {
+      documentElement: { setAttribute: vi.fn() },
+    });
+    const store: Record<string, string> = {};
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => store[k] ?? null,
+      setItem: (k: string, v: string) => { store[k] = v; },
+    });
+  });
+  afterEach(() => {
+    // Reset override locale (module-level var) after each test
+    setLocale("en");
+    vi.unstubAllGlobals();
+  });
+
+  it("getTextDirection returns ltr for English", () => {
+    expect(getTextDirection("en-US")).toBe("ltr");
+  });
+
+  it("getTextDirection returns rtl for Arabic", () => {
+    expect(getTextDirection("ar-SA")).toBe("rtl");
+  });
+
+  it("getTextDirection returns rtl for Hebrew", () => {
+    expect(getTextDirection("he-IL")).toBe("rtl");
+  });
+
+  it("getTextDirection returns rtl for Farsi", () => {
+    expect(getTextDirection("fa-IR")).toBe("rtl");
+  });
+
+  it("getTextDirection returns ltr for French", () => {
+    expect(getTextDirection("fr-FR")).toBe("ltr");
+  });
+
+  it("setLocale updates getLocale()", () => {
+    setLocale("he-IL");
+    expect(getLocale()).toBe("he-IL");
+    // Reset override for subsequent tests via another setLocale
+    setLocale("en-US");
+  });
+
+  it("persistLocale stores locale in localStorage", () => {
+    const store: Record<string, string> = {};
+    vi.stubGlobal("localStorage", {
+      getItem: (k: string) => store[k] ?? null,
+      setItem: (k: string, v: string) => { store[k] = v; },
+    });
+    persistLocale("ja-JP");
+    expect(store["crosstide_locale"]).toBe("ja-JP");
+  });
+
+  it("setLocale calls document.documentElement.setAttribute for dir", () => {
+    const setAttribute = vi.fn();
+    vi.stubGlobal("document", { documentElement: { setAttribute } });
+    setLocale("ar-EG");
+    expect(setAttribute).toHaveBeenCalledWith("dir", "rtl");
+    setLocale("en-US"); // reset
+  });
+
+  it("initLocale is callable without throwing in non-DOM env", () => {
+    vi.stubGlobal("document", undefined);
+    vi.stubGlobal("navigator", { language: "en" });
+    expect(() => initLocale()).not.toThrow();
   });
 });
 

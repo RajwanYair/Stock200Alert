@@ -13,9 +13,68 @@
  *   formatRelativeTime(-2, "day");      // "2 days ago"
  */
 
-/** Returns the active locale (browser navigator.language → fallback "en"). */
+// ── Locale & RTL ──────────────────────────────────────────────────────────────
+
+const LOCALE_STORAGE_KEY = "crosstide_locale";
+
+/** BCP 47 primary language tags that use right-to-left script. */
+const RTL_LANGUAGES = new Set(["ar", "he", "fa", "ur", "yi", "dv", "ps"]);
+
+/** @internal runtime override set by setLocale() */
+let _overrideLocale: string | undefined;
+
+/** Returns the active locale (override → localStorage → navigator.language → "en"). */
 export function getLocale(): string {
+  if (_overrideLocale) return _overrideLocale;
+  try {
+    if (typeof localStorage !== "undefined" && typeof localStorage.getItem === "function") {
+      const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
+      if (stored) return stored;
+    }
+  } catch {
+    // localStorage not available or restricted (e.g. private browsing, sandboxed env)
+  }
   return (typeof navigator !== "undefined" && navigator.language) || "en";
+}
+
+/**
+ * Set the active locale for all subsequent formatter calls.
+ * Also updates `<html dir>` and persists to localStorage.
+ */
+export function setLocale(locale: string): void {
+  _overrideLocale = locale;
+  persistLocale(locale);
+  applyHtmlDir(locale);
+}
+
+/** Persist a locale string to localStorage (no-op in non-browser envs). */
+export function persistLocale(locale: string): void {
+  try {
+    if (typeof localStorage !== "undefined" && typeof localStorage.setItem === "function") {
+      localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+    }
+  } catch {
+    // ignore — storage may be restricted
+  }
+}
+
+/** Returns "rtl" if the given locale uses right-to-left script, else "ltr". */
+export function getTextDirection(locale?: string): "ltr" | "rtl" {
+  const tag = (locale ?? getLocale()).split("-")[0].toLowerCase();
+  return RTL_LANGUAGES.has(tag) ? "rtl" : "ltr";
+}
+
+/** Apply dir attribute and lang to the root <html> element. */
+function applyHtmlDir(locale: string): void {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+  root.setAttribute("lang", locale);
+  root.setAttribute("dir", getTextDirection(locale));
+}
+
+/** Initialise locale on page load — reads persisted preference and wires up <html>. */
+export function initLocale(): void {
+  applyHtmlDir(getLocale());
 }
 
 // ── Number ────────────────────────────────────────────────────────────────────
