@@ -44,3 +44,5 @@ export type {
   SparklineLayout,
   SparklinePath,
 } from "./multi-sparkline";
+export { computeRangeBar, rangeFromCandles } from "./range-bar";
+export type { RangeBarInput, RangeBarGeometry } from "./range-bar";
