@@ -84,6 +84,12 @@ const REGISTRY: readonly CardEntry[] = [
     viewId: "view-provider-health",
     load: () => import("./provider-health-card").then((m) => m.default),
   },
+  {
+    route: "portfolio",
+    title: "Portfolio",
+    viewId: "view-portfolio",
+    load: () => import("./portfolio-card").then((m) => m.default),
+  },
 ];
 
 const cache = new Map<RouteName, Promise<CardModule>>();
