@@ -230,3 +230,7 @@ export type { ForceCandle } from "./force-index";
 export { computeStochRsi } from "./stochastic-rsi";
 export type { StochRsiPoint, StochRsiOptions } from "./stochastic-rsi";
 
+
+export { computeTsi } from "./tsi";
+export type { TsiPoint, TsiOptions } from "./tsi";
+
