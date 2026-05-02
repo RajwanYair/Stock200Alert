@@ -6,6 +6,44 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [7.10.0] - 2026-07-28
+
+### Added — 10-sprint delivery (G5, G10, G12, G13, G7, H15, H7, H2, H1, G17)
+
+- **G5 — `expectTypeOf` type assertions** (47 new tests): Type-level tests using
+  Vitest's `expectTypeOf` API across core utilities, providers, domain, and cards.
+- **G10 — OpenAPI /openapi.json endpoint**: Worker route serving a full OpenAPI 3.1
+  spec with Cache-Control: max-age=3600 (5 new tests).
+- **G12 — `Symbol.dispose` / `using` cleanup**: `ReconnectingWebSocket` and
+  `WorkerClient` implement `Symbol.dispose` for deterministic resource cleanup (5
+  new tests).
+- **G13 — Cloudflare native Rate Limiting API**: Worker middleware uses CF
+  `RateLimiter` binding when available, falls back to in-memory token bucket (4
+  new tests, 53 total worker tests).
+- **G7 — Temporal polyfill** (`@js-temporal/polyfill ^0.5.1`): `toPlainDate`,
+  `plainDateRange`, and `addTradingDays` added to `timezone.ts`; `Temporal` re-
+  exported from `core/index.ts` (12 new tests, 17 timezone tests total).
+- **H15 — Tiingo EOD/REST provider**: Full `MarketDataProvider` implementation
+  covering IEX quotes, EOD history, and search; Valibot schemas added (13 new
+  tests).
+- **H7 — Background Fetch API wrapper**: `backgroundFetchSupported`,
+  `startArchiveDownload`, `getActiveFetches`, `onFetchProgress`, and
+  `fetchWithFallback` in `src/core/background-fetch.ts` (13 new tests).
+- **H2 — `@starting-style` CSS entry animations**: `.card`, `.modal`/`[popover]`,
+  `.toast`, and `.detail-panel` gain smooth mount transitions in
+  `src/styles/components.css`.
+- **H1 — CSS Anchor Positioning for chart crosshair tooltip**: `createAnchorTooltip`
+  in `src/ui/anchor-tooltip.ts`; native path via `anchor-name`/`position-anchor`,
+  JS fallback for unsupported browsers; `@supports` guard in components.css (16
+  new tests).
+- **G17 — `@vitest/browser` mode**: 12 browser tests running in real headless
+  Chromium via Playwright (`vitest.browser.config.ts`), covering CSS Anchor
+  Positioning, Temporal timezone functions, and Background Fetch detection.
+
+### Total test count: 2877 (happy-dom) + 12 (browser / Chromium)
+
+---
+
 ## [7.8.0] - 2026-07-26
 
 ### Changed — F1 (P0): Valibot-only validation
