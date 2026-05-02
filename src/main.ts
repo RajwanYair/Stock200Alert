@@ -73,6 +73,7 @@ const cardContainers: Partial<Record<RouteName, string>> = {
   "earnings-calendar": "earnings-calendar-container",
   "macro-dashboard": "macro-dashboard-container",
   "sector-rotation": "sector-rotation-container",
+  "relative-strength": "relative-strength-container",
 };
 
 function initCardPrefetchOnIntent(): void {

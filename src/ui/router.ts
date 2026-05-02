@@ -36,7 +36,8 @@ export type RouteName =
   | "market-breadth"
   | "earnings-calendar"
   | "macro-dashboard"
-  | "sector-rotation";
+  | "sector-rotation"
+  | "relative-strength";
 
 export interface RouteInfo {
   readonly name: RouteName;
@@ -66,6 +67,7 @@ const VALID_ROUTES = new Set<RouteName>([
   "earnings-calendar",
   "macro-dashboard",
   "sector-rotation",
+  "relative-strength",
 ]);
 
 interface RoutePattern {

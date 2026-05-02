@@ -150,6 +150,12 @@ const REGISTRY: readonly CardEntry[] = [
     viewId: "view-sector-rotation",
     load: () => import("./sector-rotation-card").then((m) => m.default),
   },
+  {
+    route: "relative-strength",
+    title: "Relative Strength",
+    viewId: "view-relative-strength",
+    load: () => import("./relative-strength-card").then((m) => m.default),
+  },
 ];
 
 const cache = new Map<RouteName, Promise<CardModule>>();

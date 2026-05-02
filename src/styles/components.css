@@ -1252,6 +1252,51 @@
     background: color-mix(in srgb, var(--text-secondary) 10%, transparent);
   }
 
+  /* H21: Relative Strength */
+  .rs-controls {
+    display: flex;
+    gap: var(--sp-sm);
+    align-items: end;
+    flex-wrap: wrap;
+    margin-bottom: var(--sp-sm);
+  }
+
+  .rs-controls label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: var(--font-size-sm);
+  }
+
+  .rs-chart {
+    width: 100%;
+    height: 280px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-card);
+  }
+
+  .rs-legend {
+    margin-top: var(--sp-sm);
+    display: flex;
+    gap: var(--sp-sm);
+    flex-wrap: wrap;
+    font-size: var(--font-size-sm);
+  }
+
+  .rs-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .rs-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    display: inline-block;
+  }
+
   .sector-count {
     margin-right: var(--sp-sm);
     color: var(--text-muted);
