@@ -250,3 +250,21 @@ export type { EaseOfMovementOptions } from "./ease-of-movement";
 
 export { computeKama } from "./kama";
 export type { KamaOptions } from "./kama";
+
+export {
+  onnxSupported,
+  preprocessCandles,
+  softmax,
+  argmax,
+  topK,
+  buildInputTensor,
+  createModelLoader,
+} from "./onnx-patterns";
+export type {
+  OnnxCandle,
+  ModelLoaderOptions,
+  ModelSession,
+  TopKResult,
+  TensorSpec,
+  OrtLike,
+} from "./onnx-patterns";
