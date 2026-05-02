@@ -9,6 +9,7 @@ import { createWorkerClient, type WorkerClient } from "./worker-rpc";
 import type { ComputeApi } from "./compute-worker";
 import type { DailyCandle } from "../types/domain";
 import type { BacktestConfig, BacktestResult } from "../domain/backtest-engine";
+import { candlesToBuffer } from "./ohlcv-transfer";
 
 let _worker: Worker | null = null;
 let _client: WorkerClient<ComputeApi> | null = null;
@@ -25,6 +26,7 @@ function getClient(): WorkerClient<ComputeApi> {
 
 /**
  * Run a backtest asynchronously in the compute worker.
+ * Uses zero-copy `Float64Array` transfer (G4) when the Worker API is available.
  * Falls back to synchronous execution if Worker API is unavailable (SSR/test).
  */
 export async function runBacktestAsync(
@@ -36,7 +38,8 @@ export async function runBacktestAsync(
     const { runBacktest } = await import("../domain/backtest-engine");
     return runBacktest(candles, config);
   }
-  return getClient().call("runBacktest", config, candles);
+  const buf = candlesToBuffer(candles);
+  return getClient().callWithTransfer("runBacktestFast", [buf.buffer], config, buf);
 }
 
 export function disposeBacktestWorker(): void {

@@ -47,6 +47,12 @@ export type WorkerClient<Api extends WorkerApi> = {
     method: K,
     ...args: Parameters<Api[K]>
   ): Promise<Awaited<ReturnType<Api[K]>>>;
+  /** Like `call`, but transfers ownership of `transferables` to the worker (zero-copy). */
+  callWithTransfer<K extends keyof Api>(
+    method: K,
+    transfer: Transferable[],
+    ...args: Parameters<Api[K]>
+  ): Promise<Awaited<ReturnType<Api[K]>>>;
   terminate(): void;
 };
 
@@ -87,6 +93,26 @@ export function createWorkerClient<Api extends WorkerApi>(worker: Worker): Worke
           args,
         };
         worker.postMessage(req);
+      });
+    },
+    callWithTransfer<K extends keyof Api>(
+      method: K,
+      transfer: Transferable[],
+      ...args: Parameters<Api[K]>
+    ): Promise<Awaited<ReturnType<Api[K]>>> {
+      return new Promise((resolve, reject) => {
+        const id = nextId++;
+        pending.set(id, {
+          resolve: (v) => resolve(v as Awaited<ReturnType<Api[K]>>),
+          reject,
+        });
+        const req: RpcRequest = {
+          __rpc: true,
+          id,
+          method: method as string,
+          args,
+        };
+        worker.postMessage(req, transfer);
       });
     },
     terminate(): void {

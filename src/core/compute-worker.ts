@@ -26,6 +26,7 @@ import {
 } from "../domain/equity-curve";
 import { maxDrawdown, cagr } from "../domain/risk-ratios";
 import { serveWorkerRpc, type WorkerApi } from "./worker-rpc";
+import { bufferToCandles } from "./ohlcv-transfer";
 
 export interface SmaCrossoverResult {
   readonly trades: ClosedTrade[];
@@ -39,6 +40,8 @@ export interface SmaCrossoverResult {
 
 export interface ComputeApi extends WorkerApi {
   runBacktest(config: BacktestConfig, candles: readonly DailyCandle[]): BacktestResult;
+  /** G4: zero-copy path — candles packed as Float64Array, transferred to worker. */
+  runBacktestFast(config: BacktestConfig, ohlcvBuffer: Float64Array): BacktestResult;
   runScreener(inputs: readonly ScreenerInput[], filters: readonly ScreenerFilter[]): ScreenerRow[];
   runSmaCrossover(
     candles: readonly { close: number }[],
@@ -57,6 +60,9 @@ function smaAt(prices: readonly number[], n: number, i: number): number {
 serveWorkerRpc<ComputeApi>({
   runBacktest(config, candles) {
     return runBacktest(candles, config);
+  },
+  runBacktestFast(config, ohlcvBuffer) {
+    return runBacktest(bufferToCandles(ohlcvBuffer), config);
   },
   runScreener(inputs, filters) {
     return applyFilters(inputs, filters);
