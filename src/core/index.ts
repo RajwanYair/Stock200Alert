@@ -177,6 +177,30 @@ export {
   collectTransferables,
 } from "./transferable-ohlc";
 export type { OhlcvRow, PackedOhlcv } from "./transferable-ohlc";
+export {
+  API_VERSION,
+  MAX_PAGE_SIZE,
+  DEFAULT_PAGE_SIZE,
+  extractApiKey,
+  validateApiKey,
+  successEnvelope,
+  errorEnvelope,
+  rateLimitHeaders,
+  corsHeaders,
+  parsePagination,
+  paginate,
+  parseFields,
+  pickFields,
+  isValidTicker,
+  isValidDateParam,
+} from "./public-api";
+export type {
+  RateLimitInfo,
+  ApiResponse,
+  ApiMeta,
+  PaginationParams,
+  PaginatedMeta,
+} from "./public-api";
 export { runBacktestAsync, disposeBacktestWorker } from "./backtest-worker";
 
 export { fuzzyScore, fuzzySearch } from "./fuzzy-match";
