@@ -337,3 +337,17 @@ export {
   summariseDigest,
 } from "./news-digest";
 export type { FeedItem, FeedFormat, SentimentLabel, DigestSummary } from "./news-digest";
+
+export {
+  exportStrategy,
+  importStrategy,
+  exportBundle,
+  importBundle,
+  validateExpression,
+  validateVars,
+  checksumPayload,
+  encodeShareUrl,
+  decodeShareUrl,
+  payloadToClipboardText,
+} from "./signal-strategy-io";
+export type { StrategyPayload, StrategyBundle, ImportResult } from "./signal-strategy-io";
