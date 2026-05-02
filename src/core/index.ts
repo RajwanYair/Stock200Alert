@@ -274,6 +274,13 @@ export {
 } from "./data-export";
 export type { FullExportPayload, FullExportDomains } from "./data-export";
 
+export {
+  compressionStreamSupported,
+  compressStringToGzip,
+  estimateGzipRatio,
+  gzipFilename,
+} from "./compress";
+
 export { createFinnhubStream } from "./finnhub-ws";
 export type { FinnhubStream, FinnhubTradeTick, FinnhubStreamOptions } from "./finnhub-ws";
 

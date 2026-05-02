@@ -12,3 +12,35 @@ declare module "@fontsource-variable/inter" {}
 interface Window {
   navigation?: Navigation;
 }
+
+// H7: Background Fetch API — minimal type stubs (not yet in lib.dom.d.ts).
+interface BackgroundFetchRegistration extends EventTarget {
+  readonly id: string;
+  readonly uploaded: number;
+  readonly uploadTotal: number;
+  readonly downloaded: number;
+  readonly downloadTotal: number;
+  readonly result: "" | "success" | "failure";
+  readonly failureReason: string;
+  readonly recordsAvailable: boolean;
+  abort(): Promise<boolean>;
+  matchAll(filter?: RequestInfo): Promise<BackgroundFetchRecord[]>;
+}
+interface BackgroundFetchRecord {
+  readonly request: Request;
+  readonly responseReady: Promise<Response>;
+}
+interface BackgroundFetchManager {
+  fetch(
+    id: string,
+    requests: RequestInfo | RequestInfo[],
+    options?: BackgroundFetchOptions,
+  ): Promise<BackgroundFetchRegistration>;
+  get(id: string): Promise<BackgroundFetchRegistration | undefined>;
+  getIds(): Promise<string[]>;
+}
+interface BackgroundFetchOptions {
+  icons?: { src: string; sizes: string; type: string }[];
+  title?: string;
+  downloadTotal?: number;
+}

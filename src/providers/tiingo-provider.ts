@@ -56,7 +56,7 @@ export function createTiingoProvider(
         throw new FetchError(`Tiingo: no quote data for ${ticker}`);
       }
       const item = parsed.output[0]!;
-      const price = item.last ?? item.close ?? 0;
+      const price = item.last ?? 0;
       recordSuccess();
       return {
         ticker: ticker.toUpperCase(),
@@ -126,8 +126,8 @@ export function createTiingoProvider(
       return parsed.output.slice(0, 10).map((item) => ({
         symbol: item.ticker.toUpperCase(),
         name: item.name,
-        exchange: item.exchange,
-        type: item.assetType,
+        ...(item.exchange !== undefined ? { exchange: item.exchange } : {}),
+        ...(item.assetType !== undefined ? { type: item.assetType } : {}),
       }));
     } catch {
       recordError();
