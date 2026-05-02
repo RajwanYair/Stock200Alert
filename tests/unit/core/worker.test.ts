@@ -41,9 +41,9 @@ describe("GET /api/health", () => {
     expect(body.version).toBe("1");
   });
 
-  it("returns 405 for POST", async () => {
+  it("returns 404 for POST (Hono: method mismatch → 404)", async () => {
     const res = await worker.fetch(makeRequest("POST", "/api/health", { body: "{}" }), ENV);
-    expect(res.status).toBe(405);
+    expect(res.status).toBe(404);
   });
 });
 

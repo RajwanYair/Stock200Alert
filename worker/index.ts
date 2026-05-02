@@ -1,31 +1,33 @@
 /**
- * CrossTide API Worker — Cloudflare Workers ES modules entry point.
+ * CrossTide API Worker — Hono-based Cloudflare Workers entry point (G1).
  *
  * Routes:
- *  GET  /api/health             Worker status + version
- *  GET  /api/chart              OHLCV candles (ticker, range, interval params)
- *  GET  /api/search             Ticker fuzzy search (q, limit params)
- *  POST /api/screener           Technical screener with consensus filter
- *  GET  /api/og/:symbol         Social preview SVG image
+ *  GET  /api/health                  Worker status + version
+ *  GET  /api/chart                   OHLCV candles (ticker, range, interval params)
+ *  GET  /api/search                  Ticker fuzzy search (q, limit params)
+ *  POST /api/screener                Technical screener with consensus filter
+ *  GET  /api/og/:symbol              Social preview SVG image
+ *  POST /api/signal-dsl/execute      Execute a signal DSL expression
  *
- * All routes:
- *  - Rate-limited to 60 req/min per IP (in-memory per isolate)
- *  - CORS headers for crosstide.pages.dev and localhost
- *  - JSON error responses with { error: string } shape
+ * Middleware (applied in order):
+ *  1. CORS preflight — OPTIONS short-circuit via app.options()
+ *  2. Rate limiting — 60 req/min per IP; OPTIONS requests are exempt
+ *  3. Security + CORS headers — injected into every response
  *
  * @see worker/wrangler.toml for deployment configuration.
  * @see src/core/worker-api-client.ts for the typed browser client.
  */
 
-import { corsHeaders, handlePreflight, withCors } from "./cors.js";
-import { checkRateLimit, rateLimitKey, tooManyRequests } from "./rate-limit.js";
+import { Hono } from "hono";
+import { withCors, handlePreflight, corsHeaders } from "./cors.js";
+import { checkRateLimit, rateLimitKey } from "./rate-limit.js";
+import { withSecurityHeaders } from "./security.js";
 import { handleHealth } from "./routes/health.js";
 import { handleChart } from "./routes/chart.js";
 import { handleSearch } from "./routes/search.js";
 import { handleScreener } from "./routes/screener.js";
 import { handleOgImage } from "./routes/og.js";
 import { handleSignalDslExecute } from "./routes/signal-dsl.js";
-import { withSecurityHeaders } from "./security.js";
 
 export interface Env {
   ENVIRONMENT?: string;
@@ -35,7 +37,58 @@ export interface Env {
   // OHLCV_STORE?: R2Bucket;
 }
 
-function notFound(origin: string | null): Response {
+const app = new Hono<{ Bindings: Env }>({ strict: false });
+
+// ── CORS preflight short-circuit (must come before rate-limit middleware) ─────
+app.options("*", (c) => handlePreflight(c.req.raw));
+
+// ── Rate limiting (exempt: OPTIONS handled above) ─────────────────────────────
+app.use("*", async (c, next) => {
+  if (c.req.method !== "OPTIONS") {
+    const key = rateLimitKey(c.req.raw);
+    if (!checkRateLimit(key)) {
+      const origin = c.req.header("Origin") ?? null;
+      return new Response(JSON.stringify({ error: "Too many requests" }), {
+        status: 429,
+        headers: {
+          ...(corsHeaders(origin) as Record<string, string>),
+          "Content-Type": "application/json",
+          "Retry-After": "60",
+        },
+      });
+    }
+  }
+  await next();
+});
+
+// ── Response transform: CORS + security headers on every response ─────────────
+app.use("*", async (c, next) => {
+  await next();
+  const origin = c.req.header("Origin") ?? null;
+  c.res = withSecurityHeaders(withCors(c.res, origin));
+});
+
+// ── Routes ────────────────────────────────────────────────────────────────────
+
+app.get("/api/health", (c) => Promise.resolve(handleHealth(c.env)));
+
+app.get("/api/chart", (c) => Promise.resolve(handleChart(new URL(c.req.url))));
+
+app.get("/api/search", (c) => Promise.resolve(handleSearch(new URL(c.req.url))));
+
+app.post("/api/screener", async (c) => handleScreener(c.req.raw));
+
+app.get("/api/og/:symbol", (c) => Promise.resolve(handleOgImage(new URL(c.req.url))));
+app.get("/api/og", (c) => Promise.resolve(handleOgImage(new URL(c.req.url))));
+
+app.post("/api/signal-dsl/execute", async (c) => handleSignalDslExecute(c.req.raw));
+
+// ── Favicon (no-op) ───────────────────────────────────────────────────────────
+app.get("/favicon.ico", (c) => c.newResponse(null, 204));
+
+// ── 404 fallback ─────────────────────────────────────────────────────────────
+app.notFound((c) => {
+  const origin = c.req.header("Origin") ?? null;
   return withCors(
     new Response(JSON.stringify({ error: "Not found" }), {
       status: 404,
@@ -43,99 +96,6 @@ function notFound(origin: string | null): Response {
     }),
     origin,
   );
-}
+});
 
-function methodNotAllowed(origin: string | null): Response {
-  return withCors(
-    new Response(JSON.stringify({ error: "Method not allowed" }), {
-      status: 405,
-      headers: { "Content-Type": "application/json" },
-    }),
-    origin,
-  );
-}
-
-async function route(request: Request, env: Env): Promise<Response> {
-  const url = new URL(request.url);
-  const { pathname, method } = { pathname: url.pathname, method: request.method };
-  const origin = request.headers.get("Origin");
-
-  // CORS preflight
-  if (method === "OPTIONS") {
-    return handlePreflight(request);
-  }
-
-  // Strip trailing slash for matching
-  const path = pathname.endsWith("/") && pathname.length > 1 ? pathname.slice(0, -1) : pathname;
-
-  // ── GET /api/health ────────────────────────────────────────────────────────
-  if (path === "/api/health" || path === "/health") {
-    if (method !== "GET") return methodNotAllowed(origin);
-    return withCors(handleHealth(env), origin);
-  }
-
-  // ── GET /api/chart ─────────────────────────────────────────────────────────
-  if (path === "/api/chart") {
-    if (method !== "GET") return methodNotAllowed(origin);
-    return withCors(handleChart(url), origin);
-  }
-
-  // ── GET /api/search ────────────────────────────────────────────────────────
-  if (path === "/api/search") {
-    if (method !== "GET") return methodNotAllowed(origin);
-    return withCors(handleSearch(url), origin);
-  }
-
-  // ── POST /api/screener ─────────────────────────────────────────────────────
-  if (path === "/api/screener") {
-    if (method !== "POST") return methodNotAllowed(origin);
-    return withCors(await handleScreener(request), origin);
-  }
-
-  // ── GET /api/og/:symbol ────────────────────────────────────────────────────
-  if (path.startsWith("/api/og/") || path.startsWith("/api/og")) {
-    if (method !== "GET") return methodNotAllowed(origin);
-    return withCors(handleOgImage(url), origin);
-  }
-
-  // ── POST /api/signal-dsl/execute ───────────────────────────────────────────
-  if (path === "/api/signal-dsl/execute") {
-    if (method !== "POST") return methodNotAllowed(origin);
-    return withCors(await handleSignalDslExecute(request), origin);
-  }
-
-  // ── Favicon (no-op) ────────────────────────────────────────────────────────
-  if (path === "/favicon.ico") {
-    return new Response(null, { status: 204 });
-  }
-
-  return notFound(origin);
-}
-
-export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
-    // Skip rate limiting for preflight requests
-    if (request.method !== "OPTIONS") {
-      const key = rateLimitKey(request);
-      const origin = request.headers.get("Origin");
-      if (!checkRateLimit(key)) {
-        return tooManyRequests(corsHeaders(origin));
-      }
-    }
-
-    try {
-      return withSecurityHeaders(await route(request, env));
-    } catch (_err) {
-      const origin = request.headers.get("Origin");
-      return withSecurityHeaders(
-        withCors(
-          new Response(JSON.stringify({ error: "Internal server error" }), {
-            status: 500,
-            headers: { "Content-Type": "application/json" },
-          }),
-          origin,
-        ),
-      );
-    }
-  },
-};
+export default app;
