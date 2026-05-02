@@ -14,6 +14,7 @@ import type { CardHandle, CardContext } from "./registry";
 import { compileSignal } from "../domain/signal-dsl";
 import type { EvalContext, Value } from "../domain/signal-dsl";
 import { getApiClient } from "../core/worker-api-client";
+import { openStrategyFromDisk, saveStrategyToDisk } from "../core/file-system-access";
 
 /** Shared built-in functions exposed to every expression. */
 const BUILTIN_FUNCS: Readonly<Record<string, (...args: Value[]) => Value>> = {
@@ -87,6 +88,8 @@ export function mount(container: HTMLElement, _ctx: CardContext): CardHandle {
         <div class="dsl-actions">
           <button id="dsl-eval-btn" class="btn-primary" type="button">Evaluate</button>
           <button id="dsl-clear-btn" class="btn-secondary" type="button">Clear</button>
+          <button id="dsl-save-btn" class="btn-secondary" type="button">Save Strategy</button>
+          <button id="dsl-open-btn" class="btn-secondary" type="button">Open Strategy</button>
         </div>
 
         <div id="dsl-result-area" class="dsl-result-area" aria-live="polite" aria-atomic="true"></div>
@@ -108,6 +111,8 @@ export function mount(container: HTMLElement, _ctx: CardContext): CardHandle {
   const varsInput = container.querySelector<HTMLTextAreaElement>("#dsl-vars-input")!;
   const evalBtn = container.querySelector<HTMLButtonElement>("#dsl-eval-btn")!;
   const clearBtn = container.querySelector<HTMLButtonElement>("#dsl-clear-btn")!;
+  const saveBtn = container.querySelector<HTMLButtonElement>("#dsl-save-btn")!;
+  const openBtn = container.querySelector<HTMLButtonElement>("#dsl-open-btn")!;
   const resultArea = container.querySelector<HTMLDivElement>("#dsl-result-area")!;
 
   function evaluate(): void {
@@ -137,7 +142,10 @@ export function mount(container: HTMLElement, _ctx: CardContext): CardHandle {
     }
 
     // H9: also execute via Worker route and replace local output if successful.
-    const canCallWorker = typeof location !== "undefined" && /^https?:$/.test(location.protocol);
+    const canCallWorker =
+      typeof location !== "undefined" &&
+      /^https?:$/.test(location.protocol) &&
+      import.meta.env.MODE !== "test";
     if (canCallWorker) {
       void (async () => {
         const remote = await getApiClient().signalDslExecute({ expression: expr, vars });
@@ -161,6 +169,34 @@ export function mount(container: HTMLElement, _ctx: CardContext): CardHandle {
     exprInput.value = "";
     varsInput.value = "";
     resultArea.innerHTML = "";
+  });
+
+  saveBtn.addEventListener("click", () => {
+    void (async () => {
+      const payload = {
+        expression: exprInput.value,
+        varsJson: varsInput.value,
+        savedAt: new Date().toISOString(),
+        version: 1 as const,
+      };
+      const saved = await saveStrategyToDisk(payload);
+      if (saved) {
+        resultArea.innerHTML = `<span class="text-secondary">Strategy saved.</span>`;
+      }
+    })();
+  });
+
+  openBtn.addEventListener("click", () => {
+    void (async () => {
+      const payload = await openStrategyFromDisk();
+      if (!payload) {
+        resultArea.innerHTML = `<span class="text-secondary">No strategy loaded.</span>`;
+        return;
+      }
+      exprInput.value = payload.expression;
+      varsInput.value = payload.varsJson;
+      resultArea.innerHTML = `<span class="text-secondary">Strategy loaded (${new Date(payload.savedAt).toLocaleString()}).</span>`;
+    })();
   });
 
   return {

@@ -24,6 +24,11 @@ describe("signal-dsl card", () => {
     expect(container.querySelector<HTMLTextAreaElement>("#dsl-vars-input")).not.toBeNull();
   });
 
+  it("renders save/open strategy actions", () => {
+    expect(container.querySelector<HTMLButtonElement>("#dsl-save-btn")).not.toBeNull();
+    expect(container.querySelector<HTMLButtonElement>("#dsl-open-btn")).not.toBeNull();
+  });
+
   it("shows 'Enter an expression' message when expression is empty", () => {
     const btn = container.querySelector<HTMLButtonElement>("#dsl-eval-btn")!;
     btn.click();
