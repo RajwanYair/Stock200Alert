@@ -6,6 +6,61 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [7.13.0] - 2025-07-17
+
+### Added — 10-sprint delivery (H8, H16, I1, I2, H4, H13, I9, I10, I11, I6)
+
+- **H8 — OPFS Storage Tier** (`opfs-storage.ts`): `opfsSupported`, `writeCandles`,
+  `readCandles`, `deleteCandles`, `listTickers`, `getArchiveSize`, `clearAllArchives`,
+  `serializeCandles`, `deserializeCandles` — binary 48-byte/candle format for persistent
+  OHLCV archive in Origin Private File System (25 new tests).
+- **H16 — uPlot Inline Chart Helpers** (`uplot-helpers.ts`): `buildSparklineOpts`,
+  `buildMiniChartOpts`, `closesToSparklineData`, `candlesToUplotData`, `priceRangeFromData`,
+  `sparklineColor`, `buildVolumeBarSeries`, `hexToRgba` — config builders for sparklines
+  and mini-charts (34 new tests).
+- **I1 — ONNX Runtime Web Helpers** (`onnx-patterns.ts`): `onnxSupported`,
+  `preprocessCandles`, `softmax`, `argmax`, `topK`, `buildInputTensor`,
+  `createModelLoader` — dependency-injected abstraction for on-device ML pattern
+  recognition (29 new tests).
+- **I2 — Candlestick Pattern Recognition** (`pattern-recognition.ts`): `bodySize`,
+  `candleRange`, `upperShadow`, `lowerShadow`, `isBullish`, `isDoji`, `isHammer`,
+  `isShootingStar`, `isSpinningTop`, `isMarubozu`, `isBullishEngulfing`,
+  `isBearishEngulfing`, `isMorningStar`, `isEveningStar`, `isThreeWhiteSoldiers`,
+  `isThreeBlackCrows`, `detectAllPatterns` — 10 rule-based candlestick pattern
+  detectors + full-scan scanner (45 new tests).
+- **H4 — Scroll-driven Animations** (`scroll-driven.ts`): `supportsScrollDriven`,
+  `supportsViewTimeline`, `createScrollTimeline`, `createViewTimeline`,
+  `attachScrollProgress`, `buildScrollTimelineCss`, `buildViewTimelineCss`,
+  `buildAnimationCss` — progressive enhancement for CSS scroll-timeline API (24 new tests).
+- **H13 — XLSX Export** (`xlsx-export.ts`): `createWorkbook`, `addSheet`, `generateXlsx`,
+  `cellRef`, `escapeXml`, `inferCellType` — zero-dependency OOXML SpreadsheetML generator
+  with minimal ZIP builder (34 new tests).
+- **I9 — Market Regime Detection** (`market-regime.ts`): `Regime` enum,
+  `classifyVix`, `classifyBreadth`, `classifyYieldCurve`, `classifyDollar`,
+  `trendRegime`, `volatilityRegime`, `combinedRegime`, `regimeScore`, `regimeLabel`,
+  `regimeColor` — rule-based macro regime classifier with weighted ensemble (49 new tests).
+- **I10 — Economic Calendar** (`economic-calendar.ts`): `EventImpact`/`EventCategory`
+  enums, `parseEconEvent`, `filterByImpact`, `filterByCountry`, `filterByDateRange`,
+  `groupByDate`, `groupByCountry`, `nextEvent`, `classifyImpact`, `classifyCategory`,
+  `formatSurprise`, `surprisePct`, `isMarketMoving` — macro event parsing and analysis
+  (47 new tests).
+- **I11 — News Digest** (`news-digest.ts`): `detectFormat`, `parseRssFeed`,
+  `parseAtomFeed`, `parseFeed`, `extractTickers`, `groupByTicker`, `scoreSentiment`,
+  `classifySentiment`, `deduplicateItems`, `sortByDate`, `summariseDigest` — RSS/Atom
+  feed parsing with ticker extraction and keyword sentiment scoring (41 new tests).
+- **I6 — Signal Strategy I/O** (`signal-strategy-io.ts`): `exportStrategy`,
+  `importStrategy`, `exportBundle`, `importBundle`, `validateExpression`, `validateVars`,
+  `checksumPayload`, `encodeShareUrl`, `decodeShareUrl`, `payloadToClipboardText` —
+  portable JSON strategy sharing with checksum integrity and URL encoding (37 new tests).
+
+### Stats
+
+- **365 new tests** across 10 new modules and test files
+- Test total: **3604 tests** across **302 test files**
+- All existing tests continue to pass
+
+---
+
 ## [7.12.0] - 2026-07-30
 
 ### Added — 10-sprint delivery (H6, H21, G21, G8, G9, H3, H5, G18, G19, G16)
