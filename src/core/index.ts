@@ -308,6 +308,19 @@ export { generateOgImageSvg, svgToDataUri, downloadSvg } from "./og-image";
 export type { OgImageOptions, ConsensusDirection } from "./og-image";
 
 export {
+  opfsSupported,
+  writeCandles,
+  readCandles,
+  deleteCandles,
+  listTickers,
+  getArchiveSize,
+  clearAllArchives,
+  serializeCandles,
+  deserializeCandles,
+} from "./opfs-storage";
+export type { OhlcvCandle } from "./opfs-storage";
+
+export {
   getLocale,
   formatNumber,
   formatCompact,
