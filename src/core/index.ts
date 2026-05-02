@@ -18,7 +18,14 @@ export { Cache } from "./cache";
 export { LruCache } from "./lru-cache";
 export type { LruCacheOptions } from "./lru-cache";
 export { loadConfig, saveConfig, addTicker, removeTicker } from "./config";
-export { fetchWithTimeout, fetchWithRetry, FetchError } from "./fetch";
+export { fetchWithTimeout, fetchWithRetry, fetchConditional, FetchError } from "./fetch";
+export {
+  getValidators,
+  setValidators,
+  buildConditionalHeaders,
+  clearValidators,
+} from "./http-validator-cache";
+export type { HttpValidators } from "./http-validator-cache";
 export { toDisposable, abortOnDispose, onRouteChangeDisposable } from "./disposable";
 export type { SyncDisposable, DisposableAbortController } from "./disposable";
 export { createShortcutManager } from "./keyboard";
