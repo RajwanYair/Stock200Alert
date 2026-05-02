@@ -110,4 +110,37 @@ describe("renderSettings", () => {
       expect(clearBtn.disabled).toBe(true);
     });
   });
+
+  describe("Card settings section (G24)", () => {
+    it("renders card settings picker", () => {
+      renderSettings(container, makeConfig(), callbacks);
+      const picker = container.querySelector("#card-settings-picker") as HTMLSelectElement;
+      expect(picker).not.toBeNull();
+      const options = Array.from(picker.options).map((o) => o.value);
+      expect(options).toContain("watchlist");
+      expect(options).toContain("chart");
+      expect(options).toContain("risk");
+    });
+
+    it("calls onCardSettingsChange when watchlist settings change", () => {
+      const onCardSettingsChange = vi.fn();
+      renderSettings(container, makeConfig(), { ...callbacks, onCardSettingsChange });
+      const input = container.querySelector("#card-settings-autoRefreshSec") as HTMLInputElement;
+      input.value = "120";
+      input.dispatchEvent(new Event("change"));
+      expect(onCardSettingsChange).toHaveBeenCalled();
+      const [cardId, payload] = onCardSettingsChange.mock.calls.at(-1)!;
+      expect(cardId).toBe("watchlist");
+      expect(payload.autoRefreshSec).toBe(120);
+    });
+
+    it("switches panel fields when picker changes card", () => {
+      renderSettings(container, makeConfig(), callbacks);
+      const picker = container.querySelector("#card-settings-picker") as HTMLSelectElement;
+      picker.value = "chart";
+      picker.dispatchEvent(new Event("change"));
+      expect(container.querySelector("#card-settings-defaultInterval")).not.toBeNull();
+      expect(container.querySelector("#card-settings-indicatorSet")).not.toBeNull();
+    });
+  });
 });

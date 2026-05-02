@@ -19,6 +19,7 @@ import {
   array,
   nullable,
   optional,
+  boolean,
   union,
   literal,
   picklist,
@@ -406,9 +407,61 @@ export const MethodWeightsSchema = object({
   SuperTrend: optional(pipe(number(), minValue(0), maxValue(3))),
 });
 
+/** G24: typed per-card settings schemas. */
+export const WatchlistCardSettingsSchema = object({
+  visibleColumns: array(string()),
+  autoRefreshSec: pipe(number(), integer(), minValue(5), maxValue(3600)),
+  density: picklist(["compact", "comfortable"] as const),
+});
+
+export const ChartCardSettingsSchema = object({
+  defaultInterval: picklist(["1d", "1w", "1m"] as const),
+  indicatorSet: array(string()),
+  crosshairSnap: boolean(),
+});
+
+export const ConsensusCardSettingsSchema = object({
+  methodsToDisplay: array(MethodNameSchema),
+  historyDepth: pipe(number(), integer(), minValue(10), maxValue(500)),
+});
+
+export const ScreenerCardSettingsSchema = object({
+  defaultPreset: picklist(["balanced", "momentum", "value"] as const),
+  maxResults: pipe(number(), integer(), minValue(10), maxValue(500)),
+  sortColumn: picklist(["ticker", "price", "consensus"] as const),
+});
+
+export const HeatmapCardSettingsSchema = object({
+  colorScale: picklist(["diverging", "sequential"] as const),
+  cellLabelFormat: picklist(["ticker", "ticker-change"] as const),
+});
+
+export const BacktestCardSettingsSchema = object({
+  defaultStrategy: string(),
+  lookbackWindow: pipe(number(), integer(), minValue(20), maxValue(500)),
+  benchmark: string(),
+});
+
+export const AlertsCardSettingsSchema = object({
+  thresholdType: picklist(["percent", "absolute"] as const),
+  notificationChannel: picklist(["toast", "push"] as const),
+});
+
+export const PortfolioCardSettingsSchema = object({
+  benchmarkTicker: string(),
+  displayCurrency: picklist(["USD", "EUR", "ILS"] as const),
+});
+
+export const RiskCardSettingsSchema = object({
+  varConfidence: pipe(number(), minValue(0.8), maxValue(0.999)),
+  benchmark: string(),
+});
+
 export const AppConfigSchema = object({
   theme: ThemeSchema,
   watchlist: array(WatchlistEntrySchema),
+  // G20/G24: methodWeights/cardSettings are parsed manually in config.ts
+  // to keep exactOptionalPropertyTypes clean.
 });
 
 // ---------------------------------------------------------------------------

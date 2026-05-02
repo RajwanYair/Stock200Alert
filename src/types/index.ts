@@ -7,6 +7,8 @@ export type {
   AlertRecord,
   Holding,
   MethodWeights,
+  CardId,
+  CardSettingsMap,
 } from "./domain";
 export type { SignalDirection, MethodName, SmaPeriod } from "./domain";
 export { SMA_PERIODS, DEFAULT_METHOD_WEIGHTS } from "./domain";
@@ -51,6 +53,15 @@ export {
   ConsensusResultSchema,
   WatchlistEntrySchema,
   MethodWeightsSchema,
+  WatchlistCardSettingsSchema,
+  ChartCardSettingsSchema,
+  ConsensusCardSettingsSchema,
+  ScreenerCardSettingsSchema,
+  HeatmapCardSettingsSchema,
+  BacktestCardSettingsSchema,
+  AlertsCardSettingsSchema,
+  PortfolioCardSettingsSchema,
+  RiskCardSettingsSchema,
   ThemeSchema,
   AppConfigSchema,
   YahooChartSchema,

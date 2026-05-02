@@ -1,8 +1,26 @@
 /**
  * Configuration management — load/save/defaults.
  */
-import type { AppConfig, MethodWeights, WatchlistEntry } from "../types/domain";
-import { AppConfigSchema, safeParse } from "../types/valibot-schemas";
+import type {
+  AppConfig,
+  CardId,
+  CardSettingsMap,
+  MethodWeights,
+  WatchlistEntry,
+} from "../types/domain";
+import {
+  AlertsCardSettingsSchema,
+  AppConfigSchema,
+  BacktestCardSettingsSchema,
+  ChartCardSettingsSchema,
+  ConsensusCardSettingsSchema,
+  HeatmapCardSettingsSchema,
+  PortfolioCardSettingsSchema,
+  RiskCardSettingsSchema,
+  ScreenerCardSettingsSchema,
+  WatchlistCardSettingsSchema,
+  safeParse,
+} from "../types/valibot-schemas";
 
 const STORAGE_KEY = "crosstide-config";
 const CONFIG_VERSION = 1;
@@ -16,6 +34,18 @@ const DEFAULT_CONFIG: AppConfig = {
   theme: "dark",
   watchlist: [],
 };
+
+const CARD_IDS: readonly CardId[] = [
+  "watchlist",
+  "chart",
+  "consensus",
+  "screener",
+  "heatmap",
+  "backtest",
+  "alerts",
+  "portfolio",
+  "risk",
+] as const;
 
 export function loadConfig(): AppConfig {
   try {
@@ -43,9 +73,11 @@ export function loadConfig(): AppConfig {
     // to keep exactOptionalPropertyTypes clean.
     const rawWeights = rawCfg["methodWeights"];
     const methodWeights: MethodWeights | undefined = parseMethodWeights(rawWeights);
+    const cardSettings: CardSettingsMap | undefined = parseCardSettings(rawCfg["cardSettings"]);
 
     const baseConfig = watchlist === cfg.watchlist ? cfg : { ...cfg, watchlist };
-    return methodWeights !== undefined ? { ...baseConfig, methodWeights } : baseConfig;
+    const withWeights = methodWeights !== undefined ? { ...baseConfig, methodWeights } : baseConfig;
+    return cardSettings !== undefined ? { ...withWeights, cardSettings } : withWeights;
   } catch {
     return DEFAULT_CONFIG;
   }
@@ -139,4 +171,65 @@ function parseMethodWeights(raw: unknown): MethodWeights | undefined {
     hasAny = true;
   }
   return hasAny ? result : undefined;
+}
+
+function parseCardSettings(raw: unknown): CardSettingsMap | undefined {
+  if (raw == null || typeof raw !== "object" || Array.isArray(raw)) return undefined;
+  const obj = raw as Record<string, unknown>;
+  const result: Partial<Record<CardId, unknown>> = {};
+  let hasAny = false;
+
+  for (const cardId of CARD_IDS) {
+    const rawSettings = obj[cardId];
+    if (rawSettings == null || typeof rawSettings !== "object" || Array.isArray(rawSettings)) {
+      continue;
+    }
+    const parsed = parseSingleCardSettings(cardId, rawSettings);
+    if (parsed !== undefined) {
+      result[cardId] = parsed;
+      hasAny = true;
+    }
+  }
+  return hasAny ? (result as CardSettingsMap) : undefined;
+}
+
+function parseSingleCardSettings(cardId: CardId, raw: unknown): unknown {
+  switch (cardId) {
+    case "watchlist": {
+      const r = safeParse(WatchlistCardSettingsSchema, raw);
+      return r.success ? r.output : undefined;
+    }
+    case "chart": {
+      const r = safeParse(ChartCardSettingsSchema, raw);
+      return r.success ? r.output : undefined;
+    }
+    case "consensus": {
+      const r = safeParse(ConsensusCardSettingsSchema, raw);
+      return r.success ? r.output : undefined;
+    }
+    case "screener": {
+      const r = safeParse(ScreenerCardSettingsSchema, raw);
+      return r.success ? r.output : undefined;
+    }
+    case "heatmap": {
+      const r = safeParse(HeatmapCardSettingsSchema, raw);
+      return r.success ? r.output : undefined;
+    }
+    case "backtest": {
+      const r = safeParse(BacktestCardSettingsSchema, raw);
+      return r.success ? r.output : undefined;
+    }
+    case "alerts": {
+      const r = safeParse(AlertsCardSettingsSchema, raw);
+      return r.success ? r.output : undefined;
+    }
+    case "portfolio": {
+      const r = safeParse(PortfolioCardSettingsSchema, raw);
+      return r.success ? r.output : undefined;
+    }
+    case "risk": {
+      const r = safeParse(RiskCardSettingsSchema, raw);
+      return r.success ? r.output : undefined;
+    }
+  }
 }

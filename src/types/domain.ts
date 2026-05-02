@@ -103,6 +103,81 @@ export interface AppConfig {
   readonly watchlist: readonly WatchlistEntry[];
   /** Per-method consensus weights (0 = disabled, 3 = triple-weighted, default 1). */
   readonly methodWeights?: MethodWeights;
+  /** Per-card isolated settings namespace (G24). */
+  readonly cardSettings?: CardSettingsMap;
+}
+
+/** Cards that expose local, per-card settings in the global config. */
+export type CardId =
+  | "watchlist"
+  | "chart"
+  | "consensus"
+  | "screener"
+  | "heatmap"
+  | "backtest"
+  | "alerts"
+  | "portfolio"
+  | "risk";
+
+export interface WatchlistCardSettings {
+  readonly visibleColumns: readonly string[];
+  readonly autoRefreshSec: number;
+  readonly density: "compact" | "comfortable";
+}
+
+export interface ChartCardSettings {
+  readonly defaultInterval: "1d" | "1w" | "1m";
+  readonly indicatorSet: readonly string[];
+  readonly crosshairSnap: boolean;
+}
+
+export interface ConsensusCardSettings {
+  readonly methodsToDisplay: readonly MethodName[];
+  readonly historyDepth: number;
+}
+
+export interface ScreenerCardSettings {
+  readonly defaultPreset: "balanced" | "momentum" | "value";
+  readonly maxResults: number;
+  readonly sortColumn: "ticker" | "price" | "consensus";
+}
+
+export interface HeatmapCardSettings {
+  readonly colorScale: "diverging" | "sequential";
+  readonly cellLabelFormat: "ticker" | "ticker-change";
+}
+
+export interface BacktestCardSettings {
+  readonly defaultStrategy: string;
+  readonly lookbackWindow: number;
+  readonly benchmark: string;
+}
+
+export interface AlertsCardSettings {
+  readonly thresholdType: "percent" | "absolute";
+  readonly notificationChannel: "toast" | "push";
+}
+
+export interface PortfolioCardSettings {
+  readonly benchmarkTicker: string;
+  readonly displayCurrency: "USD" | "EUR" | "ILS";
+}
+
+export interface RiskCardSettings {
+  readonly varConfidence: number;
+  readonly benchmark: string;
+}
+
+export interface CardSettingsMap {
+  readonly watchlist?: WatchlistCardSettings;
+  readonly chart?: ChartCardSettings;
+  readonly consensus?: ConsensusCardSettings;
+  readonly screener?: ScreenerCardSettings;
+  readonly heatmap?: HeatmapCardSettings;
+  readonly backtest?: BacktestCardSettings;
+  readonly alerts?: AlertsCardSettings;
+  readonly portfolio?: PortfolioCardSettings;
+  readonly risk?: RiskCardSettings;
 }
 
 /** An alert that has been fired and persisted. */

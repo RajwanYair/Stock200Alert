@@ -280,4 +280,53 @@ describe("config", () => {
       expect(config.methodWeights).toBeUndefined();
     });
   });
+
+  describe("loadConfig cardSettings re-attachment (G24)", () => {
+    it("re-attaches valid cardSettings from raw JSON", () => {
+      const raw = {
+        version: 1,
+        config: {
+          theme: "dark",
+          watchlist: [],
+          cardSettings: {
+            chart: {
+              defaultInterval: "1d",
+              indicatorSet: ["SMA50", "SMA200"],
+              crosshairSnap: true,
+            },
+          },
+        },
+      };
+      localStorage.setItem("crosstide-config", JSON.stringify(raw));
+      const config = loadConfig();
+      expect(config.cardSettings?.chart?.defaultInterval).toBe("1d");
+      expect(config.cardSettings?.chart?.crosshairSnap).toBe(true);
+    });
+
+    it("drops invalid card settings object", () => {
+      const raw = {
+        version: 1,
+        config: {
+          theme: "dark",
+          watchlist: [],
+          cardSettings: {
+            chart: {
+              defaultInterval: "bad",
+              indicatorSet: "nope",
+              crosshairSnap: "yes",
+            },
+          },
+        },
+      };
+      localStorage.setItem("crosstide-config", JSON.stringify(raw));
+      const config = loadConfig();
+      expect(config.cardSettings?.chart).toBeUndefined();
+    });
+
+    it("returns undefined cardSettings when absent", () => {
+      saveConfig({ theme: "dark", watchlist: [] });
+      const config = loadConfig();
+      expect(config.cardSettings).toBeUndefined();
+    });
+  });
 });

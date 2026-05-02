@@ -261,6 +261,20 @@
     text-align: right;
   }
 
+  .card-settings-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: var(--sp-sm);
+    margin-top: var(--sp-sm);
+  }
+
+  .card-settings-grid label {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: var(--font-size-sm);
+  }
+
   .ticker-remove:hover {
     color: var(--danger);
   }
