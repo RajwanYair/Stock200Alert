@@ -117,4 +117,28 @@ describe("reconnecting-ws", () => {
     expect(onError).toHaveBeenCalled();
     vi.useRealTimers();
   });
+
+  // G12 — `using` keyword support
+  it("implements Symbol.dispose which calls close()", () => {
+    FakeWS.instances = [];
+    const ws = createReconnectingWS("wss://dispose-test", {
+      WebSocketImpl: FakeWS as unknown as typeof WebSocket,
+    });
+    expect(typeof ws[Symbol.dispose]).toBe("function");
+    ws[Symbol.dispose]();
+    expect(ws.readyState).toBe(3); // CLOSED
+  });
+
+  it("is usable with the using keyword", () => {
+    FakeWS.instances = [];
+    let ref: ReturnType<typeof createReconnectingWS> | null = null;
+    {
+      using ws = createReconnectingWS("wss://using-test", {
+        WebSocketImpl: FakeWS as unknown as typeof WebSocket,
+      });
+      ref = ws;
+    }
+    // After the block, dispose was called → readyState 3 (CLOSED)
+    expect(ref!.readyState).toBe(3);
+  });
 });

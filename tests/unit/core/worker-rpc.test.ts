@@ -40,8 +40,10 @@ class FakeWorker {
   }
 
   terminate(): void {
-    /* no-op */
+    this.terminated = true;
   }
+
+  public terminated = false;
 }
 
 // ── helpers ───────────────────────────────────────────────────────────────────
@@ -213,5 +215,30 @@ describe("serveWorkerRpc", () => {
     handler!(new MessageEvent("message", { data: { unrelated: true } }));
     await new Promise((r) => setTimeout(r, 0));
     expect(selfMessages).toHaveLength(0);
+  });
+});
+
+// G12 — Symbol.dispose on WorkerClient
+describe("WorkerClient Symbol.dispose", () => {
+  it("implements Symbol.dispose", () => {
+    const w = new FakeWorker();
+    const client = createWorkerClient<CalcApi>(w as unknown as Worker);
+    expect(typeof client[Symbol.dispose]).toBe("function");
+  });
+
+  it("Symbol.dispose terminates the worker", () => {
+    const w = new FakeWorker();
+    const client = createWorkerClient<CalcApi>(w as unknown as Worker);
+    client[Symbol.dispose]();
+    expect(w.terminated).toBe(true);
+  });
+
+  it("is usable with the using keyword", () => {
+    const w = new FakeWorker();
+    {
+      using client = createWorkerClient<CalcApi>(w as unknown as Worker);
+      void client;
+    }
+    expect(w.terminated).toBe(true);
   });
 });

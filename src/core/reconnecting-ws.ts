@@ -48,6 +48,8 @@ export interface ReconnectingWS {
   readonly readyState: number;
   readonly attempt: number;
   on(event: "open" | "close" | "error" | "message", handler: WSEventHandler): void;
+  /** G12: implement Symbol.dispose so `using ws = createReconnectingWS(...)` auto-closes. */
+  [Symbol.dispose](): void;
 }
 
 export function createReconnectingWS(url: string, options: ReconnectOptions = {}): ReconnectingWS {
@@ -123,6 +125,9 @@ export function createReconnectingWS(url: string, options: ReconnectOptions = {}
     },
     on(event, handler): void {
       handlers[event]?.push(handler);
+    },
+    [Symbol.dispose](): void {
+      this.close();
     },
   };
 }

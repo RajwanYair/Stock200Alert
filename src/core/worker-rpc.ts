@@ -54,6 +54,8 @@ export type WorkerClient<Api extends WorkerApi> = {
     ...args: Parameters<Api[K]>
   ): Promise<Awaited<ReturnType<Api[K]>>>;
   terminate(): void;
+  /** G12: implement Symbol.dispose so `using rpc = createWorkerClient(...)` auto-terminates. */
+  [Symbol.dispose](): void;
 };
 
 // ── client (main thread) ─────────────────────────────────────────────────────
@@ -119,6 +121,9 @@ export function createWorkerClient<Api extends WorkerApi>(worker: Worker): Worke
       worker.terminate();
       for (const p of pending.values()) p.reject(new Error("Worker terminated"));
       pending.clear();
+    },
+    [Symbol.dispose](): void {
+      this.terminate();
     },
   };
 }
