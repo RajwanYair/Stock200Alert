@@ -1516,4 +1516,75 @@
     color: var(--positive);
     font-weight: 600;
   }
+
+  /* ── H2: @starting-style — card + dialog + toast mount animations ─── */
+  /*
+   * @starting-style defines the FROM state of a CSS transition when the
+   * element first appears in the rendered tree (Baseline 2024 — Chrome 117+,
+   * Firefox 129+, Safari 17.5+).  The browser interpolates from
+   * @starting-style values to the element's normal computed style on the
+   * first style recalc after the element becomes visible, giving us
+   * JavaScript-free entry animations.
+   *
+   * No @supports guard needed — browsers that do not recognise @starting-style
+   * simply skip the at-rule and render the element in its final state.
+   */
+
+  /* Cards: fade + subtle upward slide on first paint */
+  .card {
+    transition:
+      opacity var(--transition-normal, 200ms) ease-out,
+      transform var(--transition-normal, 200ms) ease-out;
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+  }
+
+  /* Modals / popover overlays: fade + scale-in from 96% */
+  .modal,
+  [popover] {
+    transition:
+      opacity var(--transition-normal, 200ms) ease-out,
+      transform var(--transition-normal, 200ms) ease-out,
+      display var(--transition-normal, 200ms) allow-discrete,
+      overlay var(--transition-normal, 200ms) allow-discrete;
+
+    @starting-style {
+      opacity: 0;
+      transform: scale(0.96);
+    }
+  }
+
+  /* Toasts: fade + slide from the right on first insertion */
+  .toast {
+    transition:
+      opacity var(--transition-fast, 120ms) ease-out,
+      transform var(--transition-fast, 120ms) ease-out;
+
+    @starting-style {
+      opacity: 0;
+      transform: translateX(20px);
+    }
+  }
+
+  /* Detail panels / drawers: slide in from below on mobile, from right on desktop */
+  .detail-panel {
+    transition:
+      opacity var(--transition-normal, 200ms) ease-out,
+      transform var(--transition-normal, 200ms) ease-out;
+
+    @starting-style {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+
+    @media (min-width: 768px) {
+      @starting-style {
+        opacity: 0;
+        transform: translateX(16px);
+      }
+    }
+  }
 }
