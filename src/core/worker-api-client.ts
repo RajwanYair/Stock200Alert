@@ -79,6 +79,15 @@ export interface ScreenerResponse {
   rows: ScreenerRow[];
 }
 
+export interface SignalDslExecuteParams {
+  expression: string;
+  vars?: Record<string, number | boolean>;
+}
+
+export interface SignalDslExecuteResponse {
+  result: number | boolean;
+}
+
 // ---------------------------------------------------------------------------
 // Client interface
 // ---------------------------------------------------------------------------
@@ -95,6 +104,9 @@ export interface WorkerApiClient {
 
   /** POST /api/screener */
   screener(params: ScreenerParams): Promise<Result<ScreenerResponse>>;
+
+  /** POST /api/signal-dsl/execute */
+  signalDslExecute(params: SignalDslExecuteParams): Promise<Result<SignalDslExecuteResponse>>;
 }
 
 // ---------------------------------------------------------------------------
@@ -193,6 +205,11 @@ export function createApiClient(
     async screener(params): Promise<Result<ScreenerResponse>> {
       const url = buildUrl(baseUrl, "api/screener");
       return postJson<ScreenerResponse>(fetchFn, url, params, signal);
+    },
+
+    async signalDslExecute(params): Promise<Result<SignalDslExecuteResponse>> {
+      const url = buildUrl(baseUrl, "api/signal-dsl/execute");
+      return postJson<SignalDslExecuteResponse>(fetchFn, url, params, signal);
     },
   };
 }

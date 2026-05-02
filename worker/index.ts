@@ -24,6 +24,7 @@ import { handleChart } from "./routes/chart.js";
 import { handleSearch } from "./routes/search.js";
 import { handleScreener } from "./routes/screener.js";
 import { handleOgImage } from "./routes/og.js";
+import { handleSignalDslExecute } from "./routes/signal-dsl.js";
 import { withSecurityHeaders } from "./security.js";
 
 export interface Env {
@@ -95,6 +96,12 @@ async function route(request: Request, env: Env): Promise<Response> {
   if (path.startsWith("/api/og/") || path.startsWith("/api/og")) {
     if (method !== "GET") return methodNotAllowed(origin);
     return withCors(handleOgImage(url), origin);
+  }
+
+  // ── POST /api/signal-dsl/execute ───────────────────────────────────────────
+  if (path === "/api/signal-dsl/execute") {
+    if (method !== "POST") return methodNotAllowed(origin);
+    return withCors(await handleSignalDslExecute(request), origin);
   }
 
   // ── Favicon (no-op) ────────────────────────────────────────────────────────

@@ -151,6 +151,33 @@ describe("WorkerApiClient", () => {
     });
   });
 
+  describe("signalDslExecute", () => {
+    it("sends POST with expression/vars and returns result", async () => {
+      const payload = { result: true };
+      const fetchFn = mockFetch(200, payload);
+      const client = createApiClient(BASE, { fetchFn });
+      const result = await client.signalDslExecute({
+        expression: "rsi < 30 and price > 50",
+        vars: { rsi: 25, price: 100 },
+      });
+      expect(result.ok).toBe(true);
+      if (result.ok) {
+        expect(result.value.result).toBe(true);
+      }
+
+      const [, init] = (fetchFn as ReturnType<typeof vi.fn>).mock.calls[0] as [string, RequestInit];
+      expect(init.method).toBe("POST");
+      expect((init.headers as Record<string, string>)["Content-Type"]).toBe("application/json");
+      expect(String(init.body)).toContain("rsi < 30");
+    });
+
+    it("returns ok:false on endpoint failure", async () => {
+      const client = createApiClient(BASE, { fetchFn: mockFetch(400, { error: "bad expression" }) });
+      const result = await client.signalDslExecute({ expression: "(" });
+      expect(result.ok).toBe(false);
+    });
+  });
+
   // ---------------------------------------------------------------------------
   // Singleton
   // ---------------------------------------------------------------------------

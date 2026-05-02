@@ -13,6 +13,7 @@
 import type { CardHandle, CardContext } from "./registry";
 import { compileSignal } from "../domain/signal-dsl";
 import type { EvalContext, Value } from "../domain/signal-dsl";
+import { getApiClient } from "../core/worker-api-client";
 
 /** Shared built-in functions exposed to every expression. */
 const BUILTIN_FUNCS: Readonly<Record<string, (...args: Value[]) => Value>> = {
@@ -123,14 +124,27 @@ export function mount(container: HTMLElement, _ctx: CardContext): CardHandle {
       return;
     }
 
+    // Evaluate locally first for instant feedback and deterministic UX.
     try {
       const compiled = compileSignal(expr);
       const ctx: EvalContext = { vars, funcs: BUILTIN_FUNCS };
       const result = compiled(ctx);
-      resultArea.innerHTML = `<span class="text-secondary">Result: </span>${renderResult(result)}`;
+      resultArea.innerHTML = `<span class="text-secondary">Result (Local): </span>${renderResult(result)}`;
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       resultArea.innerHTML = `<span class="signal-sell">Error: ${escapeHtml(msg)}</span>`;
+      return;
+    }
+
+    // H9: also execute via Worker route and replace local output if successful.
+    const canCallWorker = typeof location !== "undefined" && /^https?:$/.test(location.protocol);
+    if (canCallWorker) {
+      void (async () => {
+        const remote = await getApiClient().signalDslExecute({ expression: expr, vars });
+        if (remote.ok) {
+          resultArea.innerHTML = `<span class="text-secondary">Result (Worker): </span>${renderResult(remote.value.result)}`;
+        }
+      })();
     }
   }
 
