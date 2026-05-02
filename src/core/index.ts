@@ -166,6 +166,17 @@ export type {
   WorkerApi,
   WorkerClient,
 } from "./worker-rpc";
+export {
+  STRIDE,
+  Field,
+  packOhlcv,
+  unpackOhlcv,
+  extractColumn,
+  packFromColumns,
+  slicePacked,
+  collectTransferables,
+} from "./transferable-ohlc";
+export type { OhlcvRow, PackedOhlcv } from "./transferable-ohlc";
 export { runBacktestAsync, disposeBacktestWorker } from "./backtest-worker";
 
 export { fuzzyScore, fuzzySearch } from "./fuzzy-match";
