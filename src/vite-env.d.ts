@@ -7,7 +7,8 @@ declare const __APP_VERSION__: string;
 declare module "@fontsource-variable/inter" {}
 
 // G8: Navigation API — TS lib.dom.d.ts types window.navigation as `string` (legacy),
-// which conflicts with the modern Navigation interface. Re-declare as the correct type.
+// which conflicts with the modern Navigation interface. Re-declare as optional so
+// "navigation" in window narrowing works correctly in both branches.
 interface Window {
-  readonly navigation: Navigation;
+  navigation?: Navigation;
 }

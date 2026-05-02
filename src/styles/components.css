@@ -45,6 +45,47 @@
     gap: var(--sp-sm);
   }
 
+  /*
+   * H5 — CSS @scope (Baseline 2024).
+   * Scope card-inner styles to the `.card` root element so they cannot
+   * match elements outside a card context. The global rules above remain
+   * as a fallback for browsers that do not yet support @scope (none in
+   * practice for the Baseline 2024 target set, but kept for safety).
+   * Inside @scope selectors, specificity is calculated without the :scope
+   * implicit ancestor, making overrides predictable.
+   */
+  @scope (.card) {
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--sp-md) var(--sp-lg);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .card-actions {
+      display: flex;
+      gap: var(--sp-sm);
+    }
+
+    /* Card body — general content area */
+    .card-body {
+      padding: var(--sp-md) var(--sp-lg);
+    }
+
+    /* Loading / empty states inside cards */
+    .card-loading,
+    .card-empty {
+      padding: var(--sp-xl);
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .card-loading {
+      font-style: italic;
+    }
+  }
+
   input[type="text"] {
     background: var(--bg-input);
     border: 1px solid var(--border);
