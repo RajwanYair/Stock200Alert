@@ -210,9 +210,14 @@ export function navigateToPath(
 ): void {
   const url = buildPath(route, params);
   if (typeof window === "undefined") return;
-  if (opts.replace) window.history.replaceState({ route, params }, "", url);
-  else window.history.pushState({ route, params }, "", url);
-  handleRoute();
+  // G8: use Navigation API when available so `navigate` event fires
+  if ("navigation" in window) {
+    void window.navigation.navigate(url, { history: opts.replace ? "replace" : "push" });
+  } else {
+    if (opts.replace) window.history.replaceState({ route, params }, "", url);
+    else window.history.pushState({ route, params }, "", url);
+    handleRoute();
+  }
 }
 
 export function navigateTo(route: RouteName): void {
@@ -277,6 +282,27 @@ function onLinkClick(e: MouseEvent): void {
   navigateToPath(route, params);
 }
 
+/**
+ * G8: Navigation API intercept handler.
+ * Handles all same-origin same-document navigations via the modern API.
+ * Registered only when `window.navigation` is available (Chrome 102+, Edge 102+).
+ */
+function onNavigateEvent(e: NavigateEvent): void {
+  // Let the browser handle: cross-origin, download, hash-only, file-scheme
+  if (!e.canIntercept || e.hashChange || e.downloadRequest !== null) return;
+  const url = new URL(e.destination.url);
+  if (url.origin !== window.location.origin) return;
+  const info = parsePath(url.pathname);
+  e.intercept({
+    handler(): Promise<void> {
+      abortNavigation();
+      activateViewWithTransition(info.name);
+      for (const fn of listeners) fn(info.name, info);
+      return Promise.resolve();
+    },
+  });
+}
+
 export function initRouter(): void {
   if (initialized) {
     handleRoute();
@@ -291,9 +317,16 @@ export function initRouter(): void {
       window.history.replaceState({}, "", redirect);
     }
   }
-  window.addEventListener("popstate", handleRoute);
-  window.addEventListener("hashchange", handleRoute); // legacy support
-  document.addEventListener("click", onLinkClick);
+
+  // G8: Navigation API progressive enhancement (Chrome 102+, Edge 102+).
+  // When available, a single "navigate" event replaces popstate + click intercept.
+  if (typeof window !== "undefined" && "navigation" in window) {
+    window.navigation.addEventListener("navigate", onNavigateEvent as EventListener);
+  } else {
+    window.addEventListener("popstate", handleRoute);
+    window.addEventListener("hashchange", handleRoute); // legacy support
+    document.addEventListener("click", onLinkClick);
+  }
   handleRoute();
 }
 
@@ -302,8 +335,12 @@ export function _resetRouterForTests(): void {
   initialized = false;
   listeners.length = 0;
   if (typeof window !== "undefined") {
-    window.removeEventListener("popstate", handleRoute);
-    window.removeEventListener("hashchange", handleRoute);
+    if ("navigation" in window) {
+      window.navigation.removeEventListener("navigate", onNavigateEvent as EventListener);
+    } else {
+      window.removeEventListener("popstate", handleRoute);
+      window.removeEventListener("hashchange", handleRoute);
+    }
   }
   if (typeof document !== "undefined") {
     document.removeEventListener("click", onLinkClick);
