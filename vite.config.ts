@@ -1,6 +1,7 @@
 import { defineConfig } from "vite";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
+import { HttpsProxyAgent } from "https-proxy-agent";
 
 const pkg = JSON.parse(readFileSync("package.json", "utf-8")) as {
   version: string;
@@ -10,6 +11,10 @@ const pkg = JSON.parse(readFileSync("package.json", "utf-8")) as {
 // Locally the app is served from the root path.
 const isCI = process.env["GITHUB_ACTIONS"] === "true";
 const BASE = process.env["VITE_BASE"] ?? (isCI ? "/CrossTide/" : "/");
+
+// Corporate proxy agent — used by Vite's http-proxy to tunnel outbound requests
+const PROXY_URL = process.env["HTTPS_PROXY"] || process.env["HTTP_PROXY"] || "";
+const proxyAgent = PROXY_URL ? new HttpsProxyAgent(PROXY_URL) : undefined;
 
 export default defineConfig({
   // GitHub Pages serves the app from /CrossTide/ (repo name).
@@ -21,9 +26,10 @@ export default defineConfig({
     __PLAUSIBLE_URL__: JSON.stringify(process.env["VITE_PLAUSIBLE_URL"] ?? ""),
     __PLAUSIBLE_SITE__: JSON.stringify(process.env["VITE_PLAUSIBLE_SITE"] ?? ""),
     __GLITCHTIP_DSN__: JSON.stringify(process.env["VITE_GLITCHTIP_DSN"] ?? ""),
-    // E2: Worker API base URL — override in .env.local for local Worker dev
+    // E2: Worker API base URL — in dev, route through Vite proxy to avoid CORS/firewall
     __WORKER_BASE_URL__: JSON.stringify(
-      process.env["VITE_WORKER_BASE_URL"] ?? "https://worker.crosstide.pages.dev",
+      process.env["VITE_WORKER_BASE_URL"] ??
+        (isCI ? "https://worker.crosstide.pages.dev" : "/api/worker"),
     ),
   },
   build: {
@@ -48,25 +54,37 @@ export default defineConfig({
     port: 5173,
     strictPort: false,
     open: true,
-    // Proxy Yahoo Finance through the Vite dev server to avoid CORS and external
-    // CORS-proxy dependencies.  All /api/yahoo/* requests are forwarded to
-    // query1.finance.yahoo.com by Node.js, which honours HTTPS_PROXY / HTTP_PROXY
-    // env vars if set (useful behind corporate firewalls).
+    // Proxy external APIs through the Vite dev server to avoid CORS and external
+    // CORS-proxy dependencies. Node.js honours HTTPS_PROXY / HTTP_PROXY env vars
+    // when using https-proxy-agent (useful behind corporate firewalls).
     proxy: {
       "/api/yahoo": {
         target: "https://query1.finance.yahoo.com",
         changeOrigin: true,
-        // Strip the /api/yahoo prefix so the upstream URL is unchanged
         rewrite: (path: string) => path.replace(/^\/api\/yahoo/, ""),
-        secure: true,
+        secure: !proxyAgent,
+        agent: proxyAgent,
+      },
+      "/api/stooq": {
+        target: "https://stooq.com",
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/api\/stooq/, ""),
+        secure: !proxyAgent,
+        agent: proxyAgent,
+      },
+      "/api/worker": {
+        target: "https://worker.crosstide.pages.dev",
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/api\/worker/, ""),
+        secure: !proxyAgent,
+        agent: proxyAgent,
       },
     },
     headers: {
-      // Mirrors public/_headers — source of truth: src/core/csp-builder.ts
-      // In dev the browser fetches Yahoo Finance directly (browser proxy handles corporate
-      // firewalls), so query1.finance.yahoo.com must be in connect-src.
+      // In dev all API requests go through the Vite proxy (/api/*), so connect-src
+      // only needs 'self'. External URLs kept for WebSocket (Finnhub).
       "Content-Security-Policy":
-        "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://query1.finance.yahoo.com https://finnhub.io https://www.alphavantage.co https://api.coingecko.com wss://ws.finnhub.io; worker-src 'self' blob:; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'; upgrade-insecure-requests",
+        "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://worker.crosstide.pages.dev wss://ws.finnhub.io; worker-src 'self' blob:; manifest-src 'self'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'",
       "X-Content-Type-Options": "nosniff",
       "X-Frame-Options": "DENY",
       "Referrer-Policy": "strict-origin-when-cross-origin",
@@ -85,6 +103,14 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path: string) => path.replace(/^\/api\/yahoo/, ""),
         secure: true,
+        agent: proxyAgent,
+      },
+      "/api/stooq": {
+        target: "https://stooq.com",
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/api\/stooq/, ""),
+        secure: true,
+        agent: proxyAgent,
       },
     },
     headers: {

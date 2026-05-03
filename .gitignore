@@ -6,6 +6,7 @@ docs-site/node_modules/
 dist/
 coverage/
 build/
+*.tsbuildinfo
 
 # Environment
 .env

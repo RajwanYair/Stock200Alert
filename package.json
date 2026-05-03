@@ -1,6 +1,6 @@
 {
   "name": "crosstide",
-  "version": "7.20.0",
+  "version": "7.22.0",
   "description": "CrossTide Web — browser-based stock monitoring dashboard with 12-method consensus signals, interactive charting, and offline-first PWA.",
   "type": "module",
   "private": true,
@@ -64,6 +64,12 @@
   "engines": {
     "node": ">=20.19.0"
   },
+  "browserslist": [
+    "last 2 Chrome versions",
+    "last 2 Edge versions",
+    "last 2 Safari versions",
+    "last 2 Firefox versions"
+  ],
   "devDependencies": {
     "@axe-core/playwright": "^4.11.3",
     "@changesets/cli": "^2.31.0",
@@ -79,6 +85,7 @@
     "eslint-plugin-import-x": "^4.16.2",
     "happy-dom": "^20.9.0",
     "htmlhint": "^1.9.2",
+    "https-proxy-agent": "^9.0.0",
     "lint-staged": "^16.4.0",
     "markdownlint-cli2": "^0.22.0",
     "playwright": "^1.59.1",

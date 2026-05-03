@@ -91,12 +91,17 @@ function ensureChain(): MarketDataProvider {
 
 // Bootstrap: always add Yahoo as the primary provider; Stooq as EOD history fallback
 (function initRegistry(): void {
+  // In dev, route through the Vite proxy to avoid CORS issues behind corporate firewalls.
+  // The Vite dev server forwards /api/yahoo/* to query1.finance.yahoo.com via Node.js,
+  // which honours HTTP_PROXY / HTTPS_PROXY env vars.
+  const yahooBase = import.meta.env.DEV ? "/api/yahoo" : undefined;
   const yahooBreaker = createCircuitBreaker({ failureThreshold: 3, cooldownMs: 60_000 });
-  registryEntries.push({ provider: createYahooProvider(), breaker: yahooBreaker });
+  registryEntries.push({ provider: createYahooProvider(yahooBase), breaker: yahooBreaker });
 
   // Stooq (F12): free EOD history fallback — history only, no quote/search
+  const stooqBase = import.meta.env.DEV ? "/api/stooq" : undefined;
   const stooqBreaker = createCircuitBreaker({ failureThreshold: 5, cooldownMs: 120_000 });
-  registryEntries.push({ provider: createStooqProvider(), breaker: stooqBreaker });
+  registryEntries.push({ provider: createStooqProvider(stooqBase), breaker: stooqBreaker });
 })();
 
 /**

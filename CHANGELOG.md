@@ -6,6 +6,44 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [7.22.0] - 2025-07-03
+
+### Added — Production hardening & proxy support
+
+- **Corporate proxy support**: Vite dev server routes Yahoo/Stooq/Worker requests
+  through `https-proxy-agent` when `HTTPS_PROXY` / `HTTP_PROXY` env vars are set.
+  Enables local development behind corporate firewalls.
+- **Cards barrel export**: Created `src/cards/index.ts` barrel file to match the
+  `"./cards"` export declared in package.json.
+- **Browserslist config**: Added explicit browser targets to package.json for
+  accurate CSS/HTML compatibility validation in VS Code.
+
+### Changed
+
+- **Workspace organization**: Moved CODE_OF_CONDUCT.md, CONTRIBUTING.md, and
+  SECURITY.md to `.github/` directory (GitHub discovers them there).
+- **tsconfig.json**: SW file is properly excluded; VS Code picks up
+  `tsconfig.sw.json` for service worker type-checking.
+- **.gitignore**: Added `*.tsbuildinfo` pattern.
+- **.vscode/settings.json**: Added CSS compat and GitHub Actions trust settings.
+
+### Fixed
+
+- **Provider registry**: Yahoo and Stooq providers now use Vite proxy paths
+  (`/api/yahoo`, `/api/stooq`) in dev mode, fixing CORS failures behind proxies.
+
+---
+
+## [7.21.0] - 2025-07-03
+
+### Changed — Production hardening
+
+- **TypeScript**: Fixed all 188 type errors — zero `tsc --noEmit` errors.
+- **ESLint**: Resolved all lint warnings — zero warnings with `--max-warnings 0`.
+- **File moves**: Consolidated configuration files into `config/` directory.
+
+---
+
 ## [7.20.0] - 2026-05-05
 
 ### Added — 10-sprint delivery (coverage sweep session 12)

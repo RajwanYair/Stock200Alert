@@ -36,5 +36,10 @@
   },
   "files.eol": "\n",
   "files.trimTrailingWhitespace": true,
-  "files.insertFinalNewline": true
+  "files.insertFinalNewline": true,
+  "css.lint.validProperties": [],
+  "css.lint.compatibleVendorPrefixes": "ignore",
+  "css.customData": [],
+  "html.validate.scripts": true,
+  "github-actions.workflows.pinned.ignoredActionsAuthors": ["actions", "cloudflare"]
 }
