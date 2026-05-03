@@ -392,3 +392,14 @@ export {
   snapshotToText,
 } from "./watchlist-share";
 export type { WatchlistSnapshot, WatchlistImportResult, MergeResult } from "./watchlist-share";
+
+export {
+  SCHEDULES,
+  isMarketOpen,
+  marketStatus,
+  allMarketStatuses,
+  isAnyMarketOpen,
+  openExchanges,
+  shouldConnectWs,
+} from "./market-hours";
+export type { MarketSchedule, ExchangeCode, MarketStatus } from "./market-hours";
