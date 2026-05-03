@@ -1,0 +1,101 @@
+---
+title: Alerts
+description: How to configure price and indicator alerts in CrossTide.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Overview
+
+The **Alerts** card monitors your watchlist tickers for technical events and fires
+browser notifications when conditions are met. Alerts are evaluated on every data
+refresh cycle — no separate polling needed.
+
+Navigate to the Alerts card via the nav bar or press `g` then `a`.
+
+## Alert Types
+
+CrossTide ships with alerts for every consensus method and key moving average crossovers:
+
+### SMA Crossovers
+
+| Alert           | Fires When                              |
+| --------------- | --------------------------------------- |
+| SMA 50 Cross Up | Price crosses above the 50-day SMA      |
+| SMA 150 Cross Up| Price crosses above the 150-day SMA     |
+| SMA 200 Cross Up| Price crosses above the 200-day SMA     |
+
+### Method Signals (Buy / Sell)
+
+Each of the 12 consensus methods generates a BUY and SELL alert:
+
+| Method      | Buy Alert             | Sell Alert             |
+| ----------- | --------------------- | ---------------------- |
+| Micho       | `michoMethodBuy`      | `michoMethodSell`      |
+| RSI         | `rsiMethodBuy`        | `rsiMethodSell`        |
+| MACD        | `macdMethodBuy`       | `macdMethodSell`       |
+| Bollinger   | `bollingerMethodBuy`  | `bollingerMethodSell`  |
+| Stochastic  | `stochasticMethodBuy` | `stochasticMethodSell` |
+| OBV         | `obvMethodBuy`        | `obvMethodSell`        |
+| ADX         | `adxMethodBuy`        | `adxMethodSell`        |
+| CCI         | `cciMethodBuy`        | `cciMethodSell`        |
+| SAR         | `sarMethodBuy`        | `sarMethodSell`        |
+| Williams %R | `williamsRMethodBuy`  | `williamsRMethodSell`  |
+| MFI         | `mfiMethodBuy`        | `mfiMethodSell`        |
+| SuperTrend  | `supertrendMethodBuy` | `supertrendMethodSell` |
+
+### Consensus Alerts
+
+| Alert          | Fires When                                        |
+| -------------- | ------------------------------------------------- |
+| Consensus BUY  | Overall consensus flips to BUY                    |
+| Consensus SELL | Overall consensus flips to SELL                   |
+
+## How Alerts Work
+
+Alerts use a **state machine** per ticker. Each alert type tracks whether it has already
+fired for the current condition to avoid duplicate notifications:
+
+1. **Armed** — the alert is enabled and waiting for its condition.
+2. **Fired** — the condition was met; a notification is sent.
+3. **Reset** — the condition is no longer met; the alert re-arms automatically.
+
+<Aside type="tip">
+  Alerts only fire on **transitions** — if RSI was already above 70 when you add a
+  ticker, it won't fire until RSI drops below 70 and crosses back above.
+</Aside>
+
+## Enabling / Disabling Alerts
+
+Toggle individual alert types on the Alerts card. Your choices are persisted in
+`localStorage` and survive page refresh. By default, all SMA crossover alerts and
+consensus alerts are enabled.
+
+## Alert History
+
+The **Alert History** panel shows a chronological log of all fired alerts with:
+
+| Column    | Description                         |
+| --------- | ----------------------------------- |
+| Time      | When the alert fired                |
+| Ticker    | Which symbol triggered it           |
+| Type      | Alert type label                    |
+| Price     | Price at the moment of the alert    |
+
+## Notifications
+
+CrossTide uses the browser **Notification API** for alert delivery. On first alert,
+you'll be prompted to grant notification permission. Alerts also appear as in-app
+toast notifications.
+
+<Aside type="note">
+  If you've enabled **Web Push** (VAPID), alerts are delivered even when the browser
+  tab is closed — as long as the service worker is registered.
+</Aside>
+
+## Keyboard Shortcuts
+
+| Key     | Action                    |
+| ------- | ------------------------- |
+| `g a`   | Navigate to Alerts        |
+| `Esc`   | Dismiss active toast      |
