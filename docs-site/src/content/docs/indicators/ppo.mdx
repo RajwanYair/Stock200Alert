@@ -1,0 +1,52 @@
+---
+title: PPO — Percentage Price Oscillator
+description: MACD expressed as a percentage of the slower EMA, enabling cross-asset comparison.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+PPO = \frac{EMA_{\text{fast}} - EMA_{\text{slow}}}{EMA_{\text{slow}}} \times 100
+$$
+
+Signal line = EMA(PPO). Histogram = PPO − Signal.
+
+## Parameters
+
+| Parameter      | Default | Range  | Notes                       |
+| -------------- | ------- | ------ | --------------------------- |
+| `fast`         | 12      | 2–100  | Fast EMA period             |
+| `slow`         | 26      | 5–200  | Slow EMA period             |
+| `signalPeriod` | 9       | 2–50   | Signal line EMA period      |
+
+## Interpretation
+
+| PPO Value              | Signal                              |
+| ---------------------- | ----------------------------------- |
+| PPO > Signal           | Bullish momentum                    |
+| PPO < Signal           | Bearish momentum                    |
+| Histogram expanding    | Trend accelerating                  |
+| Histogram contracting  | Trend decelerating                  |
+
+<Aside type="tip">
+  PPO and MACD produce identical crossover timing. The advantage of PPO is its
+  normalised scale — you can compare momentum of a $5 stock vs a $500 stock directly.
+</Aside>
+
+## Usage
+
+```ts
+import { computePpo } from "../../src/domain/ppo";
+
+const { ppo, signal, histogram } = computePpo(candles, {
+  fast: 12,
+  slow: 26,
+  signalPeriod: 9,
+});
+```
+
+## References
+
+- [PPO on Investopedia](https://www.investopedia.com/terms/p/ppo.asp)

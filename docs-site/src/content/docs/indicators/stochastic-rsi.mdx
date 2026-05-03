@@ -1,0 +1,53 @@
+---
+title: Stochastic RSI
+description: Applies the stochastic oscillator formula to RSI values, yielding a more sensitive momentum gauge in [0, 100].
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{StochRSI} = \frac{RSI - \min(RSI, n)}{\max(RSI, n) - \min(RSI, n)}
+$$
+
+%K is a smoothed StochRSI and %D is a moving average of %K.
+
+## Parameters
+
+| Parameter      | Default | Range  | Notes                            |
+| -------------- | ------- | ------ | -------------------------------- |
+| `rsiPeriod`    | 14      | 2–200  | Underlying RSI lookback          |
+| `stochPeriod`  | 14      | 2–200  | Stochastic window over RSI       |
+| `kSmooth`      | 3       | 1–20   | %K smoothing period              |
+| `dSmooth`      | 3       | 1–20   | %D signal line smoothing period  |
+
+## Interpretation
+
+| Value      | Signal                                                |
+| ---------- | ----------------------------------------------------- |
+| %K > 80   | RSI itself is overbought relative to recent range     |
+| %K < 20   | RSI is oversold relative to recent range              |
+| %K ↗ %D   | Bullish crossover — potential momentum shift upward   |
+| %K ↘ %D   | Bearish crossover — potential momentum shift downward |
+
+<Aside type="tip">
+  Stochastic RSI amplifies RSI's signals. It reaches 0 and 100 more frequently than raw RSI,
+  so pair it with a trend filter (e.g., 200-SMA direction) to reduce whipsaws.
+</Aside>
+
+## Usage
+
+```ts
+import { computeStochRsi } from "../../src/domain/stochastic-rsi";
+
+const { k, d } = computeStochRsi(candles, {
+  rsiPeriod: 14,
+  stochPeriod: 14,
+});
+```
+
+## References
+
+- Chande, T. & Kroll, S. (1994). _The New Technical Trader._
+- [StochRSI on Investopedia](https://www.investopedia.com/terms/s/stochrsi.asp)

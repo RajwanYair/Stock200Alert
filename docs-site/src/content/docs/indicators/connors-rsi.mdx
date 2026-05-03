@@ -1,0 +1,51 @@
+---
+title: Connors RSI
+description: Composite momentum oscillator combining RSI(3), streak RSI, and percentile rank of ROC.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{CRSI} = \frac{RSI(\text{close}, 3) + RSI(\text{streak}, 2) + \text{PctRank}(\text{ROC}(1), 100)}{3}
+$$
+
+Each component is independently scaled 0–100; their average produces the final reading.
+
+## Parameters
+
+| Parameter        | Default | Range   | Notes                                  |
+| ---------------- | ------- | ------- | -------------------------------------- |
+| `rsiPeriod`      | 3       | 2–50    | Short-term RSI of price                |
+| `streakPeriod`   | 2       | 2–50    | RSI of consecutive up/down day streak  |
+| `pctRankPeriod`  | 100     | 10–252  | Percentile rank lookback for ROC       |
+
+## Interpretation
+
+| CRSI Value | Signal                                 |
+| ---------- | -------------------------------------- |
+| > 90       | Overbought — expect mean reversion     |
+| 30–70      | Neutral zone                           |
+| < 10       | Oversold — potential bounce             |
+
+<Aside type="tip">
+  Connors RSI excels at mean-reversion strategies on stocks trending above their 200-SMA.
+  The default (3, 2, 100) is tuned for daily timeframes.
+</Aside>
+
+## Usage
+
+```ts
+import { computeConnorsRsi } from "../../src/domain/connors-rsi";
+
+const values = computeConnorsRsi(candles, {
+  rsiPeriod: 3,
+  streakPeriod: 2,
+  pctRankPeriod: 100,
+});
+```
+
+## References
+
+- Connors, L. & Alvarez, C. (2012). _Short Term Trading Strategies That Work._

@@ -1,0 +1,60 @@
+---
+title: Ultimate Oscillator
+description: Weighted average of buying pressure across three timeframes, reducing false divergences.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+BP = \text{Close} - \min(\text{Low}, \text{PrevClose})
+$$
+
+$$
+TR = \max(\text{High}, \text{PrevClose}) - \min(\text{Low}, \text{PrevClose})
+$$
+
+$$
+UO = 100 \times \frac{4 \cdot A_7 + 2 \cdot A_{14} + A_{28}}{4 + 2 + 1}
+$$
+
+where $A_n = \frac{\sum BP(n)}{\sum TR(n)}$.
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                        |
+| --------- | ------- | ------ | ---------------------------- |
+| `short`   | 7       | 2–50   | Short period                 |
+| `medium`  | 14      | 5–100  | Medium period                |
+| `long`    | 28      | 10–200 | Long period                  |
+
+## Interpretation
+
+| UO Value | Signal                                          |
+| -------- | ----------------------------------------------- |
+| > 70     | Overbought zone                                 |
+| 30–70    | Neutral                                         |
+| < 30     | Oversold zone                                   |
+| Diverge  | Price-UO divergence = strongest reversal signal |
+
+<Aside type="tip">
+  Williams recommended trading UO primarily via bullish/bearish divergence
+  rather than simple overbought/oversold levels.
+</Aside>
+
+## Usage
+
+```ts
+import { computeUltimateOscillator } from "../../src/domain/ultimate-oscillator";
+
+const values = computeUltimateOscillator(candles, {
+  short: 7,
+  medium: 14,
+  long: 28,
+});
+```
+
+## References
+
+- Williams, L. (1985). _Ultimate Oscillator._ Technical Analysis of Stocks & Commodities.

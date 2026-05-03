@@ -1,0 +1,43 @@
+---
+title: Momentum
+description: Simple price momentum — the absolute difference between the current close and the close N periods ago.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Momentum}(n) = \text{Close}_t - \text{Close}_{t-n}
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                     |
+| --------- | ------- | ------ | ------------------------- |
+| `period`  | 10      | 1–200  | Lookback distance         |
+
+## Interpretation
+
+| Momentum Value | Signal                            |
+| -------------- | --------------------------------- |
+| > 0 (rising)   | Bullish — price trending upward   |
+| ≈ 0            | Stalling — potential reversal     |
+| < 0 (falling)  | Bearish — price trending downward |
+
+<Aside type="tip">
+  Momentum is unbounded and scale-dependent. For cross-asset comparison,
+  prefer Rate of Change (ROC) which normalises as a percentage.
+</Aside>
+
+## Usage
+
+```ts
+import { computeMomentum } from "../../src/domain/momentum";
+
+const values = computeMomentum(candles, { period: 10 });
+```
+
+## References
+
+- Murphy, J. J. (1999). _Technical Analysis of the Financial Markets._

@@ -1,0 +1,43 @@
+---
+title: ROC — Rate of Change
+description: Percentage change between the current close and the close N periods ago.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+ROC = \frac{\text{Close}_t - \text{Close}_{t-n}}{\text{Close}_{t-n}} \times 100
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 10      | 1–200  | Lookback window          |
+
+## Interpretation
+
+| ROC Value | Signal                                         |
+| --------- | ---------------------------------------------- |
+| > 0       | Positive momentum — price rising vs N bars ago |
+| ≈ 0       | Flat momentum — possible trend change          |
+| < 0       | Negative momentum — price falling              |
+
+<Aside type="tip">
+  ROC is a building block for KST and Coppock Curve. Use zero-line crossovers
+  or divergence from price to generate signals.
+</Aside>
+
+## Usage
+
+```ts
+import { computeRoc } from "../../src/domain/roc";
+
+const values = computeRoc(candles, { period: 10 });
+```
+
+## References
+
+- [ROC on Investopedia](https://www.investopedia.com/terms/p/pricerateofchange.asp)

@@ -1,0 +1,49 @@
+---
+title: Fisher Transform
+description: Normalises price into a near-Gaussian distribution, making turning points sharp and clear.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+x_t = \frac{2 \cdot (\text{median} - \text{Low}_n)}{\text{High}_n - \text{Low}_n} - 1
+$$
+
+$$
+\text{Fisher} = 0.5 \cdot \ln\!\left(\frac{1 + x}{1 - x}\right)
+$$
+
+(Clamped so $|x| < 0.999$.)
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                         |
+| --------- | ------- | ------ | ----------------------------- |
+| `period`  | 9       | 2–100  | Lookback for hi/lo normalise  |
+
+## Interpretation
+
+| Fisher Value        | Signal                                    |
+| ------------------- | ----------------------------------------- |
+| Fisher ↗ above 0    | Bullish reversal signal                   |
+| Fisher ↘ below 0    | Bearish reversal signal                   |
+| Extreme > ±1.5      | Overextended — reversal likely imminent   |
+
+<Aside type="tip">
+  Fisher Transform peaks and troughs are sharper than raw RSI extremes,
+  making them useful for automated signal detection.
+</Aside>
+
+## Usage
+
+```ts
+import { computeFisherTransform } from "../../src/domain/fisher-transform";
+
+const values = computeFisherTransform(candles, { period: 9 });
+```
+
+## References
+
+- Ehlers, J. F. (2002). _Cybernetic Analysis for Stocks and Futures._

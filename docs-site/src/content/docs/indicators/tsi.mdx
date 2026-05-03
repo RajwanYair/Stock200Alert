@@ -1,0 +1,53 @@
+---
+title: TSI — True Strength Index
+description: Double-smoothed momentum oscillator bounded between -100 and +100, with a signal line.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+TSI = \frac{EMA_{\text{fast}}(EMA_{\text{slow}}(\Delta \text{Close}))}{EMA_{\text{fast}}(EMA_{\text{slow}}(|\Delta \text{Close}|))} \times 100
+$$
+
+Signal line = EMA of TSI.
+
+## Parameters
+
+| Parameter      | Default | Range  | Notes                            |
+| -------------- | ------- | ------ | -------------------------------- |
+| `slow`         | 25      | 5–100  | Long smoothing EMA period        |
+| `fast`         | 13      | 2–50   | Short smoothing EMA period       |
+| `signal`       | 7       | 2–20   | Signal line EMA period           |
+
+## Interpretation
+
+| TSI Value       | Signal                                      |
+| --------------- | ------------------------------------------- |
+| TSI > 0         | Bullish momentum bias                       |
+| TSI < 0         | Bearish momentum bias                       |
+| TSI crosses signal ↑ | Bullish crossover                      |
+| TSI crosses signal ↓ | Bearish crossover                      |
+
+<Aside type="tip">
+  TSI is smoother than MACD due to double smoothing, producing fewer but
+  higher-quality crossover signals. Combine with price support/resistance
+  for confirmation.
+</Aside>
+
+## Usage
+
+```ts
+import { computeTsi } from "../../src/domain/tsi";
+
+const { tsi, signal } = computeTsi(candles, {
+  slow: 25,
+  fast: 13,
+  signal: 7,
+});
+```
+
+## References
+
+- Blau, W. (1995). _Momentum, Direction, and Divergence._

@@ -1,0 +1,44 @@
+---
+title: CMO — Chande Momentum Oscillator
+description: Measures momentum as the ratio of net directional movement, oscillating between -100 and +100.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+CMO = \frac{\sum \text{Gains}(n) - \sum \text{Losses}(n)}{\sum \text{Gains}(n) + \sum \text{Losses}(n)} \times 100
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                     |
+| --------- | ------- | ------ | ------------------------- |
+| `period`  | 9       | 2–200  | Lookback window           |
+
+## Interpretation
+
+| CMO Value | Signal                                  |
+| --------- | --------------------------------------- |
+| > +50     | Overbought — strong upward momentum     |
+| -50 to +50| Neutral / consolidation                 |
+| < -50     | Oversold — strong downward momentum     |
+
+<Aside type="tip">
+  Unlike RSI (0–100), CMO is centred on zero, making crossover-based signals more intuitive.
+  Values near zero often indicate a trendless, choppy market.
+</Aside>
+
+## Usage
+
+```ts
+import { computeCmo } from "../../src/domain/chande-momentum-oscillator";
+
+const values = computeCmo(candles, { period: 9 });
+```
+
+## References
+
+- Chande, T. (1994). _The New Technical Trader._
+- [CMO on Investopedia](https://www.investopedia.com/terms/c/chandemomentumoscillator.asp)

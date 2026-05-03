@@ -1,0 +1,51 @@
+---
+title: KST — Know Sure Thing
+description: Weighted sum of four smoothed rate-of-change periods with a signal line for long-term momentum confirmation.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+KST = w_1 \cdot SMA(ROC_1) + w_2 \cdot SMA(ROC_2) + w_3 \cdot SMA(ROC_3) + w_4 \cdot SMA(ROC_4)
+$$
+
+Default weights: 1, 2, 3, 4. Signal = SMA(KST, 9).
+
+## Parameters
+
+| Parameter   | Default | Notes                          |
+| ----------- | ------- | ------------------------------ |
+| `roc1`      | 10      | Shortest ROC period            |
+| `roc2`      | 15      | Medium-short ROC period        |
+| `roc3`      | 20      | Medium-long ROC period         |
+| `roc4`      | 30      | Longest ROC period             |
+| `sma1–sma4` | 10      | Smoothing per ROC              |
+| `signal`    | 9       | Signal line period             |
+
+## Interpretation
+
+| KST Value           | Signal                                    |
+| -------------------- | ----------------------------------------- |
+| KST > Signal         | Bullish momentum                          |
+| KST < Signal         | Bearish momentum                          |
+| Both > 0             | Confirmed uptrend                         |
+| Both < 0             | Confirmed downtrend                       |
+
+<Aside type="tip">
+  KST is designed for weekly/monthly charts. On daily data,
+  consider shortening the four ROC periods by 20–30%.
+</Aside>
+
+## Usage
+
+```ts
+import { computeKst } from "../../src/domain/kst";
+
+const { kst, signal } = computeKst(candles);
+```
+
+## References
+
+- Pring, M. (1992). _Technical Analysis Explained._

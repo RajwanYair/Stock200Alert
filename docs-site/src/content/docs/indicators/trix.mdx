@@ -1,0 +1,48 @@
+---
+title: TRIX
+description: Rate of change of a triple-smoothed EMA, filtering noise to highlight persistent trend shifts.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+EMA_3 = EMA(EMA(EMA(\text{Close}, n), n), n)
+$$
+
+$$
+TRIX = \frac{EMA_{3,t} - EMA_{3,t-1}}{EMA_{3,t-1}} \times 100
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                         |
+| --------- | ------- | ------ | ----------------------------- |
+| `period`  | 15      | 2–100  | EMA smoothing period (×3)     |
+
+## Interpretation
+
+| TRIX Value   | Signal                                     |
+| ------------ | ------------------------------------------ |
+| > 0 (rising) | Bullish — accelerating upward momentum     |
+| Zero-line ↗  | Bullish crossover                          |
+| < 0 (falling)| Bearish — accelerating downward momentum   |
+| Zero-line ↘  | Bearish crossover                          |
+
+<Aside type="tip">
+  TRIX's triple smoothing eliminates almost all minor cycles (less than the
+  chosen period). It is one of the smoothest oscillators available.
+</Aside>
+
+## Usage
+
+```ts
+import { computeTrix } from "../../src/domain/trix";
+
+const { trix, signal } = computeTrix(candles, { period: 15 });
+```
+
+## References
+
+- Hutson, J. (1983). TRIX. _Technical Analysis of Stocks & Commodities._
