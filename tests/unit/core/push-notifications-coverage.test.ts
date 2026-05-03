@@ -186,3 +186,120 @@ describe("showLocalNotification — non-SW Notification constructor fallback (li
     expect(opts.tag).toBeUndefined();
   });
 });
+
+// ──────────────────────────────────────────────────────────────
+// subscribeToPush — additional branches
+// ──────────────────────────────────────────────────────────────
+
+describe("subscribeToPush — missing keys and SW errors", () => {
+  it("returns error when p256dh or auth key is null (line 83)", async () => {
+    const g = globalThis as Record<string, unknown>;
+    if (!g["PushManager"]) g["PushManager"] = {};
+
+    const mockSub = {
+      endpoint: "https://example.com/push",
+      getKey: vi.fn().mockReturnValue(null),
+    };
+    const pm = makePushManager(mockSub as unknown as PushSubscription);
+    const reg = makeRegistration(pm);
+
+    const NotifCtor = vi.fn();
+    NotifCtor.permission = "granted";
+    NotifCtor.requestPermission = vi.fn(async () => "granted");
+    vi.stubGlobal("Notification", NotifCtor);
+    vi.stubGlobal("navigator", {
+      serviceWorker: { ready: Promise.resolve(reg) },
+    });
+
+    const result = await subscribeToPush("dGVzdA");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("Missing p256dh or auth");
+    }
+  });
+
+  it("returns error when SW ready rejects (line 58)", async () => {
+    const g = globalThis as Record<string, unknown>;
+    if (!g["PushManager"]) g["PushManager"] = {};
+
+    const NotifCtor = vi.fn();
+    NotifCtor.permission = "granted";
+    NotifCtor.requestPermission = vi.fn(async () => "granted");
+    vi.stubGlobal("Notification", NotifCtor);
+    vi.stubGlobal("navigator", {
+      serviceWorker: { ready: Promise.reject(new Error("SW failed")) },
+    });
+
+    const result = await subscribeToPush("dGVzdA");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("SW not ready");
+    }
+  });
+
+  it("returns error when notification permission is denied (line 48)", async () => {
+    const g = globalThis as Record<string, unknown>;
+    if (!g["PushManager"]) g["PushManager"] = {};
+
+    const NotifCtor = vi.fn();
+    NotifCtor.permission = "denied";
+    NotifCtor.requestPermission = vi.fn(async () => "denied");
+    vi.stubGlobal("Notification", NotifCtor);
+    vi.stubGlobal("navigator", {
+      serviceWorker: { ready: Promise.resolve({}) },
+    });
+
+    const result = await subscribeToPush("dGVzdA");
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("permission denied");
+    }
+  });
+});
+
+describe("unsubscribePush — error branches", () => {
+  it("returns error when getSubscription throws (line 108)", async () => {
+    const g = globalThis as Record<string, unknown>;
+    if (!g["PushManager"]) g["PushManager"] = {};
+
+    const pm = {
+      getSubscription: vi.fn().mockRejectedValue(new Error("DB error")),
+    } as unknown as PushManager;
+    const reg = makeRegistration(pm);
+
+    vi.stubGlobal("Notification", { permission: "granted" });
+    vi.stubGlobal("navigator", {
+      serviceWorker: { ready: Promise.resolve(reg) },
+    });
+
+    const result = await unsubscribePush();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("getSubscription failed");
+    }
+  });
+
+  it("returns error when sub.unsubscribe() throws (line 112)", async () => {
+    const g = globalThis as Record<string, unknown>;
+    if (!g["PushManager"]) g["PushManager"] = {};
+
+    const mockSub = {
+      unsubscribe: vi.fn().mockRejectedValue(new Error("Network error")),
+    };
+    const pm = {
+      getSubscription: vi.fn(async () => mockSub),
+    } as unknown as PushManager;
+    const reg = makeRegistration(pm);
+
+    vi.stubGlobal("Notification", { permission: "granted" });
+    vi.stubGlobal("navigator", {
+      serviceWorker: { ready: Promise.resolve(reg) },
+    });
+
+    const result = await unsubscribePush();
+    expect(result.ok).toBe(false);
+    if (!result.ok) {
+      expect(result.error).toContain("unsubscribe failed");
+    }
+  });
+});

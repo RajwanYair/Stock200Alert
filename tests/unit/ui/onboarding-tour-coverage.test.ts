@@ -148,4 +148,77 @@ describe("onboarding-tour coverage", () => {
     // If localStorage throws, isDone returns false
     expect(tour.isDone()).toBe(false);
   });
+
+  it("start does nothing when steps array is empty (line 222)", () => {
+    const tour = createOnboardingTour([]);
+    tour.start();
+    // No tooltip should be rendered
+    expect(document.querySelector(".tour-tooltip")).toBeNull();
+    expect(tour.isDone()).toBe(false);
+  });
+
+  it("Back button navigates to previous step (line 199-201)", () => {
+    document.body.innerHTML = `<div id="s1">S1</div><div id="s2">S2</div>`;
+
+    const steps: TourStep[] = [
+      { target: "#s1", title: "First", body: "First step", placement: "bottom" },
+      { target: "#s2", title: "Second", body: "Second step", placement: "bottom" },
+    ];
+    const tour = createOnboardingTour(steps);
+    tour.start();
+
+    // Should be on step 1
+    let tooltip = document.querySelector(".tour-tooltip");
+    expect(tooltip!.textContent).toContain("First");
+
+    // Click Next to go to step 2
+    const nextBtn = tooltip!.querySelector(".tour-next") as HTMLElement;
+    nextBtn.click();
+
+    // Now on step 2
+    tooltip = document.querySelector(".tour-tooltip");
+    expect(tooltip!.textContent).toContain("Second");
+
+    // Click Back to return to step 1
+    const backBtn = tooltip!.querySelector(".tour-prev") as HTMLElement;
+    expect(backBtn).not.toBeNull();
+    backBtn.click();
+
+    // Back to step 1
+    tooltip = document.querySelector(".tour-tooltip");
+    expect(tooltip!.textContent).toContain("First");
+    tour.skip();
+  });
+
+  it("Escape key skips the tour (keyboard handler)", () => {
+    document.body.innerHTML = `<div id="t1">T</div>`;
+
+    const steps: TourStep[] = [{ target: "#t1", title: "Only", body: "Step", placement: "bottom" }];
+    const tour = createOnboardingTour(steps);
+    tour.start();
+
+    const tooltip = document.querySelector(".tour-tooltip") as HTMLElement;
+    expect(tooltip).not.toBeNull();
+
+    // Dispatch Escape keydown
+    tooltip.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+
+    // Tour should be done
+    expect(tour.isDone()).toBe(true);
+    expect(document.querySelector(".tour-tooltip")).toBeNull();
+  });
+
+  it("overlay click skips the tour", () => {
+    document.body.innerHTML = `<div id="t1">T</div>`;
+
+    const steps: TourStep[] = [{ target: "#t1", title: "Only", body: "Step", placement: "bottom" }];
+    const tour = createOnboardingTour(steps);
+    tour.start();
+
+    const overlay = document.getElementById("tour-overlay");
+    expect(overlay).not.toBeNull();
+    overlay!.click();
+
+    expect(tour.isDone()).toBe(true);
+  });
 });
