@@ -40,10 +40,15 @@
   "css.lint.validProperties": [],
   "css.lint.compatibleVendorPrefixes": "ignore",
   "css.lint.unknownAtRules": "ignore",
-  "css.validate": true,
+  "css.validate": false,
   "css.customData": ["./config/css-custom-data.json"],
   "html.validate.scripts": true,
   "html.format.wrapLineLength": 120,
   "html.customData": ["./config/html-custom-data.json"],
-  "github-actions.workflows.pinned.ignoredActionsAuthors": ["actions", "cloudflare", "softprops"]
+  "github-actions.workflows.pinned.ignoredActionsAuthors": [
+    "actions",
+    "cloudflare",
+    "softprops",
+    "gitleaks"
+  ]
 }

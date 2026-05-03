@@ -6,7 +6,13 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
-## [7.26.0] - 2026-05-03
+## [8.0.0] - 2026-05-03
+
+### Highlights
+
+Major release delivering Phase K of the architecture roadmap: performance
+infrastructure, accessibility improvements, observability, and developer
+experience enhancements.
 
 ### Added
 
@@ -27,11 +33,14 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 - **Sparkline memoization** (K13): `renderSparkline()` results cached via 128-entry
   LRU Map keyed by data content + options — avoids redundant SVG rebuilds.
+- **VS Code workspace config**: Disable built-in CSS validation (Stylelint handles
+  CSS linting); suppress progressive-enhancement compat warnings.
 
 ### Fixed
 
 - **Chart sync cleanup** (K5): Multi-chart layout now unsubscribes panel
   crosshair registrations before re-render, preventing duplicate updates.
+- **Prettier formatting**: 19 files reformatted to match project code style.
 
 ---
 
