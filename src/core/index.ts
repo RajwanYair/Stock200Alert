@@ -203,6 +203,22 @@ export type {
 } from "./public-api";
 export { createChannelManager, WS_OPEN } from "./ws-fanout";
 export type { WsLike, ChannelStats, ManagerStats, ChannelManager } from "./ws-fanout";
+export {
+  createLwwRegister,
+  updateRegister,
+  mergeLwwRegisters,
+  createGSet,
+  gSetAdd,
+  mergeGSets,
+  createOrSet,
+  orSetAdd,
+  orSetRemove,
+  orSetItems,
+  mergeOrSets,
+  mergeRegisterMaps,
+  buildSyncEnvelope,
+} from "./crdt-sync";
+export type { LwwRegister, GSet, OrSetEntry, OrSet, SyncEnvelope, MergeReport } from "./crdt-sync";
 export { runBacktestAsync, disposeBacktestWorker } from "./backtest-worker";
 
 export { fuzzyScore, fuzzySearch } from "./fuzzy-match";
