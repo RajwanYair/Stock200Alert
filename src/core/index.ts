@@ -447,3 +447,6 @@ export {
   inferCellType,
 } from "./xlsx-export";
 export type { CellValue, SheetData, Workbook, CellType } from "./xlsx-export";
+
+export { createCacheManager } from "./cache-manager";
+export type { CacheTier, CacheManagerOptions, CacheManager, CacheStats } from "./cache-manager";
