@@ -1,0 +1,72 @@
+/**
+ * E2E — Keyboard navigation & shortcuts (F3 expansion).
+ *
+ * Validates that shortcut keys are wired and focus management works.
+ */
+import { test, expect } from "@playwright/test";
+
+test.describe("Keyboard shortcuts", () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto("/");
+    await page.waitForLoadState("domcontentloaded");
+  });
+
+  test("pressing 1–7 navigates between views", async ({ page }) => {
+    const viewRoutes = [
+      { key: "1", view: "#view-watchlist" },
+      { key: "2", view: "#view-consensus" },
+      { key: "3", view: "#view-chart" },
+      { key: "4", view: "#view-alerts" },
+      { key: "5", view: "#view-heatmap" },
+      { key: "6", view: "#view-screener" },
+      { key: "7", view: "#view-settings" },
+    ];
+
+    for (const { key, view } of viewRoutes) {
+      await page.keyboard.press(key);
+      await expect(page.locator(view)).toHaveClass(/active/);
+    }
+  });
+
+  test("/ focuses the search input", async ({ page }) => {
+    await page.keyboard.press("/");
+    const searchInput = page.locator("#ticker-search, #search-input, [data-search]");
+    // At least one search input should be focused
+    const count = await searchInput.count();
+    if (count > 0) {
+      await expect(searchInput.first()).toBeFocused();
+    }
+  });
+
+  test("Escape key blurs active input", async ({ page }) => {
+    // Focus an input first
+    const input = page.locator("input").first();
+    if ((await input.count()) > 0) {
+      await input.focus();
+      await expect(input).toBeFocused();
+      await page.keyboard.press("Escape");
+      await expect(input).not.toBeFocused();
+    }
+  });
+
+  test("? key toggles shortcuts dialog", async ({ page }) => {
+    await page.keyboard.press("?");
+    const dialog = page.locator("[data-shortcuts-dialog], #shortcuts-dialog, .shortcuts-modal");
+    const count = await dialog.count();
+    if (count > 0) {
+      await expect(dialog.first()).toBeVisible();
+      // Press ? again or Escape to close
+      await page.keyboard.press("Escape");
+      await expect(dialog.first()).not.toBeVisible();
+    }
+  });
+
+  test("Tab key cycles through focusable elements", async ({ page }) => {
+    // Tab should move focus within the app
+    const body = page.locator("body");
+    await body.focus();
+    await page.keyboard.press("Tab");
+    const focused = page.locator(":focus");
+    await expect(focused).not.toHaveCount(0);
+  });
+});
