@@ -17,7 +17,7 @@ export default defineConfig({
       enabled: true,
       headless: true,
       provider: playwright(),
-      instances: [{ browser: "chromium" }],
+      instances: [{ browser: "chromium" }, { browser: "firefox" }, { browser: "webkit" }],
     },
     include: ["tests/browser/**/*.test.ts"],
     testTimeout: 15_000,

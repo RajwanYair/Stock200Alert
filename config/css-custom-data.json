@@ -1,0 +1,92 @@
+{
+  "version": 1.1,
+  "atDirectives": [
+    {
+      "name": "@starting-style",
+      "description": "CSS Transitions Level 2 — defines the initial styles for entry animations on newly displayed elements.",
+      "references": [
+        {
+          "name": "MDN Reference",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/@starting-style"
+        }
+      ]
+    },
+    {
+      "name": "@scope",
+      "description": "CSS Cascading and Inheritance Level 6 — scopes style rules to a subtree of the document.",
+      "references": [
+        {
+          "name": "MDN Reference",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/@scope"
+        }
+      ]
+    },
+    {
+      "name": "@container",
+      "description": "CSS Containment Level 3 — applies styles based on the size of a containing element.",
+      "references": [
+        {
+          "name": "MDN Reference",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/@container"
+        }
+      ]
+    },
+    {
+      "name": "@layer",
+      "description": "CSS Cascade Layers — declares a cascade layer for organizing CSS specificity.",
+      "references": [
+        {
+          "name": "MDN Reference",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/@layer"
+        }
+      ]
+    }
+  ],
+  "properties": [
+    {
+      "name": "forced-color-adjust",
+      "description": "Controls whether the browser's forced color mode (e.g., Windows High Contrast) is allowed to override the element's colors.",
+      "browsers": ["E79", "FF89", "C89"],
+      "references": [
+        {
+          "name": "MDN Reference",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/forced-color-adjust"
+        }
+      ]
+    },
+    {
+      "name": "container-type",
+      "description": "Establishes the element as a container for container size queries.",
+      "values": [{ "name": "normal" }, { "name": "size" }, { "name": "inline-size" }]
+    },
+    {
+      "name": "container-name",
+      "description": "Assigns a name to a container element for targeting in @container rules."
+    },
+    {
+      "name": "anchor-name",
+      "description": "CSS Anchor Positioning — gives an element an anchor name for use with position-anchor.",
+      "references": [
+        {
+          "name": "MDN Reference",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/anchor-name"
+        }
+      ]
+    },
+    {
+      "name": "position-anchor",
+      "description": "CSS Anchor Positioning — specifies which anchor element to position relative to.",
+      "references": [
+        {
+          "name": "MDN Reference",
+          "url": "https://developer.mozilla.org/en-US/docs/Web/CSS/position-anchor"
+        }
+      ]
+    },
+    {
+      "name": "transition-behavior",
+      "description": "Controls whether transitions start on discrete properties.",
+      "values": [{ "name": "normal" }, { "name": "allow-discrete" }]
+    }
+  ]
+}

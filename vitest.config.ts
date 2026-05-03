@@ -31,7 +31,7 @@ export default defineConfig({
         // Provider runtime type helpers
         "src/providers/types.ts",
         // DOM overlay component
-        "src/ui/paste-overlay.ts",
+        "src/ui/palette-overlay.ts",
       ],
       thresholds: {
         statements: 90,

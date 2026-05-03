@@ -12,39 +12,15 @@ import { safeParse, YahooChartSchema } from "../types/valibot-schemas";
 /**
  * Base URL for Yahoo Finance requests.
  *
- * Yahoo Finance v8 chart API returns "Access-Control-Allow-Origin: *" so the
- * browser can call it directly in all environments (dev, preview, production).
- * The browser routes the request through whatever proxy the user has configured,
- * which is exactly what we want on corporate networks.
+ * In dev mode, requests go through the Vite dev-server proxy (/api/yahoo/*)
+ * which uses https-proxy-agent to honour HTTPS_PROXY env vars — required on
+ * corporate networks behind a firewall.  The proxy also avoids CSP
+ * connect-src violations since the browser only sees a same-origin request.
  *
- * Note: we no longer use the Vite dev-server proxy (/api/yahoo/*) because that
- * path runs inside Node.js, which does NOT automatically use the browser's proxy
- * settings.  On corporate networks with a firewall, Node.js requests are blocked
- * while browser requests succeed via the system / browser proxy.
+ * In production, Yahoo Finance v8 chart API returns
+ * "Access-Control-Allow-Origin: *" so the browser calls it directly.
  */
-const YAHOO_DIRECT = "https://query1.finance.yahoo.com";
-
-const YAHOO_BASE: string = YAHOO_DIRECT;
-
-/**
- * Optional CORS-proxy prefix (deprecated — left for compatibility).
- * Set to empty string to disable.  Has no effect in dev (Vite proxy is used).
- * In production Yahoo Finance supports CORS natively so this defaults to "".
- */
-let corsProxy = "";
-
-export function setCorsProxy(proxy: string): void {
-  corsProxy = proxy;
-}
-
-export function getCorsProxy(): string {
-  return corsProxy;
-}
-
-function proxyUrl(url: string): string {
-  if (!corsProxy) return url;
-  return `${corsProxy}${encodeURIComponent(url)}`;
-}
+const YAHOO_BASE: string = import.meta.env.DEV ? "/api/yahoo" : "https://query1.finance.yahoo.com";
 
 export interface TickerData {
   ticker: string;
@@ -91,7 +67,7 @@ interface CandleResult {
  */
 async function fetchCandles(ticker: string, signal?: AbortSignal): Promise<CandleResult> {
   const url = `${YAHOO_BASE}/v8/finance/chart/${encodeURIComponent(ticker)}?range=1y&interval=1d`;
-  const res = await fetchWithTimeout(proxyUrl(url), {}, 15000, signal);
+  const res = await fetchWithTimeout(url, {}, 15000, signal);
   const raw: unknown = await res.json();
 
   // Validate response shape at the external boundary

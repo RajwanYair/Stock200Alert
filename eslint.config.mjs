@@ -125,15 +125,14 @@ export default tseslint.config(
       "@typescript-eslint/no-unused-vars": [
         "error",
         {
-          varsIgnorePattern:
-            "^_|^load|^render|^init|^toggle|^update|^stamp|^build|^check|^accept|^copy|^export|^import|^share|^sw|^request|^apply|^schedule|^card|^save|^trigger|^show|^hide|^reset|^filter|^play|^inject|^set[A-Z]|^cycle|^random",
-          argsIgnorePattern: "^_|^e$|^k$",
+          varsIgnorePattern: "^_",
+          argsIgnorePattern: "^_",
           caughtErrors: "all",
           caughtErrorsIgnorePattern: "^_",
         },
       ],
       "@typescript-eslint/no-explicit-any": "error",
-      "@typescript-eslint/no-non-null-assertion": "off",
+      "@typescript-eslint/no-non-null-assertion": "off", // TS strictNullChecks handles safety; ! is used for post-narrowing assertions
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/no-misused-promises": [
         "error",

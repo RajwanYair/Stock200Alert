@@ -500,27 +500,6 @@ export const TiingoSearchItemSchema = object({
 export const TiingoSearchSchema = array(TiingoSearchItemSchema);
 
 // ---------------------------------------------------------------------------
-// Twelve Data schema (DEPRECATED — Twelve Data provider removed in R23;
-// schema kept only for IDB migration & snapshot validation of legacy data)
-// ---------------------------------------------------------------------------
-
-export const TwelveDataTimeSeriesSchema = object({
-  status: optional(string()),
-  values: optional(
-    array(
-      object({
-        datetime: string(),
-        open: string(),
-        high: string(),
-        low: string(),
-        close: string(),
-        volume: optional(string()),
-      }),
-    ),
-  ),
-});
-
-// ---------------------------------------------------------------------------
 // Helper utilities (mirror of former zod-schemas helpers)
 // ---------------------------------------------------------------------------
 

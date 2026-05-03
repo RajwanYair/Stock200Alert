@@ -5,6 +5,8 @@
     "stylelint.vscode-stylelint",
     "DavidAnson.vscode-markdownlint",
     "vitest.explorer",
-    "ms-vscode.js-debug"
+    "ms-vscode.js-debug",
+    "nicedoc.vscode-caniuse",
+    "nicedoc.vscode-browserslist"
   ]
 }

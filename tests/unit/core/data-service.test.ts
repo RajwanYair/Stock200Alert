@@ -1,10 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import {
-  setCorsProxy,
-  getCorsProxy,
-  fetchTickerData,
-  fetchAllTickers,
-} from "../../../src/core/data-service";
+import { fetchTickerData, fetchAllTickers } from "../../../src/core/data-service";
 
 // ── Mocks ─────────────────────────────────────────────────────────────────────
 
@@ -78,30 +73,10 @@ function makeResponse(body: unknown): { json: () => Promise<unknown> } {
 
 beforeEach(() => {
   vi.clearAllMocks();
-  setCorsProxy("");
 });
 
 afterEach(() => {
-  setCorsProxy("");
-});
-
-// ── CORS proxy ────────────────────────────────────────────────────────────────
-
-describe("setCorsProxy / getCorsProxy", () => {
-  it("defaults to empty string", () => {
-    expect(getCorsProxy()).toBe("");
-  });
-
-  it("stores and retrieves a proxy URL", () => {
-    setCorsProxy("https://proxy.example.com/");
-    expect(getCorsProxy()).toBe("https://proxy.example.com/");
-  });
-
-  it("can be cleared back to empty string", () => {
-    setCorsProxy("https://proxy.example.com/");
-    setCorsProxy("");
-    expect(getCorsProxy()).toBe("");
-  });
+  vi.restoreAllMocks();
 });
 
 // ── fetchTickerData ───────────────────────────────────────────────────────────
@@ -241,16 +216,6 @@ describe("fetchTickerData", () => {
 
     expect(data.error).toBe("No candle data available");
     expect(data.candles).toEqual([]);
-  });
-
-  it("uses corsProxy prefix when set", async () => {
-    setCorsProxy("https://cors.proxy/?url=");
-    mockFetch.mockResolvedValue(makeResponse(yahooResponse({ n: 5 })));
-
-    await fetchTickerData("X");
-
-    const calledUrl: string = mockFetch.mock.calls[0]![0] as string;
-    expect(calledUrl).toMatch(/^https:\/\/cors\.proxy\/\?url=/);
   });
 
   it("computes 52-week high and low across available candles", async () => {
