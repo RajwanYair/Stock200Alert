@@ -1,0 +1,49 @@
+---
+title: Coppock Curve
+description: Long-term momentum indicator — WMA of summed ROC periods, designed for monthly buy signals.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Coppock} = WMA\!\left(ROC(\text{long}) + ROC(\text{short}),\; p\right)
+$$
+
+## Parameters
+
+| Parameter   | Default | Range  | Notes                       |
+| ----------- | ------- | ------ | --------------------------- |
+| `longRoc`   | 14      | 5–20   | Long ROC period (months)    |
+| `shortRoc`  | 11      | 5–20   | Short ROC period (months)   |
+| `wmaPeriod` | 10      | 5–20   | WMA smoothing period        |
+
+## Interpretation
+
+| Condition               | Signal                                    |
+| ----------------------- | ----------------------------------------- |
+| Coppock crosses above 0 | Major buy signal (historically reliable)  |
+| Coppock below 0, rising | Recovery in progress — early entry         |
+| Coppock declining       | Avoid new longs                           |
+
+<Aside type="tip">
+  Originally designed for monthly S&P 500 charts. On daily data,
+  scale periods by ~21 (trading days per month).
+</Aside>
+
+## Usage
+
+```ts
+import { computeCoppockCurve } from "../../src/domain/coppock-curve";
+
+const values = computeCoppockCurve(candles, {
+  longRoc: 14,
+  shortRoc: 11,
+  wmaPeriod: 10,
+});
+```
+
+## References
+
+- Coppock, E. S. C. (1962). Coppock Guide. _Barron's._

@@ -1,0 +1,46 @@
+---
+title: DPO — Detrended Price Oscillator
+description: Removes the trend from price to isolate intermediate cycles and overbought/oversold levels.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+DPO = \text{Close}_{t} - SMA\!\left(t - \left\lfloor\frac{n}{2}\right\rfloor + 1\right)
+$$
+
+The SMA is shifted back by `period/2 + 1` to centre it under the cycle.
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 20      | 5–200  | SMA lookback             |
+
+## Interpretation
+
+| DPO Value | Signal                                 |
+| --------- | -------------------------------------- |
+| > 0       | Price above its cycle midpoint         |
+| < 0       | Price below its cycle midpoint         |
+| Peaks     | Cycle tops                             |
+| Troughs   | Cycle bottoms                          |
+
+<Aside type="tip">
+  DPO is not plotted at the current bar — it lags by `period/2 + 1`.
+  Use it for cycle analysis, not real-time entry timing.
+</Aside>
+
+## Usage
+
+```ts
+import { computeDpo } from "../../src/domain/dpo";
+
+const values = computeDpo(candles, { period: 20 });
+```
+
+## References
+
+- [DPO on Investopedia](https://www.investopedia.com/terms/d/detrended-price-oscillator-dpo.asp)

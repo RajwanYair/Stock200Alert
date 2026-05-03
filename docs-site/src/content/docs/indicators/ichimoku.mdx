@@ -1,0 +1,58 @@
+---
+title: Ichimoku Kinko Hyo
+description: Five-line system combining trend, momentum, and support/resistance into a single glance.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Components
+
+| Line          | Formula                                          | Default Period |
+| ------------- | ------------------------------------------------ | -------------- |
+| Tenkan-sen    | (Highest High + Lowest Low) / 2                  | 9              |
+| Kijun-sen     | (Highest High + Lowest Low) / 2                  | 26             |
+| Senkou A      | (Tenkan + Kijun) / 2, displaced forward          | 26             |
+| Senkou B      | (Highest High + Lowest Low) / 2, displaced forward| 52            |
+| Chikou Span   | Close, displaced backward                        | 26             |
+
+## Parameters
+
+| Parameter        | Default | Range  | Notes                        |
+| ---------------- | ------- | ------ | ---------------------------- |
+| `tenkanPeriod`   | 9       | 2–50   | Conversion line period       |
+| `kijunPeriod`    | 26      | 5–100  | Base line period             |
+| `senkouBPeriod`  | 52      | 10–200 | Leading span B period        |
+| `displacement`   | 26      | 5–100  | Cloud forward shift          |
+
+## Interpretation
+
+| Condition                      | Signal                                |
+| ------------------------------ | ------------------------------------- |
+| Price above cloud              | Bullish trend                         |
+| Price below cloud              | Bearish trend                         |
+| Tenkan crosses above Kijun     | Bullish crossover (TK cross)          |
+| Chikou above price of 26 ago   | Confirmation of bullish momentum     |
+| Thick cloud                    | Strong support/resistance zone        |
+
+<Aside type="tip">
+  Ichimoku is calibrated for Japanese markets (Sat trading). For Western 5-day
+  weeks some analysts use 7/22/44 periods instead of the classic 9/26/52.
+</Aside>
+
+## Usage
+
+```ts
+import { computeIchimoku } from "../../src/domain/ichimoku";
+
+const result = computeIchimoku(candles, {
+  tenkanPeriod: 9,
+  kijunPeriod: 26,
+  senkouBPeriod: 52,
+  displacement: 26,
+});
+```
+
+## References
+
+- Hosoda, G. (1969). _Ichimoku Kinko Hyo._
+- [Ichimoku Cloud on Investopedia](https://www.investopedia.com/terms/i/ichimoku-cloud.asp)

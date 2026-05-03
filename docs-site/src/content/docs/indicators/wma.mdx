@@ -1,0 +1,45 @@
+---
+title: WMA — Weighted Moving Average
+description: Moving average with linearly increasing weights, giving more importance to recent data.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+WMA = \frac{n \cdot P_t + (n-1) \cdot P_{t-1} + \ldots + 1 \cdot P_{t-n+1}}{n + (n-1) + \ldots + 1}
+$$
+
+The denominator equals $\frac{n(n+1)}{2}$.
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | —       | 2–200  | Required; no default     |
+
+## Interpretation
+
+| Condition        | Signal                              |
+| ---------------- | ----------------------------------- |
+| Price > WMA      | Short-term bullish                  |
+| Price < WMA      | Short-term bearish                  |
+| WMA slope change | Momentum shift                     |
+
+<Aside type="tip">
+  WMA is the basis for Hull MA. It responds faster than SMA but is
+  less popular than EMA in practice due to the linear weight assumption.
+</Aside>
+
+## Usage
+
+```ts
+import { computeWma } from "../../src/domain/wma";
+
+const wma = computeWma(closes, period);
+```
+
+## References
+
+- Murphy, J. J. (1999). _Technical Analysis of the Financial Markets._

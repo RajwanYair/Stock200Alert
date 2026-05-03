@@ -1,0 +1,48 @@
+---
+title: DEMA & TEMA
+description: Double and Triple Exponential Moving Averages that reduce lag while retaining smoothness.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formulas
+
+$$
+DEMA = 2 \cdot EMA(n) - EMA(EMA(n))
+$$
+
+$$
+TEMA = 3 \cdot EMA(n) - 3 \cdot EMA(EMA(n)) + EMA(EMA(EMA(n)))
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 20      | 2–200  | Base EMA period          |
+
+## Interpretation
+
+| Condition           | Signal                               |
+| ------------------- | ------------------------------------ |
+| Price > DEMA/TEMA   | Short-term bullish                   |
+| Price < DEMA/TEMA   | Short-term bearish                   |
+| DEMA/TEMA slope ↑   | Strengthening trend                  |
+
+<Aside type="tip">
+  TEMA responds fastest, then DEMA, then regular EMA. Use TEMA for
+  entries and a slower EMA for trend direction confirmation.
+</Aside>
+
+## Usage
+
+```ts
+import { computeDema, computeTema } from "../../src/domain/dema-tema";
+
+const dema = computeDema(closes, 20);
+const tema = computeTema(closes, 20);
+```
+
+## References
+
+- Mulloy, P. (1994). _Smoothing Data with Faster Moving Averages._ TASC.

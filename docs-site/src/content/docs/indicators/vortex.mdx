@@ -1,0 +1,47 @@
+---
+title: Vortex Indicator
+description: Measures positive and negative trend movement to identify trend direction and reversals.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+VM^+ = |H_t - L_{t-1}|, \qquad VM^- = |L_t - H_{t-1}|
+$$
+
+$$
+VI^+ = \frac{\sum VM^+(n)}{\sum TR(n)}, \qquad VI^- = \frac{\sum VM^-(n)}{\sum TR(n)}
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 14      | 2–100  | Lookback window          |
+
+## Interpretation
+
+| Condition           | Signal                              |
+| ------------------- | ----------------------------------- |
+| VI+ crosses above VI- | Bullish trend beginning           |
+| VI- crosses above VI+ | Bearish trend beginning           |
+| Wide VI+ / VI- gap  | Strong directional trend            |
+
+<Aside type="tip">
+  Vortex works similarly to ADX but produces direct bullish/bearish
+  crossover signals rather than trend strength alone.
+</Aside>
+
+## Usage
+
+```ts
+import { computeVortex } from "../../src/domain/vortex-indicator";
+
+const { viPlus, viMinus } = computeVortex(candles, { period: 14 });
+```
+
+## References
+
+- Botes, E. & Siepman, D. (2010). _The Vortex Indicator._ TASC.

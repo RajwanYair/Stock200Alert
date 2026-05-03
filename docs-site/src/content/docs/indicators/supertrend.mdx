@@ -1,0 +1,53 @@
+---
+title: SuperTrend
+description: ATR-based trend-following overlay that flips between support and resistance bands.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Upper} = \frac{H + L}{2} + m \cdot ATR(n)
+$$
+
+$$
+\text{Lower} = \frac{H + L}{2} - m \cdot ATR(n)
+$$
+
+The active band flips when price crosses through it.
+
+## Parameters
+
+| Parameter    | Default | Range      | Notes                          |
+| ------------ | ------- | ---------- | ------------------------------ |
+| `atrPeriod`  | 10      | 2–100      | ATR lookback                   |
+| `multiplier` | 3.0     | 0.5–10.0   | Band distance multiplier       |
+
+## Interpretation
+
+| Condition               | Signal                     |
+| ----------------------- | -------------------------- |
+| Price above SuperTrend  | Uptrend — hold long        |
+| Price below SuperTrend  | Downtrend — hold short     |
+| Band flip               | Trend reversal             |
+
+<Aside type="tip">
+  SuperTrend works best in trending markets. In range-bound conditions,
+  increase the multiplier to reduce whipsaws.
+</Aside>
+
+## Usage
+
+```ts
+import { computeSuperTrendSeries } from "../../src/domain/supertrend-calculator";
+
+const result = computeSuperTrendSeries(candles, {
+  atrPeriod: 10,
+  multiplier: 3.0,
+});
+```
+
+## References
+
+- Pottier, O. (2007). SuperTrend indicator.

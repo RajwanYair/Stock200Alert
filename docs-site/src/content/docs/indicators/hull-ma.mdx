@@ -1,0 +1,43 @@
+---
+title: Hull Moving Average
+description: Responsive WMA-based filter that virtually eliminates lag while maintaining smoothness.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+HMA(n) = WMA\!\left(2 \cdot WMA\!\left(\frac{n}{2}\right) - WMA(n),\; \lfloor\sqrt{n}\rfloor\right)
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                     |
+| --------- | ------- | ------ | ------------------------- |
+| `period`  | 16      | 4–200  | Base WMA period           |
+
+## Interpretation
+
+| Condition       | Signal                              |
+| --------------- | ----------------------------------- |
+| HMA slope ↑     | Trend accelerating upward           |
+| HMA slope ↓     | Trend accelerating downward         |
+| Slope flip      | Potential trend change              |
+
+<Aside type="tip">
+  HMA is one of the fastest MAs. Its near-zero lag makes it excellent for
+  entries, but it can overreact during sharp intraday reversals.
+</Aside>
+
+## Usage
+
+```ts
+import { computeHullMA } from "../../src/domain/hull-ma";
+
+const hma = computeHullMA(closes, 16);
+```
+
+## References
+
+- Hull, A. (2005). Hull Moving Average.
