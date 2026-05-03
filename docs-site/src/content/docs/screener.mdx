@@ -1,0 +1,82 @@
+---
+title: Screener
+description: How to use CrossTide's stock screener to filter tickers by technical criteria.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Overview
+
+The **Screener** card lets you filter your watchlist by technical criteria to find setups
+that match specific trading conditions. Filters are applied in real-time to the latest
+quote and indicator data — no separate API call is needed.
+
+Navigate to the Screener via the nav bar or press `g` then `s`.
+
+## Built-In Filters
+
+| Filter            | Parameter    | Example                   | What It Does                        |
+| ----------------- | ------------ | ------------------------- | ----------------------------------- |
+| **Consensus**     | Direction    | `BUY`                     | Tickers where consensus = direction |
+| **RSI Below**     | Threshold    | `< 30`                    | Oversold RSI reading                |
+| **RSI Above**     | Threshold    | `> 70`                    | Overbought RSI reading              |
+| **Volume Spike**  | Multiplier   | `≥ 2× avg`               | Unusual volume activity             |
+| **Price > SMA**   | Period       | `Price > SMA 200`         | Price trading above moving average  |
+
+All filters are **AND**-combined — a ticker must match every active filter to appear in
+the results table.
+
+## Using Presets
+
+Click the **Preset** dropdown to load common filter combinations:
+
+| Preset                | Filters                                                |
+| --------------------- | ------------------------------------------------------ |
+| Oversold + Strong BUY | RSI < 30 AND Consensus = BUY                           |
+| Momentum Breakout     | Volume ≥ 2× avg AND Price > SMA 50                    |
+| Value Picks           | RSI < 40 AND Price > SMA 200                           |
+
+<Aside type="tip">
+  Modify any preset after loading it — your changes stay until you load another preset or
+  clear filters. Custom presets can be saved via the card settings.
+</Aside>
+
+## Results Table
+
+Matching tickers appear in a sortable table:
+
+| Column     | Description                                    |
+| ---------- | ---------------------------------------------- |
+| **Symbol** | Ticker symbol (click to open chart)            |
+| **Price**  | Latest price                                   |
+| **Signal** | Consensus badge (BUY / NEUTRAL / SELL)         |
+| **Matched**| Which filters this ticker matched              |
+
+Click any column header to sort. Click a ticker row to jump to its Chart card.
+
+## Custom Filters
+
+Use the **+ Add Filter** button to build your own filter chain. Each filter has:
+- A **type** selector (Consensus, RSI Below, RSI Above, Volume Spike, Price > SMA)
+- A **parameter** input (threshold value, SMA period, etc.)
+- A **remove** button to delete that filter
+
+## Export
+
+Click **Export CSV** or **Export XLSX** to download the current screener results. The
+export includes all visible columns plus the raw filter values applied.
+
+<Aside type="note">
+  Screener data is computed from the same cached quotes and indicators used by the
+  Watchlist — it refreshes automatically when new data arrives. No additional API quota
+  is consumed.
+</Aside>
+
+## Keyboard Shortcuts
+
+| Key     | Action                    |
+| ------- | ------------------------- |
+| `g s`   | Navigate to Screener      |
+| `f`     | Focus filter input        |
+| `Enter` | Apply filter              |
+| `Esc`   | Clear current filter      |
