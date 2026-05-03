@@ -1,0 +1,50 @@
+---
+title: Anchored VWAP
+description: Volume-weighted average price from a user-chosen anchor point, with standard deviation bands.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+AVWAP = \frac{\sum_{i=\text{anchor}}^{t} P_i \times V_i}{\sum_{i=\text{anchor}}^{t} V_i}
+$$
+
+Bands at ±1σ and ±2σ of the price-volume deviations.
+
+## Parameters
+
+| Parameter          | Default | Notes                                   |
+| ------------------ | ------- | --------------------------------------- |
+| `anchorIndex`      | —       | Bar index to anchor from                |
+| `bandMultipliers`  | [1, 2]  | Standard deviation multipliers          |
+
+## Interpretation
+
+| Condition             | Signal                                     |
+| --------------------- | ------------------------------------------ |
+| Price > AVWAP         | Bullish since anchor event                 |
+| Price < AVWAP         | Bearish since anchor event                 |
+| Touch ±1σ band        | Normal pullback within the move            |
+| Touch ±2σ band        | Overextended — mean reversion likely       |
+
+<Aside type="tip">
+  Anchor VWAP from earnings, IPO dates, or significant gaps to reveal
+  the true average cost of participants who entered at that event.
+</Aside>
+
+## Usage
+
+```ts
+import { anchoredVwap } from "../../src/domain/anchored-vwap";
+
+const result = anchoredVwap(candles, {
+  anchorIndex: 0,
+  bandMultipliers: [1, 2],
+});
+```
+
+## References
+
+- Ciana, B. (2011). _New Frontiers in Technical Analysis._

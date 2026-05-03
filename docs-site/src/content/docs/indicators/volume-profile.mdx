@@ -1,0 +1,56 @@
+---
+title: Volume Profile
+description: Price-by-volume histogram showing where the most trading occurred, with POC and value area.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Concept
+
+Divides the price range into `bins` horizontal rows and sums the volume traded at each level.
+
+## Key Metrics
+
+| Metric        | Definition                                              |
+| ------------- | ------------------------------------------------------- |
+| **POC**       | Point of Control — price level with the highest volume  |
+| **Value Area**| Price range containing ~70% of total volume             |
+| **VA High**   | Upper bound of the value area                           |
+| **VA Low**    | Lower bound of the value area                           |
+
+## Parameters
+
+| Parameter      | Default | Range    | Notes                         |
+| -------------- | ------- | -------- | ----------------------------- |
+| `bins`         | 24      | 10–200   | Number of price rows          |
+| `valueAreaPct` | 0.70    | 0.5–0.9  | Value area percentage         |
+
+## Interpretation
+
+| Condition                  | Signal                                  |
+| -------------------------- | --------------------------------------- |
+| Price at POC               | Fair value — expect consolidation       |
+| Price above VA High        | Breakout — potential trend continuation  |
+| Price below VA Low         | Breakdown — potential reversal / sell    |
+| Low-volume node (LVN)     | Price moves quickly through these areas |
+| High-volume node (HVN)    | Support/resistance cluster              |
+
+<Aside type="tip">
+  Volume Profile is one of the few indicators used by institutional
+  order-flow traders. The POC acts as a magnet for price in ranges.
+</Aside>
+
+## Usage
+
+```ts
+import { computeVolumeProfile } from "../../src/domain/volume-profile";
+
+const { bins, poc, vaHigh, vaLow } = computeVolumeProfile(candles, {
+  bins: 24,
+  valueAreaPct: 0.7,
+});
+```
+
+## References
+
+- Steidlmayer, P. (1986). _Markets and Market Logic._

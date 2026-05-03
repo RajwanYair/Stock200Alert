@@ -1,0 +1,44 @@
+---
+title: Fractals
+description: Bill Williams fractals — five-bar reversal patterns marking swing highs and lows.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Concept
+
+A **bearish fractal** (swing high) forms when the middle bar's high is the highest of 5 bars.
+A **bullish fractal** (swing low) forms when the middle bar's low is the lowest of 5 bars.
+
+## Parameters
+
+| Parameter | Default | Range | Notes                          |
+| --------- | ------- | ----- | ------------------------------ |
+| `n`       | 2       | 1–5   | Bars on each side (5-bar = 2) |
+
+## Interpretation
+
+| Fractal Type   | Signal                                    |
+| -------------- | ----------------------------------------- |
+| Bearish fractal| Resistance / swing high — potential short |
+| Bullish fractal| Support / swing low — potential long      |
+| Break above    | Upside breakout confirmed                 |
+| Break below    | Downside breakout confirmed               |
+
+<Aside type="tip">
+  Williams uses fractals as entry triggers in his trading system:
+  buy on a break above the last bullish fractal, sell on a break below.
+  Combine with Alligator lines for trend direction.
+</Aside>
+
+## Usage
+
+```ts
+import { computeFractals } from "../../src/domain/fractals";
+
+const { bullish, bearish } = computeFractals(candles, { n: 2 });
+```
+
+## References
+
+- Williams, B. (1995). _Trading Chaos._

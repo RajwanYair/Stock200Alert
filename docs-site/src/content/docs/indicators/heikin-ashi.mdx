@@ -1,0 +1,51 @@
+---
+title: Heikin-Ashi
+description: Smoothed candlestick representation that filters noise and highlights trend direction.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+HA_{\text{Close}} = \frac{O + H + L + C}{4}
+$$
+
+$$
+HA_{\text{Open}} = \frac{HA_{\text{Open}_{t-1}} + HA_{\text{Close}_{t-1}}}{2}
+$$
+
+$$
+HA_{\text{High}} = \max(H, HA_{\text{Open}}, HA_{\text{Close}})
+$$
+
+$$
+HA_{\text{Low}} = \min(L, HA_{\text{Open}}, HA_{\text{Close}})
+$$
+
+## Interpretation
+
+| Pattern                          | Signal                         |
+| -------------------------------- | ------------------------------ |
+| Green body, no lower wick        | Strong uptrend                 |
+| Red body, no upper wick          | Strong downtrend               |
+| Small body, both wicks           | Indecision / reversal brewing  |
+| Colour change green → red        | Potential bearish reversal     |
+| Colour change red → green        | Potential bullish reversal     |
+
+<Aside type="caution">
+  Heikin-Ashi candles use modified prices — do not place orders
+  at HA open/close levels. Use standard candle prices for execution.
+</Aside>
+
+## Usage
+
+```ts
+import { computeHeikinAshi } from "../../src/domain/heikin-ashi";
+
+const haCandles = computeHeikinAshi(candles);
+```
+
+## References
+
+- Valcu, D. (2004). "Using the Heikin-Ashi Technique." _Technical Analysis of Stocks & Commodities._

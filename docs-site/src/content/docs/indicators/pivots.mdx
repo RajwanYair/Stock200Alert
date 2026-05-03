@@ -1,0 +1,48 @@
+---
+title: Pivot Points
+description: Classic support and resistance levels derived from the prior session's high, low, and close.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Variants
+
+| Variant    | Pivot Formula                  | S/R Derivation               |
+| ---------- | ------------------------------ | ---------------------------- |
+| Classic    | (H + L + C) / 3               | Standard arithmetic          |
+| Fibonacci  | Same as classic                | Fib retracement of H-L range |
+| Camarilla  | Same as classic                | Multiplied offsets × range   |
+| Woodie     | (H + L + 2C) / 4              | Close-weighted               |
+
+## Parameters
+
+| Parameter | Default    | Options                                  |
+| --------- | ---------- | ---------------------------------------- |
+| `kind`    | `"classic"`| `"classic"`, `"fibonacci"`, `"camarilla"`, `"woodie"` |
+
+## Interpretation
+
+| Level | Usage                                        |
+| ----- | -------------------------------------------- |
+| R3/R2 | Strong resistance — consider selling         |
+| R1    | First resistance above pivot                 |
+| P     | Pivot — fair value / trend pivot             |
+| S1    | First support below pivot                    |
+| S2/S3 | Strong support — consider buying             |
+
+<Aside type="tip">
+  Day traders watch the pivot level (P) at market open. Sustained price
+  above P = bullish bias for the session; below P = bearish bias.
+</Aside>
+
+## Usage
+
+```ts
+import { computePivots } from "../../src/domain/pivots";
+
+const levels = computePivots(high, low, close, { kind: "classic" });
+```
+
+## References
+
+- [Pivot Points on Investopedia](https://www.investopedia.com/terms/p/pivotpoint.asp)

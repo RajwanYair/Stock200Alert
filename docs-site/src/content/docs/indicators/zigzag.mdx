@@ -1,0 +1,42 @@
+---
+title: ZigZag
+description: Swing-pivot detector that filters out noise by requiring a minimum percentage reversal.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Concept
+
+ZigZag connects alternating highs and lows, ignoring any reversal smaller than the threshold.
+It is **repainted** — the last segment adjusts until a confirmed reversal occurs.
+
+## Parameters
+
+| Parameter           | Default | Range      | Notes                        |
+| ------------------- | ------- | ---------- | ---------------------------- |
+| `thresholdPercent`  | 0.05    | 0.01–0.20  | Min reversal (5% = 0.05)    |
+
+## Interpretation
+
+| Pattern                    | Signal                                  |
+| -------------------------- | --------------------------------------- |
+| Higher highs + higher lows | Uptrend structure                       |
+| Lower highs + lower lows  | Downtrend structure                     |
+| Higher low after low       | Potential trend reversal up             |
+
+<Aside type="caution">
+  ZigZag repaints — do not use it for real-time entry signals.
+  It is a structure analysis tool for identifying completed swings.
+</Aside>
+
+## Usage
+
+```ts
+import { computeZigZag } from "../../src/domain/zigzag";
+
+const swings = computeZigZag(candles, { thresholdPercent: 0.05 });
+```
+
+## References
+
+- Murphy, J. J. (1999). _Technical Analysis of the Financial Markets._

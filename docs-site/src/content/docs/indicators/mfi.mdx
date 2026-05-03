@@ -1,0 +1,56 @@
+---
+title: Money Flow Index (MFI)
+description: Volume-weighted RSI measuring buying versus selling pressure on a 0–100 scale.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Typical Price} = \frac{H + L + C}{3}
+$$
+
+$$
+\text{Raw Money Flow} = \text{Typical Price} \times V
+$$
+
+$$
+\text{Money Ratio} = \frac{\sum \text{Positive MF}_{n}}{\sum \text{Negative MF}_{n}}
+$$
+
+$$
+MFI = 100 - \frac{100}{1 + \text{Money Ratio}}
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 14      | 5–50   | Lookback window          |
+
+## Interpretation
+
+| Condition  | Signal                                       |
+| ---------- | -------------------------------------------- |
+| MFI > 80   | Overbought — potential selling pressure       |
+| MFI < 20   | Oversold — potential buying opportunity        |
+| Divergence | MFI diverging from price warns of reversal    |
+| Rising MFI | Increasing buying pressure                    |
+
+<Aside type="tip">
+  MFI is sometimes called the "volume-weighted RSI." When RSI and MFI
+  agree on overbought/oversold, the signal is stronger.
+</Aside>
+
+## Usage
+
+```ts
+import { computeMfiSeries } from "../../src/domain/mfi";
+
+const values = computeMfiSeries(candles, { period: 14 });
+```
+
+## References
+
+- Quong, G. & Soudack, A. (1989). "Volume-Weighted RSI: Money Flow Index." _Technical Analysis of Stocks & Commodities._
