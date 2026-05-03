@@ -1,0 +1,45 @@
+---
+title: Ease of Movement
+description: Relates price range change to volume, showing how easily price moves.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Distance} = \frac{(H + L)/2 - (H_{-1} + L_{-1})/2}{V / (H - L)}
+$$
+
+Smoothed with an SMA of period `n`.
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                        |
+| --------- | ------- | ------ | ---------------------------- |
+| `period`  | 14      | 2–100  | SMA smoothing period         |
+
+## Interpretation
+
+| EOM Value | Signal                                        |
+| --------- | --------------------------------------------- |
+| > 0       | Price moving up on low volume (easy move)     |
+| < 0       | Price moving down on low volume               |
+| ≈ 0       | Heavy volume required for price change        |
+
+<Aside type="tip">
+  Large positive EOM readings during breakouts confirm genuine
+  demand rather than low-volume drift.
+</Aside>
+
+## Usage
+
+```ts
+import { computeEaseOfMovement } from "../../src/domain/ease-of-movement";
+
+const values = computeEaseOfMovement(candles, { period: 14 });
+```
+
+## References
+
+- Arms, R. W. (1989). _The Arms Index._

@@ -1,0 +1,54 @@
+---
+title: Elder Impulse System
+description: Colour-coded trend + momentum filter combining EMA slope and MACD histogram slope.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Logic
+
+| EMA Slope | MACD-H Slope | Signal | Colour |
+| --------- | ------------ | ------ | ------ |
+| ↑         | ↑            | BUY    | Green  |
+| ↓         | ↓            | SELL   | Red    |
+| Mixed     | Mixed        | NEUTRAL| Blue   |
+
+## Parameters
+
+| Parameter      | Default | Range  | Notes                    |
+| -------------- | ------- | ------ | ------------------------ |
+| `emaPeriod`    | 13      | 5–50   | EMA for slope            |
+| `macdFast`     | 12      | 5–50   | MACD fast EMA            |
+| `macdSlow`     | 26      | 10–100 | MACD slow EMA            |
+| `macdSignal`   | 9       | 2–20   | MACD signal period       |
+
+## Interpretation
+
+| Colour | Action                                    |
+| ------ | ----------------------------------------- |
+| Green  | Trend and momentum both up — hold/add     |
+| Red    | Both down — exit longs or short           |
+| Blue   | Mixed — reduce position or stay flat      |
+
+<Aside type="tip">
+  The Impulse System is a filter, not a standalone entry signal.
+  It tells you which trades to *avoid* — never sell short on green
+  bars or buy on red bars.
+</Aside>
+
+## Usage
+
+```ts
+import { elderImpulse } from "../../src/domain/elder-impulse";
+
+const signals = elderImpulse(candles, {
+  emaPeriod: 13,
+  macdFast: 12,
+  macdSlow: 26,
+  macdSignal: 9,
+});
+```
+
+## References
+
+- Elder, A. (2002). _Come into My Trading Room._

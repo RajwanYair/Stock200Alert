@@ -1,0 +1,47 @@
+---
+title: Ulcer Index
+description: Measures downside risk by tracking the depth and duration of drawdowns.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{PctDD}_i = \frac{\text{Close}_i - \max(\text{Close}, n)}{\max(\text{Close}, n)} \times 100
+$$
+
+$$
+UI = \sqrt{\frac{\sum_{i=1}^{n} \text{PctDD}_i^2}{n}}
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 14      | 5–200  | Lookback window          |
+
+## Interpretation
+
+| UI Value | Risk Level                               |
+| -------- | ---------------------------------------- |
+| < 5      | Low volatility / shallow drawdowns       |
+| 5–15     | Normal market risk                       |
+| > 15     | Severe drawdowns — elevated risk         |
+
+<Aside type="tip">
+  The Martin Ratio (return / Ulcer Index) is a drawdown-sensitive
+  alternative to the Sharpe Ratio — useful for risk-averse investors.
+</Aside>
+
+## Usage
+
+```ts
+import { computeUlcerIndex } from "../../src/domain/ulcer-index";
+
+const values = computeUlcerIndex(candles, { period: 14 });
+```
+
+## References
+
+- Martin, P. & McCann, B. (1989). _The Investor's Guide to Fidelity Funds._

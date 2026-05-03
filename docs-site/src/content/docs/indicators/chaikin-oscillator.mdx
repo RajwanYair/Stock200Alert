@@ -1,0 +1,45 @@
+---
+title: Chaikin Oscillator
+description: MACD applied to the Accumulation/Distribution line, measuring momentum of money flow.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Chaikin Osc} = EMA(\text{AD Line}, \text{fast}) - EMA(\text{AD Line}, \text{slow})
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `fast`    | 3       | 2–20   | Fast EMA period          |
+| `slow`    | 10      | 5–50   | Slow EMA period          |
+
+## Interpretation
+
+| Value       | Signal                                   |
+| ----------- | ---------------------------------------- |
+| > 0 rising  | Accumulation accelerating — bullish      |
+| < 0 falling | Distribution accelerating — bearish      |
+| Zero cross ↑| Buy signal                               |
+| Zero cross ↓| Sell signal                              |
+
+<Aside type="tip">
+  Best used with a trend indicator — a bullish Chaikin zero-cross
+  in an uptrend is a higher-probability signal.
+</Aside>
+
+## Usage
+
+```ts
+import { computeChaikinOscillator } from "../../src/domain/chaikin-oscillator";
+
+const values = computeChaikinOscillator(candles, { fast: 3, slow: 10 });
+```
+
+## References
+
+- Chaikin, M. (1984). Chaikin Oscillator.

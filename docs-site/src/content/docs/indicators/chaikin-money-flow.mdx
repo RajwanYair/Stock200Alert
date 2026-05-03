@@ -1,0 +1,48 @@
+---
+title: Chaikin Money Flow
+description: Measures accumulation/distribution pressure over a rolling window, bounded between -1 and +1.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+MFM = \frac{(C - L) - (H - C)}{H - L}
+$$
+
+$$
+CMF = \frac{\sum_{i=1}^{n} MFM_i \times V_i}{\sum_{i=1}^{n} V_i}
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 20      | 5–100  | Rolling window           |
+
+## Interpretation
+
+| CMF Value | Signal                                    |
+| --------- | ----------------------------------------- |
+| > 0       | Net buying pressure (accumulation)        |
+| < 0       | Net selling pressure (distribution)       |
+| > +0.25   | Strong accumulation                       |
+| < -0.25   | Strong distribution                       |
+
+<Aside type="tip">
+  CMF persistently above zero during a pullback suggests the dip
+  is being bought — a strong bullish continuation signal.
+</Aside>
+
+## Usage
+
+```ts
+import { computeChaikinMoneyFlow } from "../../src/domain/chaikin-money-flow";
+
+const values = computeChaikinMoneyFlow(candles, { period: 20 });
+```
+
+## References
+
+- Chaikin, M. (1984). _Chaikin Oscillator and Money Flow._

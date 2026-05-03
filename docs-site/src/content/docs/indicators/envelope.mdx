@@ -1,0 +1,51 @@
+---
+title: Envelope
+description: SMA-based percentage bands — a simple overbought/oversold volatility envelope.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Upper} = SMA(n) \times (1 + p/100)
+$$
+
+$$
+\text{Lower} = SMA(n) \times (1 - p/100)
+$$
+
+## Parameters
+
+| Parameter | Default | Range      | Notes                         |
+| --------- | ------- | ---------- | ----------------------------- |
+| `period`  | 20      | 5–200      | SMA period                    |
+| `percent` | 2.5     | 0.1–20.0   | Band offset percentage        |
+
+## Interpretation
+
+| Condition         | Signal                                   |
+| ----------------- | ---------------------------------------- |
+| Close > Upper     | Overbought — consider taking profit      |
+| Close < Lower     | Oversold — potential bounce              |
+| Between bands     | Normal trading range                     |
+
+<Aside type="tip">
+  Envelopes are a simpler alternative to Bollinger Bands —
+  the width is fixed rather than adaptive to volatility.
+</Aside>
+
+## Usage
+
+```ts
+import { computeEnvelope } from "../../src/domain/envelope";
+
+const { upper, middle, lower } = computeEnvelope(candles, {
+  period: 20,
+  percent: 2.5,
+});
+```
+
+## References
+
+- Murphy, J. J. (1999). _Technical Analysis of the Financial Markets._

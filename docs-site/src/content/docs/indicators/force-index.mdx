@@ -1,0 +1,45 @@
+---
+title: Force Index
+description: Volume-weighted price change that quantifies the force behind each price move.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+FI = (\text{Close}_t - \text{Close}_{t-1}) \times \text{Volume}_t
+$$
+
+Smoothed with an EMA of period `n`.
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 13      | 2–100  | EMA smoothing period     |
+
+## Interpretation
+
+| FI Value   | Signal                                        |
+| ---------- | --------------------------------------------- |
+| > 0        | Buying pressure dominates                     |
+| < 0        | Selling pressure dominates                    |
+| Divergence | FI diverging from price = weakening trend     |
+
+<Aside type="tip">
+  A 2-period Force Index catches short-term extremes; a 13-period
+  version confirms the intermediate trend direction.
+</Aside>
+
+## Usage
+
+```ts
+import { computeForceIndex } from "../../src/domain/force-index";
+
+const values = computeForceIndex(candles, { period: 13 });
+```
+
+## References
+
+- Elder, A. (1993). _Trading for a Living._

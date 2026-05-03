@@ -1,0 +1,49 @@
+---
+title: Mass Index
+description: Detects range expansions that often precede trend reversals — the "reversal bulge" setup.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Ratio} = \frac{EMA(H - L, 9)}{EMA(EMA(H - L, 9), 9)}
+$$
+
+$$
+MI = \sum_{i=1}^{25} \text{Ratio}_i
+$$
+
+## Parameters
+
+| Parameter   | Default | Range  | Notes                    |
+| ----------- | ------- | ------ | ------------------------ |
+| `emaPeriod` | 9       | 5–20   | EMA smoothing of range   |
+| `sumPeriod` | 25      | 10–50  | Rolling sum window       |
+
+## Interpretation
+
+| MI Value        | Signal                                       |
+| --------------- | -------------------------------------------- |
+| MI > 27         | "Reversal bulge" — expansion detected        |
+| MI drops < 26.5 | Bulge complete — trend reversal imminent      |
+| MI flat ≈ 25    | No expansion — trend likely to continue      |
+
+<Aside type="tip">
+  The key signal is the **setup** (>27) followed by **trigger** (<26.5).
+  Use another indicator for direction — Mass Index only detects reversals,
+  not their direction.
+</Aside>
+
+## Usage
+
+```ts
+import { computeMassIndex } from "../../src/domain/mass-index";
+
+const values = computeMassIndex(candles, { emaPeriod: 9, sumPeriod: 25 });
+```
+
+## References
+
+- Dorsey, D. (1992). _The Mass Index._ TASC.

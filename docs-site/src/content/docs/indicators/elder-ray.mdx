@@ -1,0 +1,49 @@
+---
+title: Elder Ray
+description: Decomposes price action into bull power and bear power relative to an EMA trend line.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Bull Power} = \text{High} - EMA(n)
+$$
+
+$$
+\text{Bear Power} = \text{Low} - EMA(n)
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 13      | 5–100  | EMA period               |
+
+## Interpretation
+
+| Condition                        | Signal                         |
+| -------------------------------- | ------------------------------ |
+| Bull Power > 0, Bear Power < 0   | Normal trending market         |
+| Bear Power rising toward 0       | Potential buy setup            |
+| Bull Power falling toward 0      | Potential sell setup           |
+| Both positive                    | Strong bullish momentum        |
+| Both negative                    | Strong bearish momentum        |
+
+<Aside type="tip">
+  Elder recommends buying when EMA is rising and Bear Power is
+  negative but rising — this catches pullbacks within uptrends.
+</Aside>
+
+## Usage
+
+```ts
+import { computeElderRay } from "../../src/domain/elder-ray";
+
+const { bullPower, bearPower } = computeElderRay(candles, { period: 13 });
+```
+
+## References
+
+- Elder, A. (1993). _Trading for a Living._

@@ -1,0 +1,52 @@
+---
+title: Donchian Channels
+description: Highest high and lowest low over a lookback window — the classic breakout system.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Upper} = \max(\text{High}, n)
+$$
+
+$$
+\text{Lower} = \min(\text{Low}, n)
+$$
+
+$$
+\text{Middle} = \frac{\text{Upper} + \text{Lower}}{2}
+$$
+
+## Parameters
+
+| Parameter | Default | Range  | Notes                    |
+| --------- | ------- | ------ | ------------------------ |
+| `period`  | 20      | 5–200  | Lookback window          |
+
+## Interpretation
+
+| Condition          | Signal                                  |
+| ------------------ | --------------------------------------- |
+| Close > Upper      | New N-day high — breakout long          |
+| Close < Lower      | New N-day low — breakout short          |
+| Channel narrowing  | Compression → breakout imminent         |
+
+<Aside type="tip">
+  Richard Dennis's Turtle Trading system used 20-day Donchian breakouts
+  for entries and 10-day for exits — one of the most famous trend systems.
+</Aside>
+
+## Usage
+
+```ts
+import { computeDonchian } from "../../src/domain/donchian";
+
+const { upper, middle, lower } = computeDonchian(candles, { period: 20 });
+```
+
+## References
+
+- Donchian, R. (1960). Commodity channel breakouts.
+- [Donchian on Investopedia](https://www.investopedia.com/terms/d/donchianchannels.asp)

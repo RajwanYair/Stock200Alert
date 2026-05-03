@@ -1,0 +1,46 @@
+---
+title: Accumulation/Distribution Line
+description: Cumulative volume-weighted money-flow indicator tracking smart-money accumulation or distribution.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+MFM = \frac{(C - L) - (H - C)}{H - L}
+$$
+
+$$
+AD_t = AD_{t-1} + MFM_t \times V_t
+$$
+
+## Parameters
+
+No parameters — the AD Line is a cumulative series computed from all available data.
+
+## Interpretation
+
+| AD Behaviour         | Signal                                     |
+| -------------------- | ------------------------------------------ |
+| AD rising + price ↑  | Confirmed uptrend with accumulation        |
+| AD falling + price ↓ | Confirmed downtrend with distribution      |
+| AD diverging ↑       | Bullish divergence — hidden accumulation   |
+| AD diverging ↓       | Bearish divergence — hidden distribution   |
+
+<Aside type="tip">
+  AD Line divergences often precede price reversals by days or weeks.
+  Watch for price making new highs while AD fails to confirm.
+</Aside>
+
+## Usage
+
+```ts
+import { computeAdLine } from "../../src/domain/ad-line";
+
+const adLine = computeAdLine(candles);
+```
+
+## References
+
+- Williams, L. & Chaiken, M. (1974). Accumulation Distribution.

@@ -1,0 +1,58 @@
+---
+title: Keltner Channels
+description: Volatility bands around an EMA midline, using ATR for adaptive channel width.
+---
+
+import { Aside } from "@astrojs/starlight/components";
+
+## Formula
+
+$$
+\text{Middle} = EMA(\text{Close}, n)
+$$
+
+$$
+\text{Upper} = \text{Middle} + m \times ATR(a)
+$$
+
+$$
+\text{Lower} = \text{Middle} - m \times ATR(a)
+$$
+
+## Parameters
+
+| Parameter    | Default | Range      | Notes                        |
+| ------------ | ------- | ---------- | ---------------------------- |
+| `length`     | 20      | 5–100      | EMA period                   |
+| `atrLength`  | 10      | 2–50       | ATR period                   |
+| `multiplier` | 2       | 0.5–5.0    | Band distance multiplier     |
+
+## Interpretation
+
+| Condition          | Signal                                |
+| ------------------ | ------------------------------------- |
+| Close > Upper      | Breakout — strong bullish momentum    |
+| Close < Lower      | Breakdown — strong bearish momentum   |
+| Inside channels    | Range-bound / mean-reverting          |
+| Narrowing channels | Decreasing volatility — squeeze       |
+
+<Aside type="tip">
+  Keltner + Bollinger "squeeze" strategy: when Bollinger Bands contract inside
+  Keltner Channels, a volatility expansion and breakout are imminent.
+</Aside>
+
+## Usage
+
+```ts
+import { computeKeltner } from "../../src/domain/keltner";
+
+const { upper, middle, lower } = computeKeltner(candles, {
+  length: 20,
+  atrLength: 10,
+  multiplier: 2,
+});
+```
+
+## References
+
+- Keltner, C. (1960). _How to Make Money in Commodities._
