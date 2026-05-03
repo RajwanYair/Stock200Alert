@@ -6,6 +6,56 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [7.25.0] - 2026-05-03
+
+### Breaking
+
+- **Remove deprecated corsProxy API**: `setCorsProxy()`, `getCorsProxy()`, and
+  internal `proxyUrl()` removed from `src/core/data-service.ts`. CORS proxy was
+  a no-op since v7.22.0 (Vite proxy handles dev; Yahoo CORS headers handle prod).
+
+### Removed
+
+- `TwelveDataTimeSeriesSchema` from valibot-schemas (zero imports; Twelve Data
+  provider removed in R23).
+- `corsproxy.io` from CSP `connect-src` in vite.config.ts.
+- Superseded roadmap archives (`ROADMAP.archive-2026-04.md`,
+  `ROADMAP.archive-2026-05.md`) — preserved in git history.
+
+### Fixed
+
+- `vitest.config.ts` coverage exclusion typo: `paste-overlay` → `palette-overlay`.
+- `docs/ROADMAP.md` markdown table formatting (MD060 compliance).
+
+### Changed
+
+- **ESLint**: Tightened `varsIgnorePattern` from 30+ prefixes to `^_` only.
+- **Browserslist**: Expanded to Opera, Samsung Internet, ChromeAndroid,
+  FirefoxAndroid, iOS ≥ 16.4.
+- **Playwright**: 7 projects (Chromium, Firefox, WebKit, Edge, Pixel 7,
+  iPhone 14, iPad).
+- **Vitest browser**: 3 engines (Chromium, Firefox, WebKit).
+
+### Added
+
+- `tests/browser/cross-browser-compat.browser.test.ts` — 50+ Web API assertions
+  across all engines.
+- `tests/e2e/responsive.spec.ts` — viewport, dark/light mode, reduced motion,
+  overflow detection.
+- `config/css-custom-data.json` — teaches VS Code about `@starting-style`,
+  `@scope`, `@container`, `@layer`, anchor positioning, `forced-color-adjust`.
+- README troubleshooting section.
+- `eslint-plugin-import-x` and `playwright` added to parent MyScripts shared deps.
+
+### Verified
+
+- 0 TypeScript errors (strict mode)
+- 0 ESLint warnings (`--max-warnings 0`)
+- 4,304 unit tests passing (367 test files)
+- Production build: 129.1 KB gzip JS, 44 SW precache entries (633.6 KB)
+
+---
+
 ## [7.24.0] - 2026-05-04
 
 ### Fixed

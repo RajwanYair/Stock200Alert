@@ -103,6 +103,17 @@ Cross-Up:    close[t-1] <= sma200[t-1]  AND  close[t] > sma200[t]
 Consensus:   Micho Method + >=1 confirming method = BUY
 ```
 
+## Troubleshooting
+
+| Problem                                                  | Cause                                        | Fix                                                                                          |
+| -------------------------------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `ERR_CERT_AUTHORITY_INVALID` in dev                      | Corporate MITM proxy                         | Set `HTTPS_PROXY=http://proxy-dmz.intel.com:912` before `npm run dev`                        |
+| CSP blocks fetch requests in dev                         | Hitting Yahoo directly instead of Vite proxy | Ensure `import.meta.env.DEV` routes through `/api/yahoo` (already default)                   |
+| Firefox/WebKit Playwright tests fail to start            | Browser engines not installed                | Run `npx playwright install firefox webkit`                                                  |
+| `@starting-style` / `@scope` shown as unknown in VS Code | CSS language service needs custom data       | Verify `css.customData` points to `./config/css-custom-data.json` in `.vscode/settings.json` |
+| Tests timeout behind corporate firewall                  | npm registry unreachable                     | Configure `.npmrc` with `proxy` and `https-proxy`                                            |
+| Build exceeds 200 KB budget                              | New dependency added                         | Check `npm run check:bundle` and tree-shake or lazy-load the addition                        |
+
 ## License
 
 [MIT](LICENSE)
