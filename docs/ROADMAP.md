@@ -958,6 +958,49 @@ polyfill active; Compression Streams in export; `using` sweep complete.
 
 ---
 
+## Phase J — Polish, Coverage & Documentation (v10.0.0)
+
+_Focus: close remaining test coverage gaps, expand the user-guide documentation
+suite, and prepare the codebase for long-term maintainability._
+
+### J1 — CHANGELOG Backfill
+
+| #   | Item                                 | Status  |
+| --- | ------------------------------------ | ------- |
+| J1  | Backfill CHANGELOG v7.14.0 – v7.16.0 | ✅ Done |
+
+### J2 — User-Guide Expansion
+
+| #   | Item                             | Status  |
+| --- | -------------------------------- | ------- |
+| J2  | Screener user guide (MDX)        | ✅ Done |
+| J3  | Backtest Engine user guide (MDX) | ✅ Done |
+| J4  | Alerts user guide (MDX)          | ✅ Done |
+| J5  | Docs sidebar — add User Guides   | ✅ Done |
+
+### J3 — Test Coverage Sweep
+
+| #   | Item                                                      | Status  |
+| --- | --------------------------------------------------------- | ------- |
+| J6  | chart-card / consensus-card / watchlist-card tests        | ✅ Done |
+| J7  | market-breadth-data / screener-data / settings-card tests | ✅ Done |
+| J8  | app-store / backtest-worker / compute-worker tests        | ✅ Done |
+
+### J4 — Future Items (planned)
+
+| #   | Item                                      | Priority | Notes                                                   |
+| --- | ----------------------------------------- | -------- | ------------------------------------------------------- |
+| J9  | npm workspaces refactor (`src/` → `app/`) | P1       | Carried from G2/R3; monorepo structure                  |
+| J10 | E2E Playwright smoke tests                | P2       | Automated smoke for key user flows                      |
+| J11 | Accessibility audit (WCAG 2.2 AA)         | P2       | Keyboard nav, ARIA roles, colour contrast               |
+| J12 | Performance budget CI gate                | P3       | Bundle size + LCP/FID/CLS budgets in CI pipeline        |
+| J13 | i18n framework scaffolding                | P3       | Extract strings; ICU MessageFormat; RTL layout support  |
+| J14 | Plugin API for custom indicators          | P3       | External ESM indicator modules loaded at runtime        |
+| J15 | Mobile-responsive card layouts            | P2       | Responsive grid breakpoints; touch-optimised controls   |
+| J16 | WebSocket reconnect stress tests          | P3       | Simulate network flaps; verify circuit-breaker recovery |
+
+---
+
 ## 17. Refactor & Rewrite Backlog
 
 | #   | Refactor                                                                              | Status             | Target      |
