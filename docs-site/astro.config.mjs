@@ -29,12 +29,19 @@ export default defineConfig({
           ],
         },
         {
-          label: "Indicators",
-          autogenerate: { directory: "indicators" },
+          label: "User Guides",
+          items: [
+            { label: "Charts", slug: "charts" },
+            { label: "Portfolio", slug: "portfolio" },
+            { label: "Watchlist", slug: "watchlist" },
+            { label: "Screener", slug: "screener" },
+            { label: "Backtest", slug: "backtest" },
+            { label: "Alerts", slug: "alerts" },
+          ],
         },
         {
-          label: "Core Utilities",
-          autogenerate: { directory: "core" },
+          label: "Indicators",
+          autogenerate: { directory: "indicators" },
         },
       ],
       customCss: ["./src/styles/custom.css"],
