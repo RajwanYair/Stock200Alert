@@ -6,6 +6,39 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [7.17.0] - 2026-05-03
+
+### Added — 10-sprint delivery (J1–J8, Phase J roadmap)
+
+- **J2–J4 — User Guide Pages**: Added 3 new user guide MDX pages — **Screener**,
+  **Backtest Engine**, and **Alerts** — in `docs-site/src/content/docs/`.
+  Each guide documents UI features, parameters, keyboard shortcuts, and export options.
+- **J5 — Docs Sidebar Fix**: Added "User Guides" sidebar section linking all 6 guide
+  pages (Charts, Portfolio, Watchlist, Screener, Backtest, Alerts). Removed broken
+  "Core Utilities" autogenerate pointing to non-existent content directory.
+- **J6 — Card Tests Batch 1**: Tests for `chart-card`, `consensus-card`, `watchlist-card`
+  adapters (13 tests). Covers mount/update/dispose lifecycle and backtest UI rendering.
+- **J7 — Card Tests Batch 2**: Tests for `market-breadth-data`, `screener-data`,
+  `settings-card` bridges and adapters (11 tests). Covers getter/setter round-trips and
+  settings callback wiring.
+- **J8 — Core Worker Tests**: Tests for `app-store`, `backtest-worker`, `compute-worker`
+  (11 tests). Validates reactive signal semantics, synchronous fallback path, and type
+  interface shape.
+- **Phase J Roadmap**: Added Phase J (v10.0.0) to ROADMAP.md — 8 future items including
+  E2E Playwright tests, WCAG accessibility audit, i18n scaffolding, and plugin API.
+
+### Changed
+
+- **J1 — CHANGELOG Backfill**: Added missing entries for v7.14.0, v7.15.0, and v7.16.0.
+
+### Stats
+
+- **Total tests**: 3 990 passing across 325 test files
+- **New tests this release**: 35 (13 + 11 + 11)
+- **New docs pages**: 3 user guides + Phase J roadmap section
+
+---
+
 ## [7.16.0] - 2026-05-03
 
 ### Added — 10-sprint delivery (F2, F5, F6, R4, R21)
