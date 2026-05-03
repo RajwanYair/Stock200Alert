@@ -10,8 +10,10 @@
 import { describe, it, expect, vi, afterEach } from "vitest";
 import {
   importConfigJSON,
+  exportConfigJSON,
   downloadCompressedFile,
   downloadFile,
+  EXPORT_SCHEMA_VERSION,
 } from "../../../src/core/export-import";
 
 describe("importConfigJSON — edge cases", () => {
@@ -139,5 +141,60 @@ describe("downloadFile — additional coverage", () => {
     downloadFile("data", "test.json", "application/json");
 
     expect(revokeSpy).toHaveBeenCalledWith("blob:test");
+  });
+});
+
+describe("importConfigJSON — schema version + checksum", () => {
+  it("rejects future schema version (> EXPORT_SCHEMA_VERSION)", () => {
+    const json = JSON.stringify({
+      schemaVersion: EXPORT_SCHEMA_VERSION + 1,
+      version: "99.0.0",
+      config: { theme: "dark", watchlist: [] },
+    });
+    expect(() => importConfigJSON(json)).toThrow("Unsupported export schema version");
+  });
+
+  it("throws on checksum mismatch (corrupted config)", () => {
+    const json = JSON.stringify({
+      schemaVersion: 1,
+      version: "7.0.0",
+      checksum: "ffffffff",
+      config: { theme: "dark", watchlist: [] },
+    });
+    expect(() => importConfigJSON(json)).toThrow("checksum mismatch");
+  });
+
+  it("passes with valid checksum from exportConfigJSON", () => {
+    const config = { theme: "dark" as const, watchlist: [] };
+    const exported = exportConfigJSON(config as never, "7.0.0");
+    const result = importConfigJSON(exported);
+    expect(result.theme).toBe("dark");
+  });
+});
+
+describe("downloadCompressedFile — fallback when CompressionStream unavailable", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it("falls back to plain download without .gz when CompressionStream is undefined", async () => {
+    const original = globalThis.CompressionStream;
+    // @ts-expect-error — removing global for test
+    delete globalThis.CompressionStream;
+
+    const clickSpy = vi.fn();
+    const mockAnchor = { href: "", download: "", click: clickSpy } as unknown as HTMLAnchorElement;
+    vi.spyOn(document, "createElement").mockReturnValue(mockAnchor);
+    vi.spyOn(document.body, "appendChild").mockImplementation(() => mockAnchor);
+    vi.spyOn(document.body, "removeChild").mockImplementation(() => mockAnchor);
+    vi.spyOn(URL, "createObjectURL").mockReturnValue("blob:plain");
+    vi.spyOn(URL, "revokeObjectURL").mockImplementation(() => undefined);
+
+    await downloadCompressedFile("test", "data.json.gz", "application/json");
+
+    expect(clickSpy).toHaveBeenCalledOnce();
+    expect(mockAnchor.download).toBe("data.json");
+
+    globalThis.CompressionStream = original;
   });
 });
