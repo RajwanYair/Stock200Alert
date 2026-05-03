@@ -4,6 +4,13 @@
   "description": "CrossTide Web — browser-based stock monitoring dashboard with 12-method consensus signals, interactive charting, and offline-first PWA.",
   "type": "module",
   "private": true,
+  "exports": {
+    ".": "./src/main.ts",
+    "./core": "./src/core/index.ts",
+    "./domain": "./src/domain/index.ts",
+    "./cards": "./src/cards/index.ts",
+    "./ui": "./src/ui/index.ts"
+  },
   "homepage": "https://github.com/RajwanYair/CrossTide",
   "repository": {
     "type": "git",
