@@ -46,10 +46,18 @@ export interface Env {
   // OHLCV_STORE?: R2Bucket;
 }
 
-const app = new Hono<{ Bindings: Env }>({ strict: false });
+const app = new Hono<{ Bindings: Env; Variables: { requestId: string } }>({ strict: false });
 
 // ── CORS preflight short-circuit (must come before rate-limit middleware) ─────
 app.options("*", (c) => handlePreflight(c.req.raw));
+
+// ── Request ID propagation (K12) ─────────────────────────────────────────────
+app.use("*", async (c, next) => {
+  const requestId = c.req.header("X-Request-ID") ?? crypto.randomUUID();
+  c.set("requestId", requestId);
+  await next();
+  c.res.headers.set("X-Request-ID", requestId);
+});
 
 // ── Rate limiting (exempt: OPTIONS handled above) ─────────────────────────────
 app.use("*", async (c, next) => {
