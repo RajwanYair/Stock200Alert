@@ -230,10 +230,35 @@ describe("createModelLoader", () => {
     expect(typeof loader).toBe("function");
   });
 
-  it("memoises the session promise", () => {
-    const loader = createModelLoader("https://example.com/model.onnx");
+  it("memoises the session promise", async () => {
+    vi.spyOn(globalThis, "fetch").mockResolvedValue(
+      new Response(new ArrayBuffer(8), { status: 200 }),
+    );
+    const loader = createModelLoader("https://example.com/model.onnx", {
+      loadRuntime: () =>
+        Promise.resolve({
+          InferenceSession: {
+            create: () =>
+              Promise.resolve({
+                inputNames: ["input"],
+                outputNames: ["output"],
+                run: () => Promise.resolve({ output: { data: new Float32Array() } }),
+                release: () => Promise.resolve(),
+              }),
+          },
+          Tensor: class {
+            constructor(
+              public type: string,
+              public data: Float32Array,
+              public dims: number[],
+            ) {}
+          },
+        } as any),
+    });
     const p1 = loader();
     const p2 = loader();
     expect(p1).toBe(p2);
+    await p1; // Ensure promise resolves cleanly — avoids unhandled rejection
+    vi.restoreAllMocks();
   });
 });
