@@ -290,6 +290,14 @@ export {
 } from "./pattern-recognition";
 export type { PatternCandle, PatternDirection, DetectedPattern } from "./pattern-recognition";
 
+export { evaluatePatternTrade, aggregatePatternStats, backtestPatterns } from "./pattern-backtest";
+export type {
+  PatternBacktestConfig,
+  PatternTradeResult,
+  PatternStats,
+  PatternBacktestReport,
+} from "./pattern-backtest";
+
 export {
   Regime,
   classifyVix,
