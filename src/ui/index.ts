@@ -13,7 +13,7 @@ export type { Theme } from "./theme";
 export { renderWatchlist } from "./watchlist";
 export { showToast, clearAllToasts, toastCount } from "./toast";
 export type { ToastType, ToastOptions } from "./toast";
-export { renderSparkline } from "./sparkline";
+export { renderSparkline, clearSparklineCache } from "./sparkline";
 export type { SparklineOptions } from "./sparkline";
 export { openModal, closeModal, isModalOpen } from "./modal";
 export type { ModalOptions } from "./modal";

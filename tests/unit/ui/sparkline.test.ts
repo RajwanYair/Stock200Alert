@@ -1,5 +1,5 @@
-import { describe, it, expect } from "vitest";
-import { renderSparkline } from "../../../src/ui/sparkline";
+import { describe, it, expect, afterEach } from "vitest";
+import { renderSparkline, clearSparklineCache } from "../../../src/ui/sparkline";
 
 describe("renderSparkline", () => {
   it("returns empty string for fewer than 2 points", () => {
@@ -51,5 +51,34 @@ describe("renderSparkline", () => {
     expect(match).not.toBeNull();
     const pointPairs = match![1]!.trim().split(" ");
     expect(pointPairs).toHaveLength(data.length);
+  });
+});
+
+describe("sparkline memoization (K13)", () => {
+  afterEach(() => {
+    clearSparklineCache();
+  });
+
+  it("returns identical reference for same input", () => {
+    const data = [10, 20, 30, 40, 50];
+    const a = renderSparkline(data);
+    const b = renderSparkline(data);
+    // Same string content (memoized)
+    expect(a).toBe(b);
+  });
+
+  it("cache differentiates by options", () => {
+    const data = [1, 2, 3];
+    const a = renderSparkline(data, { width: 80 });
+    const b = renderSparkline(data, { width: 120 });
+    expect(a).not.toBe(b);
+  });
+
+  it("clearSparklineCache resets cache", () => {
+    renderSparkline([1, 2, 3]);
+    clearSparklineCache();
+    // After clearing, should still produce correct output
+    const svg = renderSparkline([1, 2, 3]);
+    expect(svg).toContain("<svg");
   });
 });

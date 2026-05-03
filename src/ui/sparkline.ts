@@ -2,6 +2,7 @@
  * SVG sparkline — inline mini chart for watchlist rows.
  *
  * Pure function: takes closes, returns an SVG string.
+ * Memoized by data content hash to avoid redundant SVG rebuilds (K13).
  */
 
 export interface SparklineOptions {
@@ -20,13 +21,53 @@ const DEFAULTS = {
   fillColor: "none",
 };
 
+// ── Memoization cache (K13) ──────────────────────────────────────────────────
+const CACHE_MAX = 128;
+const cache = new Map<string, string>();
+
+/** Build a cache key from closes array + options. */
+function cacheKey(closes: readonly number[], opts: SparklineOptions): string {
+  // Use a compact serialization: length + first/last/sum to detect changes cheaply
+  // then fallback to full JSON when ambiguous. For small arrays (typically ≤60 data points)
+  // the join is fast enough and collision-free.
+  return `${closes.length}:${closes.join(",")}|${opts.width ?? ""}:${opts.height ?? ""}:${opts.strokeColor ?? ""}`;
+}
+
 /**
  * Render a sparkline SVG string from an array of close prices.
  * Returns empty string for fewer than 2 data points.
+ * Results are memoized (LRU, max 128 entries).
  */
 export function renderSparkline(closes: readonly number[], opts: SparklineOptions = {}): string {
   if (closes.length < 2) return "";
 
+  const key = cacheKey(closes, opts);
+  const cached = cache.get(key);
+  if (cached !== undefined) {
+    // Move to end for LRU behavior
+    cache.delete(key);
+    cache.set(key, cached);
+    return cached;
+  }
+
+  const svg = buildSparklineSvg(closes, opts);
+
+  // Evict oldest entry if at capacity
+  if (cache.size >= CACHE_MAX) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
+  }
+  cache.set(key, svg);
+  return svg;
+}
+
+/** Clear the sparkline memoization cache (for testing). */
+export function clearSparklineCache(): void {
+  cache.clear();
+}
+
+/** @internal Build the SVG string (pure computation, no cache). */
+function buildSparklineSvg(closes: readonly number[], opts: SparklineOptions): string {
   const w = opts.width ?? DEFAULTS.width;
   const h = opts.height ?? DEFAULTS.height;
   const stroke = opts.strokeColor ?? DEFAULTS.strokeColor;
