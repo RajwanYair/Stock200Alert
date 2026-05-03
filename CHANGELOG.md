@@ -6,6 +6,35 @@ Versioning follows [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [7.26.0] - 2026-05-03
+
+### Added
+
+- **Request deduplication** (K3): `fetchOnce()` in-flight promise cache prevents
+  duplicate concurrent network requests to the same resource.
+- **Event delegation** (K4): `createDelegate()` utility with `data-action`
+  dispatch pattern — single listener per container, routes to named handlers.
+- **ARIA live regions** (K6): Card containers now have `aria-live="polite"` so
+  screen readers announce content refreshes automatically.
+- **Worker health check CI job** (K10): New CI step starts worker via wrangler
+  dev and verifies /api/health + X-Request-ID header.
+- **CSP report-uri** (K11): `POST /api/csp-report` endpoint logs Content-Security-Policy
+  violations; CSP directives now include `report-uri /api/csp-report`.
+- **X-Request-ID propagation** (K12): Worker middleware generates/echoes a UUID
+  request ID on every response for end-to-end tracing.
+
+### Changed
+
+- **Sparkline memoization** (K13): `renderSparkline()` results cached via 128-entry
+  LRU Map keyed by data content + options — avoids redundant SVG rebuilds.
+
+### Fixed
+
+- **Chart sync cleanup** (K5): Multi-chart layout now unsubscribes panel
+  crosshair registrations before re-render, preventing duplicate updates.
+
+---
+
 ## [7.25.0] - 2026-05-03
 
 ### Breaking
