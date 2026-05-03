@@ -241,7 +241,13 @@ function handleRoute(): void {
 
 function activateView(route: RouteName): void {
   document.querySelectorAll<HTMLAnchorElement>(".nav-link").forEach((link) => {
-    link.classList.toggle("active", link.dataset["route"] === route);
+    const isActive = link.dataset["route"] === route;
+    link.classList.toggle("active", isActive);
+    if (isActive) {
+      link.setAttribute("aria-current", "page");
+    } else {
+      link.removeAttribute("aria-current");
+    }
   });
   document.querySelectorAll<HTMLElement>(".view").forEach((view) => {
     view.classList.toggle("active", view.id === `view-${route}`);

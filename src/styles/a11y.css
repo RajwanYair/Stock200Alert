@@ -87,4 +87,47 @@
   textarea {
     min-height: 2rem;
   }
+
+  /* ── ARIA current page indicator (J11) ── */
+  .nav-link[aria-current="page"] {
+    border-bottom: 2px solid var(--color-accent, #4d90fe);
+    font-weight: 600;
+  }
+
+  /* ── Card landmark roles ── */
+  .card[role="region"] {
+    position: relative;
+  }
+
+  /* ── Keyboard focus within card sections ── */
+  .card:focus-within {
+    outline: 2px solid var(--color-focus, #4d90fe);
+    outline-offset: 4px;
+    border-radius: var(--radius, 4px);
+  }
+
+  /* ── Visible label association for screen readers ── */
+  .card-header h2 {
+    font-size: inherit;
+  }
+
+  /* ── Status badge readability ── */
+  .status-badge[role="status"] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* ── Prefers contrast: more (WCAG AAA) ── */
+  @media (prefers-contrast: more) {
+    :root {
+      --color-border: #888;
+    }
+
+    .card {
+      border-width: 2px;
+    }
+
+    .nav-link {
+      text-decoration: underline;
+    }
+  }
 }
